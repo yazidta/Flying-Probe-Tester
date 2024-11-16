@@ -1,0 +1,6 @@
+../Core/Src/servo.c:20:6:PWM_Init	16	static
+../Core/Src/servo.c:32:6:PWM_WriteDuty	24	static
+../Core/Src/servo.c:52:7:PWM_ReadDuty	16	static
+../Core/Src/servo.c:56:6:SERVO_Init	16	static
+../Core/Src/servo.c:62:6:SERVO_WritePosition	24	static
+../Core/Src/servo.c:69:7:SERVO_ReadPosition	16	static
