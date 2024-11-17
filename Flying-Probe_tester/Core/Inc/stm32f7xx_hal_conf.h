@@ -23,7 +23,6 @@
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F7xx_HAL_CONF_H
 #define __STM32F7xx_HAL_CONF_H
-#define HAL_TIM_MODULE_ENABLED
 
 #ifdef __cplusplus
  extern "C" {
@@ -65,7 +64,7 @@
 /* #define HAL_MMC_MODULE_ENABLED */
 /* #define HAL_SPDIFRX_MODULE_ENABLED */
 /* #define HAL_SPI_MODULE_ENABLED */
-/* #define HAL_TIM_MODULE_ENABLED */
+#define HAL_TIM_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 /* #define HAL_USART_MODULE_ENABLED */
 /* #define HAL_IRDA_MODULE_ENABLED */

@@ -1,0 +1,13 @@
+../Components/Src/LCD.c:66:6:__lcd_delay_us	16	static
+../Components/Src/LCD.c:81:6:__lcd_i2c_write	24	static
+../Components/Src/LCD.c:104:6:__lcd_i2c_write_command	16	static
+../Components/Src/LCD.c:115:6:__lcd_i2c_write_data	16	static
+../Components/Src/LCD.c:127:6:LCD_I2C_Init	16	static
+../Components/Src/LCD.c:155:6:LCD_I2C_printCustomChar	16	static
+../Components/Src/LCD.c:166:6:LCD_I2C_printDecInt	24	static
+../Components/Src/LCD.c:183:6:LCD_I2C_printHexInt	24	static
+../Components/Src/LCD.c:197:6:LCD_I2C_printStr	32	static
+../Components/Src/LCD.c:210:6:LCD_I2C_SetCursor	16	static
+../Components/Src/LCD.c:226:6:LCD_I2C_Clear	16	static
+../Components/Src/LCD.c:238:6:LCD_I2C_DefineChar	32	static
+../Components/Src/LCD.c:255:6:LCD_I2C_printf	92	static

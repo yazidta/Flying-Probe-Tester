@@ -4,9 +4,10 @@
  *  Created on: Nov 16, 2024
  *      Author: yazed
  */
-#include "extras.h"
-#include "stm32f7xx_hal.h"      // HAL core header
 
+
+#include "stm32f7xx_hal.h"      // HAL core header
+#include "extras.h"
 bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin, uint32_t delayMs)
 {
     // Read the sensor state

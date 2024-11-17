@@ -12,6 +12,7 @@ RM := rm -rf
 -include Drivers/STM32F7xx_HAL_Driver/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
+-include Components/Src/subdir.mk
 -include objects.mk
 
 ifneq ($(MAKECMDGOALS),clean)
@@ -60,8 +61,8 @@ all: main-build
 main-build: Flying-Probe_tester.elf secondary-outputs
 
 # Tool invocations
-Flying-Probe_tester.elf Flying-Probe_tester.map: $(OBJS) $(USER_OBJS) D:\STM32\ projects\Flying-Probe_tester\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Flying-Probe_tester.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\STM32 projects\Flying-Probe_tester\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Flying-Probe_tester.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Flying-Probe_tester.elf Flying-Probe_tester.map: $(OBJS) $(USER_OBJS) D:\github\flyingrobots\Flying-Probe-Tester\Flying-Probe_tester\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Flying-Probe_tester.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\github\flyingrobots\Flying-Probe-Tester\Flying-Probe_tester\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Flying-Probe_tester.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
