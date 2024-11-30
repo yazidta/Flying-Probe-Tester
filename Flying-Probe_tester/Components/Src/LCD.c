@@ -17,8 +17,8 @@
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_tim.h"
 #include "main.h"
-#include "i2c.h"
-
+#include "stm32f7xx_hal_conf.h"
+#include <stdarg.h>
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -126,24 +126,31 @@ void __lcd_i2c_write_data(LCD_I2C_HandleTypeDef* hlcd, uint8_t data)
  */
 void LCD_I2C_Init(LCD_I2C_HandleTypeDef* hlcd)
 {
-  __lcd_delay(hlcd->Timer, 15.2);  // >15 ms
+    // Step 1: Initial delay after power-on
+    __lcd_delay(hlcd->Timer, 50); // Wait at least 40 ms after power-on
 
-  // 4-bit mode
-  __lcd_i2c_write_command(hlcd, 0x03);  // 0011
-  __lcd_delay(hlcd->Timer, 4.1);        // > 4.1 ms
-  __lcd_i2c_write_command(hlcd, 0x03);  // 0011
-  __lcd_delay(hlcd->Timer, 4.1);        // > 0.1 ms
-  __lcd_i2c_write_command(hlcd, 0x03);  // 0011
-  __lcd_i2c_write_command(hlcd, 0x02);  // 0001
+    // Step 2: Force LCD into 4-bit mode
+    __lcd_i2c_write_command(hlcd, 0x03);  // Function set: 8-bit mode
+    __lcd_delay(hlcd->Timer, 5);          // Wait > 4.1 ms
 
-  hlcd->IsInitialized = 1;
+    __lcd_i2c_write_command(hlcd, 0x03);  // Function set: 8-bit mode
+    __lcd_delay(hlcd->Timer, 1);          // Wait > 100 µs
 
-  __lcd_i2c_write_command(hlcd, LCD_FUNCTION_SET | LCD_OPT_N);
+    __lcd_i2c_write_command(hlcd, 0x03);  // Function set: 8-bit mode
+    __lcd_delay(hlcd->Timer, 1);          // Short delay
 
-  __lcd_i2c_write_command(hlcd, LCD_CLEAR_DISPLAY);                      // Clear screen
-  __lcd_delay(hlcd->Timer, 1.6);                                         // > 1.52 ms
-  __lcd_i2c_write_command(hlcd, LCD_DISPLAY_ON_OFF_CONTROL | LCD_OPT_D); // LCD on, Cursor off, On blink
-  __lcd_i2c_write_command(hlcd, LCD_ENTRY_MODE_SET | LCD_OPT_INC);       // Cursor increment on
+    __lcd_i2c_write_command(hlcd, 0x02);  // Function set: 4-bit mode
+    __lcd_delay(hlcd->Timer, 1);          // Short delay
+
+    // Step 3: Configure display
+    __lcd_i2c_write_command(hlcd, LCD_FUNCTION_SET | LCD_OPT_N);        // Function set: 4-bit, 2-line, 5x8 dots
+    __lcd_i2c_write_command(hlcd, LCD_DISPLAY_ON_OFF_CONTROL | LCD_OPT_D); // Display on, cursor off, blink off
+    __lcd_i2c_write_command(hlcd, LCD_CLEAR_DISPLAY);                   // Clear display
+    __lcd_delay(hlcd->Timer, 2);                                        // Wait > 1.52 ms
+    __lcd_i2c_write_command(hlcd, LCD_ENTRY_MODE_SET | LCD_OPT_INC);    // Entry mode: increment cursor, no shift
+
+    // Mark as initialized
+    hlcd->IsInitialized = 1;
 }
 /**
  * @brief Write custom character
@@ -261,8 +268,277 @@ void LCD_I2C_printf(LCD_I2C_HandleTypeDef* hlcd, const char* format, ...)
   LCD_I2C_printStr(hlcd, buffer);
   va_end(args);
 }
+/**
+ * @brief Display "BONGO BONG" with a glossy animation.
+ * @param[in] hlcd : LCD handler with I2C interface
+ * @param[in] row  : Row number to display the text
+ * @return None
+ */
+void LCD_I2C_DisplaySequentialGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row)
+{
+    // Ensure row is valid (0 or 1 for a 2x16 LCD)
 
 
+    const char* text = "BONGO BONG";
+    uint8_t len = strlen(text);
+
+    // Create a highlight custom character
+    uint8_t highlight_char[8] = {
+        0b11111,  // Full block
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111
+    };
+
+    // Define the custom character in CGRAM
+    LCD_I2C_DefineChar(hlcd, 0, highlight_char);
+
+    // Start from the first character
+    for (uint8_t i = 0; i < len; i++) {
+        // Highlight the current character
+        LCD_I2C_SetCursor(hlcd, row, i+3);
+        LCD_I2C_printCustomChar(hlcd, 0);
+
+        // Wait to create the glossy effect
+        __lcd_delay(hlcd->Timer, 200); // Adjust delay for visual preference
+
+        // Replace the highlighted character with the original character
+        LCD_I2C_SetCursor(hlcd, row, i+3);
+        __lcd_i2c_write_data(hlcd, text[i]);
+    }
+}
+void LCD_I2C_DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row)
+{
+    // Ensure row is valid (0 or 1 for a 2x16 LCD)
+    if (row >= 2) return;
+
+    const char* text = "BONGO BONG";
+    uint8_t len = strlen(text);
+    uint8_t gloss_position = 0;
+
+    // Clear the display
+    LCD_I2C_Clear(hlcd);
+
+    // Create a highlight custom character
+    uint8_t highlight_char[8] = {
+        0b11111,  // Full block
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111,
+        0b11111
+    };
+
+    // Define the custom character in CGRAM
+    LCD_I2C_DefineChar(hlcd, 0, highlight_char);
+
+    // Display the static text on the specified row
+    LCD_I2C_SetCursor(hlcd, row, 0);
+    LCD_I2C_printStr(hlcd, (char*)text);
+
+    // Animate the gloss effect
+    while (1) {
+        for (uint8_t i = 0; i < len; i++) {
+            // Highlight the character at gloss_position
+            LCD_I2C_SetCursor(hlcd, row, i);
+
+            if (i == gloss_position) {
+                // Display the highlight custom character
+                LCD_I2C_printCustomChar(hlcd, 0);
+            } else {
+                // Re-display the original character
+                __lcd_i2c_write_data(hlcd, text[i]);
+            }
+        }
+
+        // Erase the leftover character from the previous position
+        if (gloss_position > 0) {
+            LCD_I2C_SetCursor(hlcd, row, gloss_position - 1);
+            __lcd_i2c_write_data(hlcd, text[gloss_position - 1]);
+        } else {
+            LCD_I2C_SetCursor(hlcd, row, len - 1);
+            __lcd_i2c_write_data(hlcd, text[len - 1]);
+        }
+
+        // Update gloss position
+        gloss_position = (gloss_position + 1) % len;
+
+        // Delay for smooth animation
+        __lcd_delay(hlcd->Timer, 100); // Adjust delay as needed
+    }
+}
+void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* hlcd)
+{
+    // Clear the screen before rendering the option
+    LCD_I2C_Clear(hlcd);
+
+    switch (selectedOption) {
+        case 1:
+            // Logic for "Test from SD Card"
+        	LCD_I2C_SetCursor(hlcd, 0, 0);
+        	LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
+        	LCD_I2C_SetCursor(hlcd, 0, 0);
+            LCD_I2C_printStr(hlcd, "Testing SD...");
+            HAL_Delay(2000); // Placeholder for actual SD card testing logic
+            break;
+
+        case 2:
+            // Logic for "Prepare the Machine"
+        	LCD_I2C_SetCursor(hlcd, 0, 0);
+        	LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
+            LCD_I2C_SetCursor(hlcd, 0, 0);  // Set the cursor position for the first line
+            LCD_I2C_printStr(hlcd, "Preparing...");  // Ensure it's <= 16 characters for a 16x2 LCD
+            HAL_Delay(2000); // Placeholder for machine preparation logic
+            break;
+
+        default:
+            // Handle invalid cases (should not occur in normal use)
+            LCD_I2C_SetCursor(hlcd, 0, 0);
+            LCD_I2C_printStr(hlcd, "Invalid Option");
+            HAL_Delay(2000);
+            break;
+    }
+}
+
+
+uint8_t LCD_I2C_MainMenu(LCD_I2C_HandleTypeDef* hlcd, int (*buttons)(void))
+{
+    const char* menuItems[] = {"Test from SD", "Prepare Machine"}; // Menu options
+    uint8_t selectedOption = 0; // Current selected menu item
+    uint8_t totalOptions = sizeof(menuItems) / sizeof(menuItems[0]);
+    int buttonInput = 0;
+
+    // Assuming a 20-character LCD width for this example
+    const uint8_t LCD_WIDTH = 20;
+
+    while (1) {
+        // Clear the screen before rendering the menu
+        LCD_I2C_Clear(hlcd);
+
+        // Loop through menu options and display them
+        for (uint8_t i = 0; i < totalOptions; i++) {
+            // Set cursor position for each menu line
+            LCD_I2C_SetCursor(hlcd, i, 0);
+
+            // Buffer to store formatted line with highlighting
+            char formattedLine[LCD_WIDTH + 1]; // LCD_WIDTH + 1 for null terminator
+            memset(formattedLine, ' ', LCD_WIDTH); // Fill with spaces for clearing
+            formattedLine[LCD_WIDTH] = '\0';       // Null terminate the string
+
+            if (i == selectedOption) {
+                // Highlight the selected menu item with ">" symbol
+                snprintf(formattedLine, LCD_WIDTH + 1, ">%-*s", LCD_WIDTH - 1, menuItems[i]);
+            } else {
+                // Unselected menu items, aligned without ">" symbol
+                snprintf(formattedLine, LCD_WIDTH + 1, " %-*s", LCD_WIDTH - 1, menuItems[i]);
+            }
+
+            // Print the formatted line to the LCD
+            LCD_I2C_printStr(hlcd, formattedLine);
+        }
+
+        // Wait for button input from the user
+        buttonInput = buttons(); // External function to read button state
+
+        // Handle navigation input
+        switch (buttonInput) {
+            case 1: // "Up" button
+                if (selectedOption > 0) {
+                    selectedOption--;
+                }
+                break;
+
+            case 2: // "Down" button
+                if (selectedOption < totalOptions - 1) {
+                    selectedOption++;
+                }
+                break;
+
+            case 3: // "Select" button
+                // Return the selected option (1-based index)
+                return selectedOption + 1;
+
+            default:
+                // No valid input, continue looping
+                break;
+        }
+
+        // Add a small delay for debounce
+        HAL_Delay(200);
+    }
+}
+
+uint8_t LCD_I2C_MainMenu_Encoder(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc) {
+    const char* menuItems[] = {"Test from SD", "Prepare Machine"}; // Menu options
+    uint8_t totalOptions = sizeof(menuItems) / sizeof(menuItems[0]);
+    uint8_t selectedOption = 0; // Current selected menu item
+    uint8_t previousOption = 255; // Invalid to ensure the first update
+
+    while (1) {
+        // Get the current encoder step count using your ENC_GetCounter function
+        uint32_t encoderStep = ENC_GetCounter(henc);
+
+        // Normalize encoder steps to menu options
+        selectedOption = encoderStep % totalOptions;
+
+        // Handle wrap-around (if encoderStep can be negative)
+        if (selectedOption < 0) {
+            selectedOption += totalOptions;
+        }
+
+        // Update the menu display only if the selection has changed
+        if (selectedOption != previousOption) {
+            previousOption = selectedOption;
+
+            // Update menu display
+            for (uint8_t i = 0; i < totalOptions; i++) {
+                // Clear the line and set cursor position
+                LCD_I2C_SetCursor(hlcd, i, 0);
+                LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
+                LCD_I2C_SetCursor(hlcd, i, 0);
+
+                // Highlight the selected item
+                if (i == selectedOption) {
+                    char formattedLine[21];
+                    snprintf(formattedLine, 21, ">%-19s", menuItems[i]);
+                    LCD_I2C_printStr(hlcd, formattedLine);
+                } else {
+                    char formattedLine[21];
+                    snprintf(formattedLine, 21, " %-19s", menuItems[i]);
+                    LCD_I2C_printStr(hlcd, formattedLine);
+                }
+            }
+        }
+
+        // Check for selection button
+        bool buttonInput = read_buttons();
+        if (buttonInput==0) { // Replace with your actual button logic
+            HAL_Delay(200); // Debounce delay
+            if (buttonInput==0) {
+                return selectedOption + 1;
+            }
+        }
+
+        // Add a delay for smoother updates
+        HAL_Delay(100);
+    }
+}
+
+
+
+bool read_buttons(void)
+{
+
+    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return 1; // Down
+    else return 0;
+
+}
 
 
 

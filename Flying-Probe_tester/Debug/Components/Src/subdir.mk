@@ -6,18 +6,24 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../Components/Src/LCD.c \
+../Components/Src/encoder.c \
+../Components/Src/encoder_config.c \
 ../Components/Src/extras.c \
 ../Components/Src/lcd_config.c \
 ../Components/Src/servo.c 
 
 OBJS += \
 ./Components/Src/LCD.o \
+./Components/Src/encoder.o \
+./Components/Src/encoder_config.o \
 ./Components/Src/extras.o \
 ./Components/Src/lcd_config.o \
 ./Components/Src/servo.o 
 
 C_DEPS += \
 ./Components/Src/LCD.d \
+./Components/Src/encoder.d \
+./Components/Src/encoder_config.d \
 ./Components/Src/extras.d \
 ./Components/Src/lcd_config.d \
 ./Components/Src/servo.d 
@@ -30,7 +36,7 @@ Components/Src/%.o Components/Src/%.su Components/Src/%.cyclo: ../Components/Src
 clean: clean-Components-2f-Src
 
 clean-Components-2f-Src:
-	-$(RM) ./Components/Src/LCD.cyclo ./Components/Src/LCD.d ./Components/Src/LCD.o ./Components/Src/LCD.su ./Components/Src/extras.cyclo ./Components/Src/extras.d ./Components/Src/extras.o ./Components/Src/extras.su ./Components/Src/lcd_config.cyclo ./Components/Src/lcd_config.d ./Components/Src/lcd_config.o ./Components/Src/lcd_config.su ./Components/Src/servo.cyclo ./Components/Src/servo.d ./Components/Src/servo.o ./Components/Src/servo.su
+	-$(RM) ./Components/Src/LCD.cyclo ./Components/Src/LCD.d ./Components/Src/LCD.o ./Components/Src/LCD.su ./Components/Src/encoder.cyclo ./Components/Src/encoder.d ./Components/Src/encoder.o ./Components/Src/encoder.su ./Components/Src/encoder_config.cyclo ./Components/Src/encoder_config.d ./Components/Src/encoder_config.o ./Components/Src/encoder_config.su ./Components/Src/extras.cyclo ./Components/Src/extras.d ./Components/Src/extras.o ./Components/Src/extras.su ./Components/Src/lcd_config.cyclo ./Components/Src/lcd_config.d ./Components/Src/lcd_config.o ./Components/Src/lcd_config.su ./Components/Src/servo.cyclo ./Components/Src/servo.d ./Components/Src/servo.o ./Components/Src/servo.su
 
 .PHONY: clean-Components-2f-Src
 

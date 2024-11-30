@@ -14,7 +14,7 @@
 #include "lcd.h"
 #include "lcd_config.h"
 #include "main.h"
-#include "i2c.h"
+#include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_tim.h"
 
 /* Private typedef -----------------------------------------------------------*/
@@ -27,7 +27,7 @@ extern TIM_HandleTypeDef htim7;
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-
+extern I2C_HandleTypeDef hi2c1;
 /* Public variables ----------------------------------------------------------*/
 LCD_I2C_HandleTypeDef hlcd3 = {
     .I2C = &hi2c1,

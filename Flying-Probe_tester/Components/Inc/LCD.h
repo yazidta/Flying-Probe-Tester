@@ -21,7 +21,8 @@
 #include <string.h>
 #include <stdio.h>
 #include "stm32f7xx_hal.h"
-
+#include "encoder.h"
+#include <stdbool.h>
 
 
 /* Typedef -------------------------------------------------------------------*/
@@ -145,6 +146,12 @@ void LCD_I2C_DefineChar(LCD_I2C_HandleTypeDef* lcd, uint8_t code, uint8_t bitmap
  */
 void LCD_I2C_printf(LCD_I2C_HandleTypeDef* lcd, const char* format, ...);
 
+void DisplaySequentialGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
+void DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
+void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* hlcd);
+void LCD_I2C_DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
+bool read_buttons(void);
+uint8_t LCD_I2C_MainMenu_Encoder(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc);
 
 #endif
 

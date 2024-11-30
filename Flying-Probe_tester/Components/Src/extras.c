@@ -8,6 +8,9 @@
 
 #include "stm32f7xx_hal.h"      // HAL core header
 #include "extras.h"
+#include "LCD.h"
+#include "encoder.h"
+
 bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin, uint32_t delayMs)
 {
     // Read the sensor state
