@@ -33,11 +33,15 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
- D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/lcd_config.h \
- D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/lcd.h \
- D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder.h \
- D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder.h \
- D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder_config.h
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h
 ../Core/Inc/main.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -73,8 +77,12 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
-D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/lcd_config.h:
-D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/lcd.h:
-D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder.h:
-D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder.h:
-D:/github/flyingrobots/Flying-Probe-Tester/Flying-Probe_tester/Components/Inc/encoder_config.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:

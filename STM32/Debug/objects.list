@@ -1,4 +1,6 @@
 "./Components/Src/LCD.o"
+"./Components/Src/TMC2209.o"
+"./Components/Src/TMC2209_configs.o"
 "./Components/Src/encoder.o"
 "./Components/Src/encoder_config.o"
 "./Components/Src/extras.o"

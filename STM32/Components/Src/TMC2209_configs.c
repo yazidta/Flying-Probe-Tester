@@ -113,7 +113,7 @@ void initializeMotors() {
         else if(i == 2){
         	// Configure motor 3 Y-axis
             // TIMER configurations
-            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+           // motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 2;
             motors[i].stepsPerRevolution = 400;
@@ -134,7 +134,7 @@ void initializeMotors() {
         else if(i == 3){
         	// Configure motor 4 Y-axis
             // TIMER configurations
-            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+            //motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 2;
             motors[i].stepsPerRevolution = 400;
