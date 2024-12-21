@@ -384,7 +384,7 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
         	LCD_I2C_SetCursor(hlcd, 0, 0);
         	LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
         	LCD_I2C_SetCursor(hlcd, 0, 0);
-        	display_files_on_lcd(hlcd);
+            LCD_I2C_printStr(hlcd, "Testing SD...");
             HAL_Delay(2000); // Placeholder for actual SD card testing logic
             break;
 

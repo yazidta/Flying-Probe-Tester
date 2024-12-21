@@ -43,7 +43,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "extras.h"
+
 
 
 
@@ -115,6 +115,5 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs);
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
-void CarriageHoming(Motor *motor);
 
 #endif // TMC2209_H

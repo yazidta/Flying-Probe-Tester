@@ -19,14 +19,13 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_dma.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_dma_ex.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_cortex.h \
+ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_eth.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_flash.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_flash_ex.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c_ex.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr_ex.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi_ex.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h \
@@ -34,14 +33,6 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
- ../FATFS/App/fatfs.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/integer.h \
- ../FATFS/Target/ffconf.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/diskio.h \
- C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff.h \
- ../FATFS/Target/user_diskio.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
@@ -50,11 +41,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h
 ../Core/Inc/main.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -76,14 +63,13 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_dma.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_dma_ex.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_cortex.h:
+C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_eth.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_flash.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_flash_ex.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_i2c_ex.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pwr_ex.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_spi_ex.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_tim_ex.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart.h:
@@ -91,14 +77,6 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
-../FATFS/App/fatfs.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/integer.h:
-../FATFS/Target/ffconf.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/diskio.h:
-C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Middlewares/Third_Party/FatFs/src/ff.h:
-../FATFS/Target/user_diskio.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
@@ -107,8 +85,4 @@ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
