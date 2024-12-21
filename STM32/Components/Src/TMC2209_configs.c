@@ -113,7 +113,7 @@ void initializeMotors() {
         else if(i == 2){
         	// Configure motor 3 Y-axis
             // TIMER configurations
-           // motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 2;
             motors[i].stepsPerRevolution = 400;
@@ -134,7 +134,7 @@ void initializeMotors() {
         else if(i == 3){
         	// Configure motor 4 Y-axis
             // TIMER configurations
-            //motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 2;
             motors[i].stepsPerRevolution = 400;
@@ -159,18 +159,17 @@ void initializeMotors() {
 }
 
 
-void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, float lengthMM, const char *axisName) {
+void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumference, const char *axisName) {
     // Assign motors to the axis
     axis->motors[0] = motor1;
     axis->motors[1] = motor2;
-    const float pulleyCircumference = 40.0f; // GT2 20-tooth pulley with 2mm pitch(Pulley Circumference	= Number of Teeth * Belt Pitch)
+    // The circumference variable is calculated based on the physical setup. For example: GT2 20-tooth pulley with 2mm pitch(Pulley Circumference = Number of Teeth * Belt Pitch)
 
     // Axis dimensions and step calculations
-    axis->lengthMM = lengthMM;
     uint32_t totalStepsPerRevolution = motor1->stepsPerRevolution * motor1->driver.mstep; // Both motors use the same microstepping
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;
-    axis->stepPerUnit = totalStepsPerRevolution / pulleyCircumference;;
+    axis->stepPerUnit = totalStepsPerRevolution / circumference;;
 
     // IDs for motors controlling the axis, eg. X1, X2
     snprintf(axis->id[0], sizeof(axis->id[0]), "%s%d", axisName, motor1->driver.id);
@@ -181,7 +180,7 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, float lengthMM, co
 
 void initializeSystem(){
     // X-axis
-    initializeAxis(&axes[0], &motors[0], NULL, X_AXIS_LENGTH, "X");
+    initializeAxis(&axes[0], &motors[0],&motors[0], 400, "X");
 
     // Y-axis
    // initializeAxis(&axes[0], &motors[2], &motors[3], Y_AXIS_LENGTH, "Y");

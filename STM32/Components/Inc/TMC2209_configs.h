@@ -109,7 +109,7 @@ extern Axis axes[MAX_MOTORS_PER_AXIS - 1];
 
 // Function declarations
 void initializeMotors();
-void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, float lengthMM, const char *axisName);
+void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumference, const char *axisName);
 void initializeSystem();
 
 
