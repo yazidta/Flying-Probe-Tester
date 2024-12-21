@@ -33,3 +33,4 @@
 ../Components/Src/TMC2209.c:634:6:TMC2209_configureSpreadCycle	8
 ../Components/Src/TMC2209.c:670:10:TMC2209_readStallGuardResult	1
 ../Components/Src/TMC2209.c:680:6:TMC2209_setStallGuardThreshold	1
+../Components/Src/TMC2209.c:685:6:CarriageHoming	2
