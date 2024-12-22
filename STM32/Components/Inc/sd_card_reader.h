@@ -26,5 +26,6 @@ void parse_gcode(const char *char_array);
 void process_raw_gcode(FIL *fil);
 void sd_card_read_gcode();
 void uart_transmit_string(const char *str);
+void sd_card_list_files(void);
 
 #endif /* INC_SD_CARD_READER_H_ */

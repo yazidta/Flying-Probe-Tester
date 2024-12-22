@@ -10,7 +10,7 @@
 ../FATFS/Target/user_diskio_spi.c:233:5:xmit_datablock	24	static
 ../FATFS/Target/user_diskio_spi.c:261:6:send_cmd	24	static
 ../FATFS/Target/user_diskio_spi.c:320:16:USER_SPI_initialize	32	static
-../FATFS/Target/user_diskio_spi.c:378:16:USER_SPI_status	16	static
-../FATFS/Target/user_diskio_spi.c:393:16:USER_SPI_read	24	static
-../FATFS/Target/user_diskio_spi.c:432:16:USER_SPI_write	24	static
-../FATFS/Target/user_diskio_spi.c:473:16:USER_SPI_ioctl	56	static
+../FATFS/Target/user_diskio_spi.c:380:16:USER_SPI_status	16	static
+../FATFS/Target/user_diskio_spi.c:395:16:USER_SPI_read	24	static
+../FATFS/Target/user_diskio_spi.c:434:16:USER_SPI_write	24	static
+../FATFS/Target/user_diskio_spi.c:475:16:USER_SPI_ioctl	56	static

@@ -327,9 +327,11 @@ inline DSTATUS USER_SPI_initialize (
 	//assume SPI already init init_spi();	/* Initialize SPI */
 
 	if (Stat & STA_NODISK) return Stat;	/* Is card existing in the soket? */
+	flag = Stat;
 
 	FCLK_SLOW();
-	spiPre = SD_SPI_HANDLE.Instance->CR1;
+	//SD_SPI_HANDLE.Instance->CR1 = SPI_BAUDRATEPRESCALER_128;
+
 
 	for (n = 10; n; n--) xchg_spi(0xFF);	/* Send 80 dummy clocks */
 

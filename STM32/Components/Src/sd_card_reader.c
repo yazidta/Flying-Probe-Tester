@@ -35,6 +35,44 @@ void myprintf(const char *fmt, ...) {
     HAL_UART_Transmit(&huart3, (uint8_t*)buffer, strlen(buffer), HAL_MAX_DELAY);
 }
 
+/* List all files in the root directory of the SD card */
+void sd_card_list_files(void) {
+    FATFS FatFs;
+    FRESULT fres;
+    DIR dir;
+    FILINFO fno;
+
+    fres = f_mount(&FatFs, "", 1);
+    if (fres != FR_OK) {
+        myprintf("Failed to mount SD card (Error: %i)\r\n", fres);
+        return;
+    }
+
+    // Open the root directory
+    fres = f_opendir(&dir, "/");
+    if (fres != FR_OK) {
+        myprintf("Failed to open root directory (Error: %i)\r\n", fres);
+        f_mount(NULL, "", 0); // Unmount before exiting
+        return;
+    }
+
+    // Read all files in the root directory
+    myprintf("Files on the SD card:\r\n");
+    while (1) {
+        fres = f_readdir(&dir, &fno); // Read a directory item
+        if (fres != FR_OK || fno.fname[0] == '\0') break; // Break on error or end of dir
+        if (fno.fattrib & AM_DIR) {
+            myprintf("  <DIR>  %s\r\n", fno.fname); // It's a directory
+        } else {
+            myprintf("  <FILE> %s (Size: %lu bytes)\r\n", fno.fname, fno.fsize); // It's a file
+        }
+    }
+
+    f_closedir(&dir);
+    f_mount(NULL, "", 0); // Unmount the SD card
+}
+
+/* Parse a single G-code line for X, Y, and Z coordinates */
 void parse_gcode(const char *line) {
     float x = 0.0f, y = 0.0f, z = 0.0f;
     bool x_found = false, y_found = false, z_found = false;
@@ -58,7 +96,6 @@ void parse_gcode(const char *line) {
         }
     }
 
-    // Store the parsed coordinates if valid
     if (coordinate_index < MAX_COORD_COUNT) {
         if (x_found) coordinates_x[coordinate_index] = x;
         if (y_found) coordinates_y[coordinate_index] = y;
@@ -69,7 +106,7 @@ void parse_gcode(const char *line) {
     }
 }
 
-/* Process the G-code file */
+/* Process the G-code file and display lines */
 void process_raw_gcode(FIL *fil) {
     char buffer[BUFFER_SIZE];
     UINT bytes_read = 0;
@@ -83,55 +120,66 @@ void process_raw_gcode(FIL *fil) {
             if (c == '\n' || c == '\r') {
                 if (line_index > 0) {
                     line[line_index] = '\0';
+                    myprintf("Line: %s\r\n", line); // Display the line
                     parse_gcode(line);
                     line_index = 0;
                 }
             } else {
                 if (line_index < LINE_BUFFER_SIZE - 1) {
                     line[line_index++] = c;
+                } else {
+                    myprintf("Line buffer overflow, skipping line.\r\n");
+                    line_index = 0; // Reset for safety
                 }
             }
         }
     }
 
-    // Handle remaining line
     if (line_index > 0) {
         line[line_index] = '\0';
+        myprintf("Line: %s\r\n", line); // Display the line
         parse_gcode(line);
     }
 }
 
 /* Open and process the G-code file */
 void sd_card_read_gcode(void) {
-    // Custom Message
     myprintf("\r\n~ SD card G-code processing ~\r\n");
 
-    // Mounting the SD card
+    // List all available files
+    myprintf("Listing files on SD card:\r\n");
+    sd_card_list_files();
+
+    // Mount the SD card
     FATFS FatFs;
     FIL fil;
     FRESULT fres;
 
+    myprintf("Mounting SD card...\r\n");
     fres = f_mount(&FatFs, "", 1);
     if (fres != FR_OK) {
         myprintf("Failed to mount SD card (Error: %i)\r\n", fres);
-        while (1); // Stop if SD card mount fails
+        return;
     }
 
-    // Open the G-code file
-    fres = f_open(&fil, "test.gco", FA_READ);
+    // Open a G-code file
+    const char *filename = "yazidstink.gcode";
+    myprintf("Attempting to open file '%s'\r\n", filename);
+
+    fres = f_open(&fil, filename, FA_READ);
     if (fres != FR_OK) {
-        myprintf("Failed to open file 'test.gco' (Error: %i)\r\n", fres);
-        f_mount(NULL, "", 0); // Unmount before exiting
-        while (1); // Stop if file open fails
+        myprintf("Failed to open file '%s' (Error: %i)\r\n", filename, fres);
+        f_mount(NULL, "", 0);
+        return;
     }
 
     // Process the G-code file
-    myprintf("Processing 'test.gco'...\r\n");
+    myprintf("Processing '%s'...\r\n", filename);
     process_raw_gcode(&fil);
 
-    // Close and unmount the SD card
+    // Close the file and unmount the SD card
     f_close(&fil);
     f_mount(NULL, "", 0);
 
-    myprintf("File processing complete and SD card unmounted.\r\n");
+    myprintf("File '%s' processing complete and SD card unmounted.\r\n", filename);
 }

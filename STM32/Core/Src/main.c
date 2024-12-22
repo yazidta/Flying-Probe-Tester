@@ -93,6 +93,7 @@ TIM_HandleTypeDef htim7;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 volatile uint32_t spiPre;
+uint8_t flag;
 
 
 /* USER CODE BEGIN PV */
@@ -242,14 +243,14 @@ int main(void)
 //
 //      }
 
-//	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
-//	  uint32_t encode = ENC_GetCounter(&henc1);
-//          // Show the menu and get the user's choice
-//          uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
+	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
+	  uint32_t encode = ENC_GetCounter(&henc1);
+          // Show the menu and get the user's choice
+          uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
+
 //
-////
-////          // Handle the selected option using the encapsulated function
-//          LCD_I2C_HandleMenuSelection(choice, &hlcd3);
+//          // Handle the selected option using the encapsulated function
+          LCD_I2C_HandleMenuSelection(choice, &hlcd3);
 
 
 

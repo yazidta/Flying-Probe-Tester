@@ -1,5 +1,6 @@
 ../Components/Src/sd_card_reader.c:23:6:uart_transmit_string	1
 ../Components/Src/sd_card_reader.c:28:6:myprintf	1
-../Components/Src/sd_card_reader.c:38:6:parse_gcode	9
-../Components/Src/sd_card_reader.c:73:6:process_raw_gcode	9
-../Components/Src/sd_card_reader.c:105:6:sd_card_read_gcode	3
+../Components/Src/sd_card_reader.c:39:6:sd_card_list_files	6
+../Components/Src/sd_card_reader.c:76:6:parse_gcode	9
+../Components/Src/sd_card_reader.c:110:6:process_raw_gcode	9
+../Components/Src/sd_card_reader.c:146:6:sd_card_read_gcode	3
