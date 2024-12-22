@@ -10,7 +10,10 @@
 
 #include "main.h"
 #include "fatfs.h"
-
+#include <stdio.h>
+#include <string.h>
+#include <stdarg.h> // for va_list var arg functions
+#include <stdbool.h> // for 'bool', 'true', and 'false'
 // Maximum G-code line length
 #define BUFFER_SIZE 128        // Buffer size for reading file chunks
 #define LINE_BUFFER_SIZE 256

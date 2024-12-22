@@ -23,7 +23,10 @@
 #include "stm32f7xx_hal.h"
 #include "encoder.h"
 #include <stdbool.h>
-
+#include "stm32f7xx_hal_tim.h"
+#include "main.h"
+#include "stm32f7xx_hal_conf.h"
+#include <stdarg.h>
 
 /* Typedef -------------------------------------------------------------------*/
 #define LCD_TimerType TIM_HandleTypeDef*

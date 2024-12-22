@@ -12,6 +12,6 @@
 
 // Include TIM functions
 
-bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin, uint32_t delayMs);
+bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin);
 
 #endif /* INC_EXTRAS_H_ */

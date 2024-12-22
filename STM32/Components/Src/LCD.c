@@ -12,13 +12,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "LCD.h"
-#include <string.h>
-#include <stdlib.h>
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_tim.h"
-#include "main.h"
-#include "stm32f7xx_hal_conf.h"
-#include <stdarg.h>
+
 
 /* Private typedef -----------------------------------------------------------*/
 

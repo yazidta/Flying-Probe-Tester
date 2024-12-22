@@ -1,6 +1,6 @@
-../Components/Src/servo.c:21:6:PWM_Init	1
-../Components/Src/servo.c:33:6:PWM_WriteDuty	8
-../Components/Src/servo.c:53:7:PWM_ReadDuty	1
-../Components/Src/servo.c:57:6:SERVO_Init	1
-../Components/Src/servo.c:63:6:SERVO_WritePosition	1
-../Components/Src/servo.c:70:7:SERVO_ReadPosition	1
+../Components/Src/servo.c:20:6:PWM_Init	1
+../Components/Src/servo.c:32:6:PWM_WriteDuty	8
+../Components/Src/servo.c:52:7:PWM_ReadDuty	1
+../Components/Src/servo.c:56:6:SERVO_Init	1
+../Components/Src/servo.c:62:6:SERVO_WritePosition	1
+../Components/Src/servo.c:69:7:SERVO_ReadPosition	1

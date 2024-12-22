@@ -33,3 +33,4 @@
 ../Components/Src/TMC2209.c:636:6:TMC2209_configureSpreadCycle	24	static
 ../Components/Src/TMC2209.c:672:10:TMC2209_readStallGuardResult	72	static
 ../Components/Src/TMC2209.c:682:6:TMC2209_setStallGuardThreshold	16	static
+../Components/Src/TMC2209.c:687:6:MotorsHoming	16	static

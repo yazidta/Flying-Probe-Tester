@@ -1,9 +1,5 @@
 #include "sd_card_reader.h"
-#include <stdio.h>
-#include <string.h>
-#include <stdarg.h> // for va_list var arg functions
-#include <stdbool.h> // for 'bool', 'true', and 'false'
-#include "fatfs.h"
+
 
 #define MAX_LINE_LENGTH 256
 #define MAX_COORD_COUNT 500

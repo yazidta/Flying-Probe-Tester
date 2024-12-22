@@ -4,7 +4,7 @@
 #ifdef USE_HAL_DRIVER
 #include "stm32f7xx_hal.h"         // Include the main HAL header
 #include <math.h>
-
+#include "stm32f7xx_hal_tim.h"
 #endif
 
 typedef TIM_HandleTypeDef* PWM_TIM_TypeDef;

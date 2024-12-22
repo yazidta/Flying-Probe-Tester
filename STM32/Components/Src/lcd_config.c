@@ -11,11 +11,9 @@
   */
   /* Private includes ----------------------------------------------------------*/
 
-#include "lcd.h"
+
 #include "lcd_config.h"
-#include "main.h"
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_tim.h"
+
 
 /* Private typedef -----------------------------------------------------------*/
 

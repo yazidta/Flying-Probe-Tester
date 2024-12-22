@@ -684,7 +684,16 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
     debug_print("StallGuard threshold set successfully! \r\n");
     debug_print("\r\n");
 }
+void MotorsHoming(Motor *motor){
+	TMC2209_SetDirection(motor,0);
+	TMC2209_SetSpeed(motor,16000);
+	while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
+		TMC2209_Start(motor);
+	}
 
+	    TMC2209_Stop(motor);
+
+}
 
 
 

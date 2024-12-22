@@ -6,8 +6,7 @@
  */
 #include "servo.h"
 
-#include "stm32f7xx_hal.h"
-#include "stm32f7xx_hal_tim.h"
+
 
 
 #define SERVO_MIN_DUTY 	2.5f
