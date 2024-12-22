@@ -9,7 +9,11 @@ RM := rm -rf
 
 # All of the sources participating in the build are defined here
 -include sources.mk
--include Drivers/STM32F7xx_HAL_Driver/subdir.mk
+-include Middlewares/Third_Party/FatFs/src/option/subdir.mk
+-include Middlewares/Third_Party/FatFs/src/subdir.mk
+-include FATFS/Target/subdir.mk
+-include FATFS/App/subdir.mk
+-include Drivers/STM32F7xx_HAL_Driver/Src/subdir.mk
 -include Core/Startup/subdir.mk
 -include Core/Src/subdir.mk
 -include Components/Src/subdir.mk
@@ -61,8 +65,8 @@ all: main-build
 main-build: Flying-Probe_tester.elf secondary-outputs
 
 # Tool invocations
-Flying-Probe_tester.elf Flying-Probe_tester.map: $(OBJS) $(USER_OBJS) D:\github\flyingrobots\Flying-Probe-Tester\STM32\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Flying-Probe_tester.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\github\flyingrobots\Flying-Probe-Tester\STM32\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Flying-Probe_tester.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+Flying-Probe_tester.elf Flying-Probe_tester.map: $(OBJS) $(USER_OBJS) D:\Studia\7th_semester\Flying_Probe_Tester\FPT_new\Flying-Probe-Tester\STM32\STM32F746ZGTX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Flying-Probe_tester.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m7 -T"D:\Studia\7th_semester\Flying_Probe_Tester\FPT_new\Flying-Probe-Tester\STM32\STM32F746ZGTX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Flying-Probe_tester.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv5-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
