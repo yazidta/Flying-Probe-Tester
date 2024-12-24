@@ -213,6 +213,29 @@ int main(void)
 
   //  testIHOLDIRUN(&motors[0], 31, 16, 8);
   //  HAL_Delay(2);
+    TMC2209_enable_PDNuart(&motors[1]);
+
+        //TMC2209_read_ifcnt(&motors[0]);
+        //configureGCONF(&motors[0]);
+        TMC2209_SetSpreadCycle(&motors[1], 1);
+        //TMC2209_read_ifcnt(&motors[0]);
+        TMC2209_EnableDriver(&motors[1], 1);
+        HAL_Delay(2);
+        //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
+
+       TMC2209_read_ifcnt(&motors[1]);
+        HAL_Delay(2);
+        setMicrosteppingResolution(&motors[1], 8);
+    //    HAL_Delay(2);
+
+        checkMicrosteppingResolution(&motors[1]);
+        HAL_Delay(2);
+      //  TMC2209_SetSpreadCycle(&motors[0], 1);
+       // HAL_Delay(2);
+       // TMC2209_setStallGuardThreshold(&motors[0], 10);
+    //    HAL_Delay(2);
+        TMC2209_SetDirection(&motors[1], dir);
+        //TMC2209_SetSpeed(&motors[1], 5000);
 
    spiPre = SD_SPI_HANDLE.Instance->CR1;
 
@@ -238,8 +261,10 @@ int main(void)
       if (Flag) // Adjust based on button state
       {
     	         HAL_Delay(200);
+    	         //TMC2209_Step(&motors[0], 1600);
+    	         TMC2209_Step(&motors[1], 16000);
 
-    	         MotorsHoming(&motors);
+    	         //MotorsHoming(&motors);
 
     	  	  	 Flag = 0;
 
@@ -738,10 +763,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOG_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_9, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(dir1_GPIO_Port, dir1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_11|LD3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, enn2_Pin|dir2_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, enn1_Pin|LD3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI_cs_GPIO_Port, SPI_cs_Pin, GPIO_PIN_SET);
@@ -761,17 +789,24 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PF9 */
-  GPIO_InitStruct.Pin = GPIO_PIN_9;
+  /*Configure GPIO pin : dir1_Pin */
+  GPIO_InitStruct.Pin = dir1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+  HAL_GPIO_Init(dir1_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : PA3 */
   GPIO_InitStruct.Pin = GPIO_PIN_3;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : enn2_Pin dir2_Pin */
+  GPIO_InitStruct.Pin = enn2_Pin|dir2_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : PB1 PB2 */
@@ -786,8 +821,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : PB11 LD3_Pin */
-  GPIO_InitStruct.Pin = GPIO_PIN_11|LD3_Pin;
+  /*Configure GPIO pins : enn1_Pin LD3_Pin */
+  GPIO_InitStruct.Pin = enn1_Pin|LD3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -799,6 +834,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI_cs_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : diag_Pin diag1_Pin */
+  GPIO_InitStruct.Pin = diag_Pin|diag1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
@@ -812,12 +853,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : PD1 */
-  GPIO_InitStruct.Pin = GPIO_PIN_1;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);

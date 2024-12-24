@@ -377,7 +377,7 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
  		debug_print("Invalid data received!(MCU Address)\r\n");
  		return -1;
  	}
- 	// Byte 2: Register ddress correct?
+ 	// Byte 2: Register address correct?
  	if (verifyBuffer[2] != regAddress){
  		debug_print("Invalid data received!(Register Address)\r\n");
  		return -1;

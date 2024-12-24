@@ -73,7 +73,7 @@ void initializeMotors() {
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
         motors[i].driver.mstep = 8;
-        motors[i].stepsPerRevolution = 400;
+        motors[i].stepsPerRevolution = 200;
         // GPIO PINS
         motors[i].driver.step_port = GPIOB;
         motors[i].driver.step_pin = GPIO_PIN_10;
@@ -90,6 +90,28 @@ void initializeMotors() {
 
         else if(i == 1){
         	// Configure motor 2 X-axis
+            // TIMER configurations
+            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+            motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
+            motors[i].driver.mstep = 2;
+            motors[i].stepsPerRevolution = 400;
+            // GPIO PINS
+            motors[i].driver.step_port = GPIOA;
+            motors[i].driver.step_pin = GPIO_PIN_6;
+            motors[i].driver.dir_port = GPIOA;
+            motors[i].driver.dir_pin = GPIO_PIN_7;
+            motors[i].driver.enn_port = GPIOA;
+            motors[i].driver.enn_pin = GPIO_PIN_5;
+            motors[i].driver.diag_port = GPIOD;
+            motors[i].driver.diag_pin = GPIO_PIN_1;
+            motors[i].driver.index_port = GPIOA;
+            motors[i].driver.index_pin = GPIO_PIN_5;
+
+        }
+
+
+        else if(i == 2){
+        	// Configure motor 3 Y-axis
             // TIMER configurations
             //motors[i].driver.htim = &htim3;				 // TIMER HANDLER
            // motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
@@ -109,33 +131,11 @@ void initializeMotors() {
 
         }
 
-
-        else if(i == 2){
-        	// Configure motor 3 Y-axis
-            // TIMER configurations
-            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
-            motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
-            motors[i].driver.mstep = 2;
-            motors[i].stepsPerRevolution = 400;
-            // GPIO PINS
-            motors[i].driver.step_port = GPIOB;
-            motors[i].driver.step_pin = GPIO_PIN_10;
-            motors[i].driver.dir_port = GPIOF;
-            motors[i].driver.dir_pin = GPIO_PIN_9;
-            motors[i].driver.enn_port = GPIOB;
-            motors[i].driver.enn_pin = GPIO_PIN_11;
-            motors[i].driver.diag_port = GPIOD;
-            motors[i].driver.diag_pin = GPIO_PIN_1;
-            motors[i].driver.index_port = GPIOA;
-            motors[i].driver.index_pin = GPIO_PIN_5;
-
-        }
-
         else if(i == 3){
         	// Configure motor 4 Y-axis
             // TIMER configurations
-            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
-            motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
+            //motors[i].driver.htim = &htim3;				 // TIMER HANDLER
+            //motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 2;
             motors[i].stepsPerRevolution = 400;
             // GPIO PINS

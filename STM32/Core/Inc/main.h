@@ -64,8 +64,20 @@ void Error_Handler(void);
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
+#define dir1_Pin GPIO_PIN_9
+#define dir1_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
+#define enn2_Pin GPIO_PIN_5
+#define enn2_GPIO_Port GPIOA
+#define step2_Pin GPIO_PIN_6
+#define step2_GPIO_Port GPIOA
+#define dir2_Pin GPIO_PIN_7
+#define dir2_GPIO_Port GPIOA
+#define step1_Pin GPIO_PIN_10
+#define step1_GPIO_Port GPIOB
+#define enn1_Pin GPIO_PIN_11
+#define enn1_GPIO_Port GPIOB
 #define LD3_Pin GPIO_PIN_14
 #define LD3_GPIO_Port GPIOB
 #define STLK_RX_Pin GPIO_PIN_8
@@ -78,6 +90,8 @@ void Error_Handler(void);
 #define ENC_CLK_GPIO_Port GPIOD
 #define SPI_cs_Pin GPIO_PIN_14
 #define SPI_cs_GPIO_Port GPIOD
+#define diag_Pin GPIO_PIN_15
+#define diag_GPIO_Port GPIOD
 #define USB_PowerSwitchOn_Pin GPIO_PIN_6
 #define USB_PowerSwitchOn_GPIO_Port GPIOG
 #define USB_OverCurrent_Pin GPIO_PIN_7
@@ -96,6 +110,8 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define diag1_Pin GPIO_PIN_1
+#define diag1_GPIO_Port GPIOD
 
 /* USER CODE BEGIN Private defines */
 
