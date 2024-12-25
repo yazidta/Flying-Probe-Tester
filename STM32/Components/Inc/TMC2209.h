@@ -74,7 +74,7 @@ extern uint32_t last_tmc_read_attempt_ms;
 extern uint8_t rxData[TMC_REPLY_SIZE + 1]; // Buffer to track all received data
 extern uint8_t rxBuffer[TMC_REPLY_SIZE]; // Buffer store the actual received 8 bytes
 extern volatile uint8_t dataReadyFlag ; // Flag to indicate data reception
-extern uint32_t stepsTaken;
+extern uint32_t stepsTaken[MAX_MOTORS];
 //extern volatile uint32_t stepsTaken;
 
 // Function prototypes

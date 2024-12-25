@@ -43,10 +43,11 @@ extern UART_HandleTypeDef huart2;
 
 // Timer Handler declaration
 extern TIM_HandleTypeDef htim2; // Motor 1
+extern TIM_HandleTypeDef htim3; // Motor 1
 
 
 // Motors & axis
-#define MAX_MOTORS 1 // Max motors to be added -- You can handle upto 4 TMC2209 drivers on the same UART BUS
+#define MAX_MOTORS 2 // Max motors to be added -- You can handle upto 4 TMC2209 drivers on the same UART BUS
 #define MAX_MOTORS_PER_AXIS 2 // Num of motors per axis
 #define X_AXIS_LENGTH	469.356
 #define Y_AXIS_LENGTH 	300

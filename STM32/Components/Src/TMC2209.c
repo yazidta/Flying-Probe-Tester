@@ -41,7 +41,7 @@ uint8_t rxBuffer[TMC_REPLY_SIZE];
 volatile uint8_t dataReady = 0; // Flag to indicate data reception
 volatile uint8_t rxBufferReady = 0;
 
-uint32_t stepsTaken;
+uint32_t stepsTaken[MAX_MOTORS];
 ////////// HAL FUNCTIONS //////////
 
 // PWM callback for step counting
@@ -50,7 +50,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-		  stepsTaken = motors[i].stepsTaken;  // increment counter
+		  stepsTaken[i] = motors[i].stepsTaken;  // increment counter
 	  }
   }
 
