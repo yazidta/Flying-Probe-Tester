@@ -78,11 +78,13 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 /* USER CODE BEGIN PV */
 
 volatile uint8_t es = 0;
+volatile uint8_t x = 0;
+
 volatile uint8_t Flag =0 ;
 int32_t speed = 2000;
 int32_t stepsRequired = 30000;
 uint32_t SG_RESULT = 0;
-uint8_t dir = 0;
+uint8_t dir = 1;
 volatile uint32_t lastDebounceTime = 0;  // Tracks the last debounce time
 const uint32_t debounceDelay = 50;
 I2C_HandleTypeDef hi2c1;
@@ -189,7 +191,7 @@ int main(void)
     //configureGCONF(&motors[0]);
     TMC2209_SetSpreadCycle(&motors[0], 1);
     //TMC2209_read_ifcnt(&motors[0]);
-    //TMC2209_EnableDriver(&motors[0], 1);
+    TMC2209_EnableDriver(&motors[0], 1);
     HAL_Delay(2);
     //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
 
@@ -205,7 +207,7 @@ int main(void)
    // TMC2209_setStallGuardThreshold(&motors[0], 10);
 //    HAL_Delay(2);
     TMC2209_SetDirection(&motors[0], dir);
-    TMC2209_SetSpeed(&motors[0], 16000);
+    TMC2209_SetSpeed(&motors[0], 32000);
     //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1
    // TMC2209_RampUp(&motors[0], 500,3000, 200);
     //TMC2209_Step(&motors[0], 1600);
@@ -219,13 +221,13 @@ int main(void)
         //configureGCONF(&motors[0]);
        // TMC2209_SetSpreadCycle(&motors[1], 1);
         //TMC2209_read_ifcnt(&motors[0]);
-        //TMC2209_EnableDriver(&motors[1], 1);
+        TMC2209_EnableDriver(&motors[1], 1);
         HAL_Delay(2);
         //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
 
        TMC2209_read_ifcnt(&motors[1]);
         HAL_Delay(2);
-        setMicrosteppingResolution(&motors[1], 8);
+        setMicrosteppingResolution(&motors[1], 16);
     //    HAL_Delay(2);
 
         checkMicrosteppingResolution(&motors[1]);
@@ -235,7 +237,7 @@ int main(void)
        // TMC2209_setStallGuardThreshold(&motors[0], 10);
     //    HAL_Delay(2);
         TMC2209_SetDirection(&motors[1], dir);
-        //TMC2209_SetSpeed(&motors[1], 5000);
+        TMC2209_SetSpeed(&motors[1], 16000);
         //TMC2209_Step(&motors[1], 16000);
 
    spiPre = SD_SPI_HANDLE.Instance->CR1;
@@ -262,19 +264,20 @@ int main(void)
       if (Flag) // Adjust based on button state
       {
     	         HAL_Delay(200);
-    	         //TMC2209_Step(&motors[0], 1600);
-    	         //TMC2209_Step(&motors[0], 16000);
+    	         //TMC2209_Step(&motors[1], 3200);
+    	         //TMC2209_Step(&motors[0], 6400);
     	         //TMC2209_Step(&motors[1], 16000);
     	         //TMC2209_Start(&motors[0]);
-    	         TMC2209_Start(&motors[1]);
+    	         //TMC2209_Start(&motors[1]);
 
 
-    	         //MotorsHoming(&motors);
+    	         MotorsHoming(&motors);
 
     	  	  	 Flag = 0;
 
       }
-      es = IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin);
+      es = IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin);
+      x = IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin);
 
 	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
 //	  uint32_t encode = ENC_GetCounter(&henc1);
@@ -802,11 +805,11 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : EndStop1_Pin */
-  GPIO_InitStruct.Pin = EndStop1_Pin;
+  /*Configure GPIO pins : EndStop1_Pin EndStop2_Pin */
+  GPIO_InitStruct.Pin = EndStop1_Pin|EndStop2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(EndStop1_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USER_Btn_Pin */
   GPIO_InitStruct.Pin = USER_Btn_Pin;

@@ -685,13 +685,37 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
     debug_print("\r\n");
 }
 void MotorsHoming(Motor *motor){
-	TMC2209_SetDirection(motor,0);
-	TMC2209_SetSpeed(motor,16000);
-	while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
-		TMC2209_Start(motor);
+	for(int i = 0; i<3; i++){
+		if(i == 0){
+			TMC2209_SetDirection(&motor[0],0);
+			TMC2209_SetSpeed(&motor[0],16000);
+			while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
+					TMC2209_Start(&motor[0]);
+					if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
+						TMC2209_Stop(&motor[0]);
+					}
+
+				}
+			TMC2209_Stop(&motor[0]);
+
+		}
+		if(i == 1){
+			TMC2209_SetDirection(&motor[1],1);
+			TMC2209_SetSpeed(&motor[1],16000);
+			while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
+				TMC2209_Start(&motor[1]);
+				if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
+					TMC2209_Stop(&motor[1]);
+				}
+			}
+			TMC2209_Stop(&motor[1]);
+		}
 	}
 
-	    TMC2209_Stop(motor);
+
+
+
+
 
 }
 

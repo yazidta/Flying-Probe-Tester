@@ -61,6 +61,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EndStop1_Pin GPIO_PIN_2
 #define EndStop1_GPIO_Port GPIOE
+#define EndStop2_Pin GPIO_PIN_4
+#define EndStop2_GPIO_Port GPIOE
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
