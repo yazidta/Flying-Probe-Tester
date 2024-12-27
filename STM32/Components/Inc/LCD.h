@@ -27,6 +27,7 @@
 #include "main.h"
 #include "stm32f7xx_hal_conf.h"
 #include <stdarg.h>
+#include "sd_card_reader.h"
 
 /* Typedef -------------------------------------------------------------------*/
 #define LCD_TimerType TIM_HandleTypeDef*
@@ -155,6 +156,7 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
 void LCD_I2C_DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
 bool read_buttons(void);
 uint8_t LCD_I2C_MainMenu_Encoder(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc);
+void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd);
 
 #endif
 

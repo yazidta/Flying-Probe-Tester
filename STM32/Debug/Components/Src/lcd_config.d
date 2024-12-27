@@ -1,6 +1,5 @@
 Components/Src/lcd_config.o: ../Components/Src/lcd_config.c \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h \
  ../Core/Inc/stm32f7xx_hal_conf.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h \
@@ -37,9 +36,16 @@ Components/Src/lcd_config.o: ../Components/Src/lcd_config.c \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
- ../Core/Inc/main.h
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd.h:
+ ../Core/Inc/main.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h \
+ ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
+ ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
+ ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
+ ../Middlewares/Third_Party/FatFs/src/diskio.h \
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_rcc.h:
@@ -77,3 +83,14 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
 ../Core/Inc/main.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h:
+../FATFS/App/fatfs.h:
+../Middlewares/Third_Party/FatFs/src/ff.h:
+../Middlewares/Third_Party/FatFs/src/integer.h:
+../FATFS/Target/ffconf.h:
+../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h:
+../Middlewares/Third_Party/FatFs/src/diskio.h:
+../Middlewares/Third_Party/FatFs/src/ff.h:
+../FATFS/Target/user_diskio.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:

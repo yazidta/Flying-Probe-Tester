@@ -78,7 +78,7 @@ void initializeMotors() {
         motors[i].driver.step_port = GPIOB;
         motors[i].driver.step_pin = GPIO_PIN_10;
         motors[i].driver.dir_port = GPIOF;
-        motors[i].driver.dir_pin = GPIO_PIN_9;
+        motors[i].driver.dir_pin = GPIO_PIN_7;
         motors[i].driver.enn_port = GPIOB;
         motors[i].driver.enn_pin = GPIO_PIN_11;
         motors[i].driver.diag_port = GPIOD;

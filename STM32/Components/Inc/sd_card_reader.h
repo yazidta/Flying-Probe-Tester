@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdarg.h> // for va_list var arg functions
 #include <stdbool.h> // for 'bool', 'true', and 'false'
+
 // Maximum G-code line length
 #define BUFFER_SIZE 128        // Buffer size for reading file chunks
 #define LINE_BUFFER_SIZE 256
@@ -29,6 +30,6 @@ void parse_gcode(const char *char_array);
 void process_raw_gcode(FIL *fil);
 void sd_card_read_gcode();
 void uart_transmit_string(const char *str);
-void sd_card_list_files(void);
+//void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd);
 
 #endif /* INC_SD_CARD_READER_H_ */

@@ -11,22 +11,28 @@
   */
   /* Private includes ----------------------------------------------------------*/
 
-
+#include "LCD.h"
 #include "lcd_config.h"
+#include "main.h"
+#include "stm32f7xx_hal_i2c.h"
+#include "stm32f7xx_hal_tim.h"
 
+//#include "i2c.h"
+//#include "tim.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
 /* Private define ------------------------------------------------------------*/
 #ifdef LCD_USE_TIMER
 #endif
-extern TIM_HandleTypeDef htim7;
-
 /* Private macro -------------------------------------------------------------*/
 
 /* Private variables ---------------------------------------------------------*/
-extern I2C_HandleTypeDef hi2c1;
+
 /* Public variables ----------------------------------------------------------*/
+extern I2C_HandleTypeDef hi2c1;
+extern TIM_HandleTypeDef htim7;
+
 LCD_I2C_HandleTypeDef hlcd3 = {
     .I2C = &hi2c1,
     .Address = 0x27,  // PCF8574T (for all jumpers OPEN)

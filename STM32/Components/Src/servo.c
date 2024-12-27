@@ -55,7 +55,7 @@ float PWM_ReadDuty(const PWM_Handle_TypeDef* hpwm)
 }
 void SERVO_Init(SERVO_Handle_TypeDef* hservo)
 {
-	SERVO_WritePosition(hservo, 90.0f);
+	SERVO_WritePosition(hservo, 120.0f);
 	PWM_Init(&(hservo->PwmOut));
 }
 

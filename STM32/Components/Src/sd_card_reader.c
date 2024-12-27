@@ -32,41 +32,101 @@ void myprintf(const char *fmt, ...) {
 }
 
 /* List all files in the root directory of the SD card */
-void sd_card_list_files(void) {
-    FATFS FatFs;
-    FRESULT fres;
-    DIR dir;
-    FILINFO fno;
+//void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd) {
+//    FATFS FatFs;
+//    FRESULT fres;
+//    DIR dir;
+//    FILINFO fno;
+//    char fileList[20][20]; // Assuming up to 20 files and max name length of 20 characters
+//    uint8_t fileCount = 0;
+//    uint8_t startIndex = 0; // Index of the first file to display
+//    uint8_t LCD_ROWS = 2;  // Adjust for your LCD size
+//    uint8_t LCD_WIDTH = 20; // Adjust for your LCD width
+//    int buttonInput = read_buttons();
+//
+//    fres = f_mount(&FatFs, "", 1);
+//    if (fres != FR_OK) {
+//        LCD_I2C_Clear(hlcd);
+//        LCD_I2C_SetCursor(hlcd, 0, 0);
+//        LCD_I2C_printStr(hlcd, "Failed to mount");
+//        HAL_Delay(2000);
+//        return;
+//    }
+//
+//    // Open the root directory
+//    fres = f_opendir(&dir, "/");
+//    if (fres != FR_OK) {
+//        LCD_I2C_Clear(hlcd);
+//        LCD_I2C_SetCursor(hlcd, 0, 0);
+//        LCD_I2C_printStr(hlcd, "Open dir failed");
+//        f_mount(NULL, "", 0); // Unmount before exiting
+//        HAL_Delay(2000);
+//        return;
+//    }
+//
+//    // Read all files in the root directory
+//    while (1) {
+//        fres = f_readdir(&dir, &fno); // Read a directory item
+//        if (fres != FR_OK || fno.fname[0] == '\0') break; // Break on error or end of dir
+//        if (!(fno.fattrib & AM_DIR)) { // Add only files (ignore directories)
+//            strncpy(fileList[fileCount], fno.fname, LCD_WIDTH - 1);
+//            fileList[fileCount][LCD_WIDTH - 1] = '\0'; // Null-terminate
+//            fileCount++;
+//            if (fileCount >= 20) break; // Avoid overflow
+//        }
+//    }
+//
+//    f_closedir(&dir);
+//    f_mount(NULL, "", 0); // Unmount the SD card
+//
+//    if (fileCount == 0) {
+//        LCD_I2C_Clear(hlcd);
+//        LCD_I2C_SetCursor(hlcd, 0, 0);
+//        LCD_I2C_printStr(hlcd, "No files found");
+//        HAL_Delay(2000);
+//        return;
+//    }
+//
+//    // Display files with scrolling logic
+//    while (1) {
+//        LCD_I2C_Clear(hlcd);
+//
+//        // Display files within the visible range
+//        for (uint8_t i = 0; i < LCD_ROWS; i++) {
+//            if (startIndex + i < fileCount) {
+//                LCD_I2C_SetCursor(hlcd, i, 0);
+//                LCD_I2C_printStr(hlcd, fileList[startIndex + i]);
+//            }
+//        }
+//
+//        // Wait for button input for scrolling
+//        buttonInput = buttons();
+//
+//        switch (buttonInput) {
+//            case 1: // "Up" button
+//                if (startIndex > 0) {
+//                    startIndex--;
+//                }
+//                break;
+//
+//            case 2: // "Down" button
+//                if (startIndex < fileCount - LCD_ROWS) {
+//                    startIndex++;
+//                }
+//                break;
+//
+//            case 3: // "Back" button or Exit
+//                return;
+//
+//            default:
+//                // No valid input, continue looping
+//                break;
+//        }
+//
+//        HAL_Delay(200); // Debounce delay
+//    }
+//}
 
-    fres = f_mount(&FatFs, "", 1);
-    if (fres != FR_OK) {
-        myprintf("Failed to mount SD card (Error: %i)\r\n", fres);
-        return;
-    }
-
-    // Open the root directory
-    fres = f_opendir(&dir, "/");
-    if (fres != FR_OK) {
-        myprintf("Failed to open root directory (Error: %i)\r\n", fres);
-        f_mount(NULL, "", 0); // Unmount before exiting
-        return;
-    }
-
-    // Read all files in the root directory
-    myprintf("Files on the SD card:\r\n");
-    while (1) {
-        fres = f_readdir(&dir, &fno); // Read a directory item
-        if (fres != FR_OK || fno.fname[0] == '\0') break; // Break on error or end of dir
-        if (fno.fattrib & AM_DIR) {
-            myprintf("  <DIR>  %s\r\n", fno.fname); // It's a directory
-        } else {
-            myprintf("  <FILE> %s (Size: %lu bytes)\r\n", fno.fname, fno.fsize); // It's a file
-        }
-    }
-
-    f_closedir(&dir);
-    f_mount(NULL, "", 0); // Unmount the SD card
-}
 
 /* Parse a single G-code line for X, Y, and Z coordinates */
 void parse_gcode(const char *line) {
@@ -144,7 +204,7 @@ void sd_card_read_gcode(void) {
 
     // List all available files
     myprintf("Listing files on SD card:\r\n");
-    sd_card_list_files();
+    //sd_card_list_files();
 
     // Mount the SD card
     FATFS FatFs;

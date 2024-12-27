@@ -15,10 +15,15 @@
 /* Config --------------------------------------------------------------------*/
 
 /* Includes ------------------------------------------------------------------*/
-#include "lcd.h"
+#include "LCD.h"
 #include "main.h"
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_tim.h"
+#include "stm32f7xx_hal_conf.h"
+#include "stm32f7xx_hal_i2c.h"
+#include <string.h>
+#include <stdio.h>
+
 /* Typedef -------------------------------------------------------------------*/
 
 /* Define --------------------------------------------------------------------*/

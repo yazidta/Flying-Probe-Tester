@@ -374,13 +374,11 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
 
     switch (selectedOption) {
         case 1:
-            // Logic for "Test from SD Card"
         	LCD_I2C_SetCursor(hlcd, 0, 0);
         	LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
-        	LCD_I2C_SetCursor(hlcd, 0, 0);
-            LCD_I2C_printStr(hlcd, "Testing SD...");
-            HAL_Delay(2000); // Placeholder for actual SD card testing logic
-            break;
+        	LCD_I2C_SetCursor(hlcd, 0, 0);  // Set the cursor position for the first line
+            // Logic for "Test from SD Card"
+        	sd_card_display_files(hlcd);
 
         case 2:
             // Logic for "Prepare the Machine"
@@ -534,7 +532,82 @@ bool read_buttons(void)
 
 }
 
+void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd) {
+    FATFS FatFs;
+    FRESULT fres;
+    DIR dir;
+    FILINFO fno;
+    char fileList[4][21] = {0}; // File list buffer (20 + null terminator)
+    uint8_t fileCount = 0;
+    uint8_t LCD_ROWS = 4;  // Update to match 4x20 LCD
+    uint8_t LCD_WIDTH = 20;
 
+    // Mount SD Card
+    fres = f_mount(&FatFs, "", 1);
+    if (fres != FR_OK) {
+        LCD_I2C_Clear(hlcd);
+        LCD_I2C_printStr(hlcd, "              ");
+
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "Failed to mount");
+        HAL_Delay(2000);
+        return;
+    }
+
+    // Open root directory
+    fres = f_opendir(&dir, "/");
+    if (fres != FR_OK) {
+        LCD_I2C_Clear(hlcd);
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "Open dir failed");
+        f_mount(NULL, "", 0);
+        HAL_Delay(2000);
+        return;
+    }
+
+    // Read files into buffer (limit to 4 files)
+    while (fileCount < 4) {
+        fres = f_readdir(&dir, &fno);
+        if (fres != FR_OK || fno.fname[0] == '\0') break;
+        if (!(fno.fattrib & AM_DIR)) {
+            snprintf(fileList[fileCount], LCD_WIDTH, "%s", fno.fname);
+            fileCount++;
+        }
+    }
+
+    f_closedir(&dir);
+    f_mount(NULL, "", 0);
+
+    if (fileCount == 0) {
+        LCD_I2C_Clear(hlcd);
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "No files found");
+        HAL_Delay(2000);
+        return;
+    }
+
+    // Display files directly
+    LCD_I2C_Clear(hlcd);
+	LCD_I2C_SetCursor(hlcd, 0, 0);
+	LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
+    LCD_I2C_SetCursor(hlcd, 0, 0);  // Set the cursor position for the first line
+    for (uint8_t i = 0; i < fileCount; i++) {
+        // Print first 16 chars on line i
+        LCD_I2C_SetCursor(hlcd, i, 0);
+        LCD_I2C_printStr(hlcd, fileList[i]);
+
+        // If file name > 16 chars, print overflow on next line
+        if (strlen(fileList[i]) > 16) {
+            LCD_I2C_SetCursor(hlcd, i + 1, 0);  // Move to next line
+            LCD_I2C_printStr(hlcd, &fileList[i][16]);  // Print remaining chars
+        }
+    }
+
+    // Keep displayed files without exiting
+    while (1) {
+        HAL_Delay(1000);
+    }
+}
 
 
 #endif

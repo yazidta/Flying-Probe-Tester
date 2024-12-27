@@ -14,6 +14,7 @@
 ../Components/Src/LCD.c:271:6:LCD_I2C_DisplaySequentialGlossyText	2
 ../Components/Src/LCD.c:308:6:LCD_I2C_DisplayGlossyText	5
 ../Components/Src/LCD.c:370:6:LCD_I2C_HandleMenuSelection	3
-../Components/Src/LCD.c:404:9:LCD_I2C_MainMenu	9
-../Components/Src/LCD.c:471:9:LCD_I2C_MainMenu_Encoder	6
-../Components/Src/LCD.c:529:6:read_buttons	2
+../Components/Src/LCD.c:402:9:LCD_I2C_MainMenu	9
+../Components/Src/LCD.c:469:9:LCD_I2C_MainMenu_Encoder	6
+../Components/Src/LCD.c:527:6:read_buttons	2
+../Components/Src/LCD.c:535:6:sd_card_display_files	10

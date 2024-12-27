@@ -32,6 +32,8 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #define SD_SPI_HANDLE hspi2
+
+
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -66,8 +68,10 @@ void Error_Handler(void);
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
-#define dir1_Pin GPIO_PIN_9
+#define dir1_Pin GPIO_PIN_7
 #define dir1_GPIO_Port GPIOF
+#define Servo1PWM_Pin GPIO_PIN_9
+#define Servo1PWM_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
 #define enn2_Pin GPIO_PIN_5
@@ -76,12 +80,22 @@ void Error_Handler(void);
 #define step2_GPIO_Port GPIOA
 #define dir2_Pin GPIO_PIN_7
 #define dir2_GPIO_Port GPIOA
+#define EncoderBtn_Pin GPIO_PIN_1
+#define EncoderBtn_GPIO_Port GPIOB
+#define BtnUp_Pin GPIO_PIN_14
+#define BtnUp_GPIO_Port GPIOF
+#define BtnDown_Pin GPIO_PIN_15
+#define BtnDown_GPIO_Port GPIOF
+#define BtnLeft_Pin GPIO_PIN_0
+#define BtnLeft_GPIO_Port GPIOG
+#define BtnRight_Pin GPIO_PIN_1
+#define BtnRight_GPIO_Port GPIOG
+#define BtnCtr_Pin GPIO_PIN_11
+#define BtnCtr_GPIO_Port GPIOE
 #define step1_Pin GPIO_PIN_10
 #define step1_GPIO_Port GPIOB
 #define enn1_Pin GPIO_PIN_11
 #define enn1_GPIO_Port GPIOB
-#define LD3_Pin GPIO_PIN_14
-#define LD3_GPIO_Port GPIOB
 #define STLK_RX_Pin GPIO_PIN_8
 #define STLK_RX_GPIO_Port GPIOD
 #define STLK_TX_Pin GPIO_PIN_9
