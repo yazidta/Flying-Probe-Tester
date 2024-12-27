@@ -42,6 +42,7 @@ volatile uint8_t dataReady = 0; // Flag to indicate data reception
 volatile uint8_t rxBufferReady = 0;
 
 uint32_t stepsTaken[MAX_MOTORS];
+uint32_t CurrentPosition;
 ////////// HAL FUNCTIONS //////////
 
 // PWM callback for step counting
@@ -148,44 +149,43 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
 
     // Select the motor from the axis
     Motor *motor = axis->motors[motorIndex];
-    if (!motor) {
-        debug_print("Motor not assigned.\r\n");
-        return;
-    }
+//    if (!motor) {
+//        debug_print("Motor not assigned.\r\n");
+//        return;
+//    }
 
     // Calculate the distance to move in millimeters
-    float distanceToMoveMM = targetPositionMM - motor->currentPositionMM;
+    //motor->currentPositionMM =0;
+
+    float distanceToMoveMM = targetPositionMM - axis->motors[motorIndex]->currentPositionMM;
 
     // Convert the distance to move into steps
     int32_t stepsToMove = (int32_t)(distanceToMoveMM * axis->stepPerUnit);
 
     // Update the target position in the motor structure
-    motor->nextPositionMM = targetPositionMM;
+    axis->motors[motorIndex]->nextPositionMM = targetPositionMM;
 
     // Decide the direction based on the sign of the steps
     if (stepsToMove > 0) {
-        TMC2209_SetDirection(motor, GPIO_PIN_RESET); // Forward direction
+        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_RESET); // Forward direction
     } else {
-        TMC2209_SetDirection(motor, GPIO_PIN_SET); // Reverse direction
+        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_SET); // Reverse direction
         stepsToMove = -stepsToMove; // Convert to positive for step count
     }
 
     // Start the motor
-    TMC2209_Start(motor);
+    TMC2209_Start(axis->motors[motorIndex]);
 
     // Set the total steps to move
-    motor->nextTotalSteps = stepsToMove;
-
-    // Count the steps until the desired position is reached
-    while (motor->stepsTaken < motor->nextTotalSteps) {
-        // Optionally, handle stop signals or other events here
-    }
+    axis->motors[motorIndex]->nextTotalSteps = stepsToMove;
+	TMC2209_CountSteps(axis->motors[motorIndex], stepsToMove);
 
     // Stop the motor
-    TMC2209_Stop(motor);
+    TMC2209_Stop(axis->motors[motorIndex]);
 
     // Update the current position in the motor structure
-    motor->currentPositionMM = targetPositionMM;
+    axis->motors[motorIndex]->currentPositionMM = targetPositionMM;
+
 }
 
 
@@ -693,6 +693,8 @@ void MotorsHoming(Motor *motor){
 					TMC2209_Start(&motor[0]);
 					if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
 						TMC2209_Stop(&motor[0]);
+						//motor[0].currentPositionMM = 0;
+
 					}
 
 				}
@@ -706,17 +708,40 @@ void MotorsHoming(Motor *motor){
 				TMC2209_Start(&motor[1]);
 				if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
 					TMC2209_Stop(&motor[1]);
+					//motor[1].currentPositionMM = 0;
 				}
 			}
 			TMC2209_Stop(&motor[1]);
 		}
+		if(i == 2){
+//			TMC2209_SetDirection(&motor[2],1);
+//			TMC2209_SetSpeed(&motor[2],16000);
+//			while(IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 0){
+//				TMC2209_Start(&motor[2]);
+//				if((IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 1)){
+//					TMC2209_Stop(&motor[2]);
+//				}
+//			}
+//			TMC2209_Stop(&motor[2]);
 	}
+		if(i == 3){
+//			TMC2209_SetDirection(&motor[3],1);
+//			TMC2209_SetSpeed(&motor[3],16000);
+//			while(IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin) == 0){
+//				TMC2209_Start(&motor[3]);
+//				if((IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin) == 1)){
+//					TMC2209_Stop(&motor[3]);
+//				}
+//			}
+//			TMC2209_Stop(&motor[3]);
+		}
 
 
 
 
 
 
+}
 }
 
 

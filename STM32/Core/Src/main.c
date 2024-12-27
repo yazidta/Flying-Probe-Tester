@@ -79,12 +79,14 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 volatile uint8_t es = 0;
 volatile uint8_t x = 0;
+ uint8_t c = 0;
+
 
 volatile uint8_t Flag =0 ;
 int32_t speed = 2000;
 int32_t stepsRequired = 30000;
 uint32_t SG_RESULT = 0;
-uint8_t dir = 1;
+uint8_t dir = 0;
 volatile uint32_t lastDebounceTime = 0;  // Tracks the last debounce time
 const uint32_t debounceDelay = 50;
 I2C_HandleTypeDef hi2c1;
@@ -97,6 +99,8 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 volatile uint32_t spiPre;
 uint8_t flag;
+Motor motors[MAX_MOTORS]; // Global motor array
+Axis axes[MAX_MOTORS_PER_AXIS - 1];
 
 
 /* USER CODE BEGIN PV */
@@ -181,7 +185,7 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
   initializeMotors();
-//  initializeSystem();
+  initializeSystem();
 //   ENC_Init(&henc1);
    //HAL_TIM_Encoder_Start_IT(&htim4,TIM_CHANNEL_ALL);
 
@@ -258,12 +262,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+   c = axes[0].motors[0]->currentPositionMM;
+   TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
 
   while (1){
 
       if (Flag) // Adjust based on button state
       {
-    	         HAL_Delay(200);
     	         //TMC2209_Step(&motors[1], 3200);
     	         //TMC2209_Step(&motors[0], 6400);
     	         //TMC2209_Step(&motors[1], 16000);
@@ -272,12 +277,27 @@ int main(void)
 
 
     	         MotorsHoming(&motors);
-
+    	         stepsTaken[0] = 0;
+    	         HAL_Delay(200);
+    	         //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
     	  	  	 Flag = 0;
 
       }
+      //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
+
       es = IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin);
       x = IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin);
+       if(es && x){
+           //TMC2209_SetDirection(&motors[0], 1);
+
+	         //TMC2209_Step(&motors[0], 6400);
+
+	         TMC2209_MoveTo(&axes[0], 0, -100);
+// Axis X, Motor X1
+	         //TMC2209_Stop(&motors[0]);
+
+       }
+//       c = axes[0].motors[0]->currentPositionMM;
 
 	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
 //	  uint32_t encode = ENC_GetCounter(&henc1);

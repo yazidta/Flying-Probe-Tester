@@ -44,8 +44,8 @@
 
 
 // Motors & axis
-Motor motors[MAX_MOTORS];
-Axis axes[MAX_MOTORS_PER_AXIS - 1];
+extern Motor motors[MAX_MOTORS];
+extern Axis axes[MAX_MOTORS_PER_AXIS - 1];
 
 
 void initializeMotors() {
@@ -72,8 +72,8 @@ void initializeMotors() {
         // TIMER configurations
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
-        motors[i].driver.mstep = 8;
-        motors[i].stepsPerRevolution = 200;
+        motors[i].driver.mstep = 16;
+        motors[i].stepsPerRevolution = 400;
         // GPIO PINS
         motors[i].driver.step_port = GPIOB;
         motors[i].driver.step_pin = GPIO_PIN_10;
@@ -94,7 +94,7 @@ void initializeMotors() {
             motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
-            motors[i].stepsPerRevolution = 400;
+            motors[i].stepsPerRevolution = 200;
             // GPIO PINS
             motors[i].driver.step_port = GPIOA;
             motors[i].driver.step_pin = GPIO_PIN_6;
@@ -166,6 +166,8 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
     // The circumference variable is calculated based on the physical setup. For example: GT2 20-tooth pulley with 2mm pitch(Pulley Circumference = Number of Teeth * Belt Pitch)
 
     // Axis dimensions and step calculations
+    axis->motors[0]->currentPositionMM = 0;
+    axis->motors[1]->currentPositionMM = 0;
     uint32_t totalStepsPerRevolution = motor1->stepsPerRevolution * motor1->driver.mstep; // Both motors use the same microstepping
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;
@@ -180,9 +182,9 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
 
 void initializeSystem(){
     // X-axis
-    initializeAxis(&axes[0], &motors[0],&motors[0], 400, "X");
+    initializeAxis(&axes[0], &motors[0],&motors[2], 40, "X");
 
     // Y-axis
-   // initializeAxis(&axes[0], &motors[2], &motors[3], Y_AXIS_LENGTH, "Y");
+   // initializeAxis(&axes[1], &motors[1], &motors[3], Y_AXIS_LENGTH, "Y");
     // TODO: ADD Z-AXIS should be a servo
 }
