@@ -152,11 +152,14 @@ void LCD_I2C_printf(LCD_I2C_HandleTypeDef* lcd, const char* format, ...);
 
 void DisplaySequentialGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
 void DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
-void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* hlcd);
+void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* hlcd,ENC_Handle_TypeDef* henc);
 void LCD_I2C_DisplayGlossyText(LCD_I2C_HandleTypeDef* hlcd, uint8_t row);
 bool read_buttons(void);
 uint8_t LCD_I2C_MainMenu_Encoder(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc);
 void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd);
+void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc);
+void LCD_I2C_Cursor(LCD_I2C_HandleTypeDef* hlcd, uint8_t row, uint8_t col);
+
 
 #endif
 

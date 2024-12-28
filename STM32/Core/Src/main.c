@@ -251,9 +251,7 @@ int main(void)
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);
-   LCD_I2C_SetCursor(&hlcd3, 3, 3);
-   LCD_I2C_DisplaySequentialGlossyText(&hlcd3,1);
-   //LCD_I2C_printStr(&hlcd3,"Nigga");
+   LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
    spiPre = SD_SPI_HANDLE.Instance->CR1;
 
@@ -321,7 +319,7 @@ int main(void)
 
 //
 //          // Handle the selected option using the encapsulated function
-          LCD_I2C_HandleMenuSelection(choice, &hlcd3);
+          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
 
 
 
