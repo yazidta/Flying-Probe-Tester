@@ -1,0 +1,3 @@
+- 1x Buzzer with generator: (https://botland.com.pl/buzzery-generatory-dzwieku/786-buzzer-z-generatorem-5v-12mm-tht-5904422366940.html)
+- 2x Resistor 100 ohm
+- 1x Transistor BC547: (https://botland.com.pl/tranzystory-npn/254-tranzystor-bipolarny-npn-bc547b-50v-01a-5szt-5904422308025.html)
