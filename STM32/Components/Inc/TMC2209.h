@@ -74,7 +74,9 @@ extern uint32_t last_tmc_read_attempt_ms;
 extern uint8_t rxData[TMC_REPLY_SIZE + 1]; // Buffer to track all received data
 extern uint8_t rxBuffer[TMC_REPLY_SIZE]; // Buffer store the actual received 8 bytes
 extern volatile uint8_t dataReadyFlag ; // Flag to indicate data reception
-extern uint32_t stepsTaken[MAX_MOTORS];
+extern int32_t stepsTaken[MAX_MOTORS];
+//extern uint32_t StepsFront[4];
+//extern int32_t StepsBack[4] ;
 //extern volatile uint32_t stepsTaken;
 
 // Function prototypes
@@ -117,7 +119,9 @@ void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
 void MotorsHoming(Motor *motor);
-void MotorControl_ButtonHandler(Axis *axes);
+void MotorControl_ButtonHandler(Motor *motors);
+void TMC2209_Start_C(Motor *motor);
+static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
 
 
 #endif // TMC2209_H

@@ -40,9 +40,20 @@ uint8_t rxData[TMC_REPLY_SIZE + 1]; // +1 for TX
 uint8_t rxBuffer[TMC_REPLY_SIZE];
 volatile uint8_t dataReady = 0; // Flag to indicate data reception
 volatile uint8_t rxBufferReady = 0;
-static uint8_t motorGroup = 0; // 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
+//static uint8_t motorGroup = 0; // 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
+int8_t motor1Cali[2];
+int8_t motor2Cali[2];
+uint32_t StepsFront[4]={0,0,0,0};
+int32_t StepsBack[4]={0,0};
+uint32_t LastSteps[3] = {0,0,0,0};
+uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
 
-uint32_t stepsTaken[MAX_MOTORS];
+uint8_t Pressed = 0;
+volatile uint8_t direction = 0; // Flag to indicate data reception
+
+
+
+int32_t stepsTaken[MAX_MOTORS];
 uint32_t CurrentPosition;
 ////////// HAL FUNCTIONS //////////
 
@@ -52,10 +63,17 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-		  stepsTaken[i] = motors[i].stepsTaken;  // increment counter
-	  }
-  }
+		  stepsTaken[i] = motors[i].stepsTaken;
+		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
+		  motors[i].StepsFront++;
+		  }
+		  else if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_RESET){
 
+			  		  motors[i].StepsBack++;
+		 }
+      }
+
+    }
 }
 
 // UART callback for read from TMC2209
@@ -72,6 +90,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 // Set the direction of the motor
 void TMC2209_SetDirection(Motor *motor, GPIO_PinState state) {
     HAL_GPIO_WritePin(motor->driver.dir_port, motor->driver.dir_pin, state);
+    direction = state;
 }
 
 // Enable or disable the driver
@@ -118,7 +137,14 @@ void TMC2209_Start(Motor *motor) {
     HAL_TIM_PWM_Start_IT(htim, channel);
     motor->isStepping = true;
 }
-
+void TMC2209_Start_C(Motor *motor) {
+	TIM_HandleTypeDef *htim = motor->driver.htim;
+	uint32_t channel = motor->driver.step_channel;
+   //motor->stepsTaken = 0;
+	TMC2209_EnableDriver(motor, GPIO_PIN_RESET);
+    HAL_TIM_PWM_Start_IT(htim, channel);
+    motor->isStepping = true;
+}
 
 
 
@@ -128,6 +154,16 @@ static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for
 	while (motor->stepsTaken < motor->nextTotalSteps); // Wait until we reach required steps
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
 	motor->nextTotalSteps = 0;
+}
+static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
+	motor->nextTotalSteps = totalSteps;
+	motor->stepsTaken = 0;
+	while (motor->stepsTaken < motor->nextTotalSteps || motor->stepsTaken > motor->nextTotalSteps); // Wait until we reach required steps
+	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
+	motor->nextTotalSteps = 0;
+
+	TMC2209_Stop(motor);
+
 }
 
 void TMC2209_Step(Motor *motor, uint32_t steps){ // This doesn't work anymore since we have MoveTo
@@ -690,11 +726,14 @@ void MotorsHoming(Motor *motor){
 		if(i == 0){
 			TMC2209_SetDirection(&motor[0],0);
 			TMC2209_SetSpeed(&motor[0],16000);
-			while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
+			if(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
 					TMC2209_Start(&motor[0]);
+					while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0);
 					if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
 						TMC2209_Stop(&motor[0]);
 						motor[0].currentPositionMM = 0;
+						motor[0].stepsTaken = 0;
+						motor[i].StepsBack = 0;
 
 					}
 
@@ -705,11 +744,14 @@ void MotorsHoming(Motor *motor){
 		if(i == 1){
 			TMC2209_SetDirection(&motor[1],1);
 			TMC2209_SetSpeed(&motor[1],16000);
-			while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
+			if(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
 				TMC2209_Start(&motor[1]);
+				while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0);
 				if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
 					TMC2209_Stop(&motor[1]);
 					motor[1].currentPositionMM = 0;
+					motor[i].stepsTaken = 0;
+	                motor[i].StepsFront = 0;
 				}
 			}
 			TMC2209_Stop(&motor[1]);
@@ -744,47 +786,123 @@ void MotorsHoming(Motor *motor){
 
 }
 }
-void MotorControl_ButtonHandler(Axis *axes) {
-    if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET) {
+void MotorControl_ButtonHandler(Motor *motors) {
+    static uint8_t CtrPressedFlag = 0;  // Flag to detect button press edge
+	//StepsFront[0] = 0;
+    uint32_t pressStartTime = 0;
+
+	if(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET){
+		    // Send one step for each millisecond the button is pressed
+	    //setMicrosteppingResolution(&motors[motorGroup *2], 16);
+		//TMC2209_SetSpeed(&motors[motorGroup *2+1],16000);
+			//StepsFront[0] = 0;
+            //LastSteps[0] += StepsFront[0];
+			TMC2209_SetDirection(&motors[motorGroup * 2], GPIO_PIN_SET);
+		    TMC2209_Start_C(&motors[motorGroup * 2]);
+		    while(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET){
+    		    //StepsFront[0] = motors[motorGroup *2].stepsTaken + LastSteps[0];
+		    }
+		    //LastSteps = StepsFront[0];
+    	//motors[motorGroup *2].currentPositionMM = StepsFront[0] * 160;
+//    	if(StepsFront[0] <= -28000){
+//        	TMC2209_Stop(&motors[motorGroup * 2]);
+//        	StepsFront[0] = 0;
+
+    	//}
+}
+    if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_SET ) {
+    	TMC2209_Stop(&motors[motorGroup * 2]);
+    }
+
+
+	if(HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET){
+		//motors[motorGroup*2].stepsTaken = 0;
+		//StepsBack[0] = 0;
+		//StepsBack[0] += motors[motorGroup*2].stepsTaken;
+		TMC2209_SetDirection(&motors[motorGroup * 2], GPIO_PIN_RESET);
+		TMC2209_Start_C(&motors[motorGroup * 2]);
+		while(HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET){
+    	//StepsBack[0] = -(int)(motors[motorGroup *2].stepsTaken);
+		}
+//    	if(StepsBack[0] >= 28000){
+//        	TMC2209_Stop(&motors[motorGroup * 2]);
+//        	StepsBack[0] = 0;
+//
+//
+//    	}
+
+
+}
+    if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_SET || StepsBack[0] > 28000) {
         // Button 1 pressed (Step Motor in one direction)
-        TMC2209_SetDirection(axes->motors[motorGroup * 2], GPIO_PIN_SET);
-        TMC2209_Start(axes->motors[motorGroup * 2]);
+    	TMC2209_Stop(&motors[motorGroup * 2]);
 
+        //TMC2209_CountSteps_C(&motors[motorGroup * 2],StepsBack[0]);
     }
 
-    if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) {
-        // Button 2 pressed (Step Motor in the opposite direction)
-        TMC2209_SetDirection(axes->motors[motorGroup * 2], GPIO_PIN_RESET);
-        TMC2209_Start(axes->motors[motorGroup * 2]);
+
+	if(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET){
+        TMC2209_SetDirection(&motors[motorGroup * 2+1], GPIO_PIN_SET);
+        TMC2209_Start_C(&motors[motorGroup * 2+1]);
+        while(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET);
+}
+    if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_SET) {
+        // Button 1 pressed (Step Motor in one direction)
+        TMC2209_Stop(&motors[motorGroup * 2 + 1]);
     }
 
-    if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
-        // Button 3 pressed (Step Motor in one direction)
-        TMC2209_SetDirection(axes->motors[motorGroup * 2 + 1], GPIO_PIN_SET);
-        TMC2209_Start(axes->motors[motorGroup * 2 + 1]);
+
+	if(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET){
+        TMC2209_SetDirection(&motors[motorGroup * 2+1], GPIO_PIN_RESET);
+        TMC2209_Start_C(&motors[motorGroup * 2+1]);
+        while(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET);
+}
+    if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_SET) {
+        // Button 1 pressed (Step Motor in one direction)
+        TMC2209_Stop(&motors[motorGroup * 2+1]);
     }
 
-    if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) {
-        // Button 4 pressed (Step Motor in the opposite direction)
-        TMC2209_SetDirection(axes->motors[motorGroup * 2 + 1], GPIO_PIN_RESET);
-        TMC2209_Start(axes->motors[motorGroup * 2 + 1]);
-    }
 
     if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_RESET) {
-        // Button 5 pressed (Change motor group and save variable)
+
+    	if (CtrPressedFlag == 0) {  // Only increment on first press
+                Pressed += 1;
+                CtrPressedFlag = 1;  // Set flag to avoid multiple increments
+            }
+        } else {
+            CtrPressedFlag = 0;  // Reset flag when button is released
+        }
+
+        // Debounce and process after button release
         static uint32_t lastPressTime = 0;
         uint32_t currentTime = HAL_GetTick();
 
-        if (currentTime - lastPressTime > 200) { // Debounce handling (200 ms)
+        if (currentTime - lastPressTime > 50 && Pressed > 0) {
             lastPressTime = currentTime;
 
-            // Save variable (example: save motor group state)
-            //axes->motors[motorGroup*2]->currentPositionMM =
 
-            // Toggle motor group
-            motorGroup = 1 - motorGroup;
+            // Save variable (example: save motor group state)
+            if (Pressed == 1) {
+            	motors[motorGroup * 2].currentPositionMM = ((motors[motorGroup *2].StepsFront) - (motors[motorGroup*2].StepsBack))/160;
+            	motors[motorGroup * 2+1].currentPositionMM = ((motors[motorGroup *2+1].StepsBack) - (motors[motorGroup*2+1].StepsFront))/400;
+            	motors[motorGroup * 2].calibX[0] = motors[motorGroup *2].currentPositionMM;
+                motors[motorGroup * 2+1].calibY[0] = motors[motorGroup *2+1].currentPositionMM;
+                motors[motorGroup *2].currentPositionMM = 0;
+                motors[motorGroup *2 +1].currentPositionMM = 0;
+            }
+            if (Pressed == 2) {
+            	motors[motorGroup * 2].currentPositionMM = ((motors[motorGroup *2].StepsFront) - (motors[motorGroup*2].StepsBack))/160;
+            	motors[motorGroup * 2+1].currentPositionMM = ((motors[motorGroup *2+1].StepsBack) - (motors[motorGroup*2+1].StepsFront))/400;
+                motors[motorGroup * 2].calibX[1] = motors[motorGroup *2].currentPositionMM;
+                motors[motorGroup * 2+1].calibY[1] = motors[motorGroup *2+1].currentPositionMM;
+
+               // Pressed = 0;  // Reset counter after second press
+            }
+            if (Pressed == 3){
+            	motorGroup = (motorGroup + 1) % 2;  // Safe toggle between 0 and 1
+            }
         }
-    }
+
 }
 
 

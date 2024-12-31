@@ -80,6 +80,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 volatile uint8_t es = 0;
 volatile uint8_t x = 0;
+uint8_t xx = 0;
+
  uint8_t c = 0;
  float move[] = {100, 40 , 250};
 
@@ -189,65 +191,65 @@ int main(void)
   MX_TIM14_Init();
   /* USER CODE BEGIN 2 */
   //SERVO_Init(&hservo1);
-  //initializeMotors();
-  //initializeSystem();
+  initializeMotors();
+  initializeSystem();
    ENC_Init(&henc1);
    //HAL_TIM_Encoder_Start_IT(&htim4,TIM_CHANNEL_ALL);
 
-//    TMC2209_enable_PDNuart(&motors[0]);
-//
-//    //TMC2209_read_ifcnt(&motors[0]);
-//    //configureGCONF(&motors[0]);
-//    TMC2209_SetSpreadCycle(&motors[0], 1);
-//    //TMC2209_read_ifcnt(&motors[0]);
-//    TMC2209_EnableDriver(&motors[0], 1);
+    TMC2209_enable_PDNuart(&motors[0]);
+
+    //TMC2209_read_ifcnt(&motors[0]);
+    configureGCONF(&motors[0]);
+    TMC2209_SetSpreadCycle(&motors[0], 1);
+    //TMC2209_read_ifcnt(&motors[0]);
+    TMC2209_EnableDriver(&motors[0], 1);
+    HAL_Delay(2);
+    //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
+
+   TMC2209_read_ifcnt(&motors[0]);
+    HAL_Delay(2);
+    setMicrosteppingResolution(&motors[0], 16);
 //    HAL_Delay(2);
-//    //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
-//
-//   TMC2209_read_ifcnt(&motors[0]);
+
+    checkMicrosteppingResolution(&motors[0]);
+    HAL_Delay(2);
+  //  TMC2209_SetSpreadCycle(&motors[0], 1);
+   // HAL_Delay(2);
+   // TMC2209_setStallGuardThreshold(&motors[0], 10);
 //    HAL_Delay(2);
-//    setMicrosteppingResolution(&motors[0], 16);
-////    HAL_Delay(2);
-//
-//    checkMicrosteppingResolution(&motors[0]);
-//    HAL_Delay(2);
-//  //  TMC2209_SetSpreadCycle(&motors[0], 1);
-//   // HAL_Delay(2);
-//   // TMC2209_setStallGuardThreshold(&motors[0], 10);
-////    HAL_Delay(2);
-//    TMC2209_SetDirection(&motors[0], dir);
-//    TMC2209_SetSpeed(&motors[0], 32000);
-//    //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1
-//   // TMC2209_RampUp(&motors[0], 500,3000, 200);
-//    //TMC2209_Step(&motors[0], 1600);
-//    //TMC2209_Start(&motors[0]);
-//
-//  //  testIHOLDIRUN(&motors[0], 31, 16, 8);
-//  //  HAL_Delay(2);
-//    TMC2209_enable_PDNuart(&motors[1]);
-//
-//        //TMC2209_read_ifcnt(&motors[0]);
-//        //configureGCONF(&motors[0]);
-//       // TMC2209_SetSpreadCycle(&motors[1], 1);
-//        //TMC2209_read_ifcnt(&motors[0]);
-//        TMC2209_EnableDriver(&motors[1], 1);
-//        HAL_Delay(2);
-//        //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
-//
-//       TMC2209_read_ifcnt(&motors[1]);
-//        HAL_Delay(2);
-//        setMicrosteppingResolution(&motors[1], 16);
-//    //    HAL_Delay(2);
-//
-//        checkMicrosteppingResolution(&motors[1]);
-//        HAL_Delay(2);
-//      //  TMC2209_SetSpreadCycle(&motors[0], 1);
-//       // HAL_Delay(2);
-//       // TMC2209_setStallGuardThreshold(&motors[0], 10);
-//    //    HAL_Delay(2);
-//        TMC2209_SetDirection(&motors[1], dir);
-//        TMC2209_SetSpeed(&motors[1], 16000);
-//        //TMC2209_Step(&motors[1], 16000);
+    TMC2209_SetDirection(&motors[0], dir);
+    TMC2209_SetSpeed(&motors[0], 32000);
+    //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1
+   // TMC2209_RampUp(&motors[0], 500,3000, 200);
+    //TMC2209_Step(&motors[0], 1600);
+    //TMC2209_Start(&motors[0]);
+
+  //  testIHOLDIRUN(&motors[0], 31, 16, 8);
+  //  HAL_Delay(2);
+    TMC2209_enable_PDNuart(&motors[1]);
+
+        //TMC2209_read_ifcnt(&motors[0]);
+        //configureGCONF(&motors[0]);
+       // TMC2209_SetSpreadCycle(&motors[1], 1);
+        //TMC2209_read_ifcnt(&motors[0]);
+        TMC2209_EnableDriver(&motors[1], 1);
+        HAL_Delay(2);
+        //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
+
+       TMC2209_read_ifcnt(&motors[1]);
+        HAL_Delay(2);
+        setMicrosteppingResolution(&motors[1], 16);
+    //    HAL_Delay(2);
+
+        checkMicrosteppingResolution(&motors[1]);
+        HAL_Delay(2);
+      //  TMC2209_SetSpreadCycle(&motors[0], 1);
+       // HAL_Delay(2);
+       // TMC2209_setStallGuardThreshold(&motors[0], 10);
+    //    HAL_Delay(2);
+        TMC2209_SetDirection(&motors[1], dir);
+        TMC2209_SetSpeed(&motors[1], 16000);
+        //TMC2209_Step(&motors[1], 16000);
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);
@@ -269,22 +271,23 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 //   /*c = axes[0].motors[0]->currentPositionMM;
-//   TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1*/
-   //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
+   //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1*/
+  // TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
  // Axis X, Motor X1
+   //TMC2209_Step(&motors[1], 3200);
+   //TMC2209_Step(&motors[0], 6400);
 
   while (1){
 
       if (Flag) // Adjust based on button state
       {
-    	         //TMC2209_Step(&motors[1], 3200);
-    	         //TMC2209_Step(&motors[0], 6400);
+
     	         //TMC2209_Step(&motors[1], 16000);
     	         //TMC2209_Start(&motors[0]);
     	         //TMC2209_Start(&motors[1]);
 
 
-//    	         MotorsHoming(&motors);
+    	         MotorsHoming(&motors);
 //    	         stepsTaken[0] = 0;
 //    	         HAL_Delay(200);
     	         //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
@@ -293,9 +296,20 @@ int main(void)
       }
       //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
 //
-//      es = IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin);
-//      x = IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin);
-//       if(es && x){
+     es = IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin);
+      x = IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin);
+
+      //xx = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
+
+      if(es && x){
+      xx =+1;
+      }
+      else{
+    	  xx = 0;
+      }
+      while(xx >= 1){
+      MotorControl_ButtonHandler(&motors);
+      }
 ////           //TMC2209_SetDirection(&motors[0], 1);
 //      for(int i =0; i < 3;i++){
 //	         //TMC2209_Step(&motors[0], 6400);
@@ -313,13 +327,13 @@ int main(void)
 //       c = axes[0].motors[0]->currentPositionMM;
 
 	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
-	  uint32_t encode = ENC_GetCounter(&henc1);
-          // Show the menu and get the user's choice
-         uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
-
+//	  uint32_t encode = ENC_GetCounter(&henc1);
+//          // Show the menu and get the user's choice
+//         uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
 //
-//          // Handle the selected option using the encapsulated function
-          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
+////
+////          // Handle the selected option using the encapsulated function
+//          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
 
 
 

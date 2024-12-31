@@ -85,11 +85,15 @@ typedef struct {
     TMC2209_Driver driver;         // Driver settings for the motor
     uint32_t stepsPerRevolution;	// Steps per revolution of the motor
     uint32_t totalStepsPerRevolution; // we will calculate this later based on the mstep option the driver has
-    uint32_t stepsTaken;           // Count of steps taken
+    int32_t stepsTaken;           // Count of steps taken
     uint32_t nextTotalSteps;           // Total steps the motor should take
     float currentPositionMM; // Current position on the axis in millimeters
     float nextPositionMM;
     bool isStepping;               // State to track if the motor is currently stepping
+    uint32_t StepsFront;           // Tracking Steps Based on direction
+    int32_t StepsBack;
+    uint16_t calibX[2];
+    uint16_t calibY[2];
 } Motor;
 
 // Axis structure
