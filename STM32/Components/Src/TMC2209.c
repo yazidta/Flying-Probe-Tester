@@ -46,7 +46,6 @@ int8_t motor2Cali[2];
 uint32_t StepsFront[4]={0,0,0,0};
 int32_t StepsBack[4]={0,0};
 uint32_t LastSteps[3] = {0,0,0,0};
-uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
 
 uint8_t Pressed = 0;
 volatile uint8_t direction = 0; // Flag to indicate data reception
@@ -790,6 +789,65 @@ void MotorControl_ButtonHandler(Motor *motors) {
     static uint8_t CtrPressedFlag = 0;  // Flag to detect button press edge
 	//StepsFront[0] = 0;
     uint32_t pressStartTime = 0;
+    uint32_t debounceTime = 50;
+    uint32_t currentTime = HAL_GetTick();
+    static uint32_t lastPressTime = 0;  // Last valid press timestamp
+
+    uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
+    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_RESET) {
+    	if (CtrPressedFlag == 0) {  // Only increment on first press
+    	                Pressed += 1;
+    	                CtrPressedFlag = 1;  // Set flag to avoid multiple increments
+    	            }
+    	        } else {
+    	            CtrPressedFlag = 0;  // Reset flag when button is released
+    	        }
+
+    	        // Debounce and process after button release
+
+    	        if (currentTime - lastPressTime > 50 && Pressed > 0) {
+    	            lastPressTime = currentTime;
+        switch (Pressed) {
+            case 1:
+                // Save calibration for first press
+                motors[motorGroup * 2].currentPositionMM =
+                    (motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160;
+                motors[motorGroup * 2 + 1].currentPositionMM =
+                    (motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400;
+
+                motors[motorGroup * 2].calib[0] = motors[motorGroup * 2].currentPositionMM;
+                motors[motorGroup * 2 + 1].calib[0] = motors[motorGroup * 2 + 1].currentPositionMM;
+
+                motors[motorGroup * 2].currentPositionMM = 0;
+                motors[motorGroup * 2 + 1].currentPositionMM = 0;
+                break;
+
+            case 2:
+                // Save calibration for second press
+                motors[motorGroup * 2].currentPositionMM =
+                    (motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160;
+                motors[motorGroup * 2 + 1].currentPositionMM =
+                    (motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400;
+
+                motors[motorGroup * 2].calib[1] = motors[motorGroup * 2].currentPositionMM;
+                motors[motorGroup * 2 + 1].calib[1] = motors[motorGroup * 2 + 1].currentPositionMM;
+                break;
+
+            case 3:
+                // Switch motor group on third press
+                TMC2209_Stop(&motors[motorGroup * 2]);
+                TMC2209_Stop(&motors[motorGroup * 2 + 1]);
+                motorGroup = 1 - motorGroup;
+                Pressed = 0;  // Reset press counter after processing// Toggle motor group
+                break;
+
+            default:
+                break;
+        }
+
+    }
+
+
 
 	if(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET){
 		    // Send one step for each millisecond the button is pressed
@@ -861,49 +919,10 @@ void MotorControl_ButtonHandler(Motor *motors) {
         // Button 1 pressed (Step Motor in one direction)
         TMC2209_Stop(&motors[motorGroup * 2+1]);
     }
-
-
-    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_RESET) {
-
-    	if (CtrPressedFlag == 0) {  // Only increment on first press
-                Pressed += 1;
-                CtrPressedFlag = 1;  // Set flag to avoid multiple increments
-            }
-        } else {
-            CtrPressedFlag = 0;  // Reset flag when button is released
-        }
-
-        // Debounce and process after button release
-        static uint32_t lastPressTime = 0;
-        uint32_t currentTime = HAL_GetTick();
-
-        if (currentTime - lastPressTime > 50 && Pressed > 0) {
-            lastPressTime = currentTime;
-
-
-            // Save variable (example: save motor group state)
-            if (Pressed == 1) {
-            	motors[motorGroup * 2].currentPositionMM = ((motors[motorGroup *2].StepsFront) - (motors[motorGroup*2].StepsBack))/160;
-            	motors[motorGroup * 2+1].currentPositionMM = ((motors[motorGroup *2+1].StepsBack) - (motors[motorGroup*2+1].StepsFront))/400;
-            	motors[motorGroup * 2].calibX[0] = motors[motorGroup *2].currentPositionMM;
-                motors[motorGroup * 2+1].calibY[0] = motors[motorGroup *2+1].currentPositionMM;
-                motors[motorGroup *2].currentPositionMM = 0;
-                motors[motorGroup *2 +1].currentPositionMM = 0;
-            }
-            if (Pressed == 2) {
-            	motors[motorGroup * 2].currentPositionMM = ((motors[motorGroup *2].StepsFront) - (motors[motorGroup*2].StepsBack))/160;
-            	motors[motorGroup * 2+1].currentPositionMM = ((motors[motorGroup *2+1].StepsBack) - (motors[motorGroup*2+1].StepsFront))/400;
-                motors[motorGroup * 2].calibX[1] = motors[motorGroup *2].currentPositionMM;
-                motors[motorGroup * 2+1].calibY[1] = motors[motorGroup *2+1].currentPositionMM;
-
-               // Pressed = 0;  // Reset counter after second press
-            }
-            if (Pressed == 3){
-            	motorGroup = (motorGroup + 1) % 2;  // Safe toggle between 0 and 1
-            }
-        }
-
 }
+
+
+
 
 
 

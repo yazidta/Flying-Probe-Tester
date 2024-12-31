@@ -44,10 +44,11 @@ extern UART_HandleTypeDef huart2;
 // Timer Handler declaration
 extern TIM_HandleTypeDef htim2; // Motor 1
 extern TIM_HandleTypeDef htim3; // Motor 1
-
+extern TIM_HandleTypeDef htim9; // Motor 1
+extern TIM_HandleTypeDef htim10; // Motor 1
 
 // Motors & axis
-#define MAX_MOTORS 2 // Max motors to be added -- You can handle upto 4 TMC2209 drivers on the same UART BUS
+#define MAX_MOTORS 4 // Max motors to be added -- You can handle upto 4 TMC2209 drivers on the same UART BUS
 #define MAX_MOTORS_PER_AXIS 2 // Num of motors per axis
 #define X_AXIS_LENGTH	469.356
 #define Y_AXIS_LENGTH 	300
@@ -92,8 +93,7 @@ typedef struct {
     bool isStepping;               // State to track if the motor is currently stepping
     uint32_t StepsFront;           // Tracking Steps Based on direction
     int32_t StepsBack;
-    uint16_t calibX[2];
-    uint16_t calibY[2];
+    uint16_t calib[2];
 } Motor;
 
 // Axis structure

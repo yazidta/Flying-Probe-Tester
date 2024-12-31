@@ -63,17 +63,29 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define EndStop1_Pin GPIO_PIN_2
 #define EndStop1_GPIO_Port GPIOE
+#define enn3_Pin GPIO_PIN_3
+#define enn3_GPIO_Port GPIOE
 #define EndStop2_Pin GPIO_PIN_4
 #define EndStop2_GPIO_Port GPIOE
+#define step3_Pin GPIO_PIN_5
+#define step3_GPIO_Port GPIOE
+#define dir3_Pin GPIO_PIN_6
+#define dir3_GPIO_Port GPIOE
 #define USER_Btn_Pin GPIO_PIN_13
 #define USER_Btn_GPIO_Port GPIOC
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
+#define enn4_Pin GPIO_PIN_0
+#define enn4_GPIO_Port GPIOF
+#define step4_Pin GPIO_PIN_6
+#define step4_GPIO_Port GPIOF
 #define dir1_Pin GPIO_PIN_7
 #define dir1_GPIO_Port GPIOF
 #define Servo1PWM_Pin GPIO_PIN_9
 #define Servo1PWM_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
+#define servoPWM_Pin GPIO_PIN_0
+#define servoPWM_GPIO_Port GPIOA
 #define enn2_Pin GPIO_PIN_5
 #define enn2_GPIO_Port GPIOA
 #define step2_Pin GPIO_PIN_6
@@ -126,6 +138,8 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define dir4_Pin GPIO_PIN_0
+#define dir4_GPIO_Port GPIOD
 #define diag1_Pin GPIO_PIN_1
 #define diag1_GPIO_Port GPIOD
 
