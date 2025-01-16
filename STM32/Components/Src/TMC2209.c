@@ -731,6 +731,18 @@ void TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY 
 	TMC2209_writeInit(tmc2209, TMC2209_REG_SLAVECONF, nodeconf);	// Write back the updated value
 }
 
+void TMC2209_setMotorsConfiguration(Motor motors[], uint8_t sendDelay, bool enableSpreadCycle)
+{
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+        TMC2209_setSendDelay(&motors[i], sendDelay);
+        TMC2209_enable_PDNuart(&motors[i]);
+        uint16_t mstep = motors[i].driver.mstep;
+        setMicrosteppingResolution(&motors[i], mstep);
+        TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
+    }
+}
+
+
 
 void MotorsHoming(Motor *motor){
 	for(int i = 0; i<3; i++){

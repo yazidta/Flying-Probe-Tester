@@ -58,7 +58,7 @@ extern TIM_HandleTypeDef htim10; // Motor 1
 // Driver structure
 typedef struct {
 	uint8_t id;                      // Motor ID to identify each motor -- this is useless now ince we have address for uart
-	uint8_t mstep;					//	Microstepping setting of the driver
+	uint16_t mstep;					//	Microstepping setting of the driver
     UART_HandleTypeDef *huart;
     uint8_t address;                // UART address
 
