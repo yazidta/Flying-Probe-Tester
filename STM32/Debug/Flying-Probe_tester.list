@@ -37945,9 +37945,9 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  800ed68:	080124b8 	.word	0x080124b8
  800ed6c:	080124aa 	.word	0x080124aa
  800ed70:	080124ad 	.word	0x080124ad
- 800ed74:	0801285f 	.word	0x0801285f
- 800ed78:	08012628 	.word	0x08012628
- 800ed7c:	08012600 	.word	0x08012600
+ 800ed74:	0801285e 	.word	0x0801285e
+ 800ed78:	08012728 	.word	0x08012728
+ 800ed7c:	08012700 	.word	0x08012700
  800ed80:	7ff00000 	.word	0x7ff00000
  800ed84:	7ca00000 	.word	0x7ca00000
  800ed88:	7fefffff 	.word	0x7fefffff
@@ -38614,7 +38614,7 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  800f45c:	601a      	str	r2, [r3, #0]
  800f45e:	e7c4      	b.n	800f3ea <strtof+0x3a>
  800f460:	2000005c 	.word	0x2000005c
- 800f464:	0801285f 	.word	0x0801285f
+ 800f464:	0801285e 	.word	0x0801285e
  800f468:	7f7fffff 	.word	0x7f7fffff
  800f46c:	7fefffff 	.word	0x7fefffff
  800f470:	7ff00000 	.word	0x7ff00000
@@ -39578,8 +39578,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  800fd04:	d1dd      	bne.n	800fcc2 <__gethex+0x26a>
  800fd06:	e7ee      	b.n	800fce6 <__gethex+0x28e>
  800fd08:	080124a8 	.word	0x080124a8
- 800fd0c:	08012510 	.word	0x08012510
- 800fd10:	08012521 	.word	0x08012521
+ 800fd0c:	08012611 	.word	0x08012611
+ 800fd10:	08012622 	.word	0x08012622
  800fd14:	1e6f      	subs	r7, r5, #1
  800fd16:	f1b9 0f00 	cmp.w	r9, #0
  800fd1a:	d130      	bne.n	800fd7e <__gethex+0x326>
@@ -39714,7 +39714,7 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  800fe6e:	42b0      	cmp	r0, r6
  800fe70:	dbe7      	blt.n	800fe42 <__gethex+0x3ea>
  800fe72:	e7f0      	b.n	800fe56 <__gethex+0x3fe>
- 800fe74:	08012510 	.word	0x08012510
+ 800fe74:	08012611 	.word	0x08012611
 
 0800fe78 <L_shift>:
  800fe78:	f1c2 0208 	rsb	r2, r2, #8
@@ -40105,8 +40105,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80101ec:	e9c0 3303 	strd	r3, r3, [r0, #12]
  80101f0:	e7f7      	b.n	80101e2 <_Balloc+0x66>
  80101f2:	bf00      	nop
- 80101f4:	08012581 	.word	0x08012581
- 80101f8:	08012598 	.word	0x08012598
+ 80101f4:	08012682 	.word	0x08012682
+ 80101f8:	08012699 	.word	0x08012699
 
 080101fc <_Bfree>:
  80101fc:	b570      	push	{r4, r5, r6, lr}
@@ -40134,8 +40134,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010230:	6021      	str	r1, [r4, #0]
  8010232:	f843 4022 	str.w	r4, [r3, r2, lsl #2]
  8010236:	bd70      	pop	{r4, r5, r6, pc}
- 8010238:	08012581 	.word	0x08012581
- 801023c:	08012598 	.word	0x08012598
+ 8010238:	08012682 	.word	0x08012682
+ 801023c:	08012699 	.word	0x08012699
 
 08010240 <__multadd>:
  8010240:	e92d 41f0 	stmdb	sp!, {r4, r5, r6, r7, r8, lr}
@@ -40189,8 +40189,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80102bc:	6125      	str	r5, [r4, #16]
  80102be:	4620      	mov	r0, r4
  80102c0:	e8bd 81f0 	ldmia.w	sp!, {r4, r5, r6, r7, r8, pc}
- 80102c4:	08012510 	.word	0x08012510
- 80102c8:	08012598 	.word	0x08012598
+ 80102c4:	08012611 	.word	0x08012611
+ 80102c8:	08012699 	.word	0x08012699
 
 080102cc <__s2b>:
  80102cc:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -40251,8 +40251,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010350:	f7ff ff76 	bl	8010240 <__multadd>
  8010354:	e7ee      	b.n	8010334 <__s2b+0x68>
  8010356:	bf00      	nop
- 8010358:	08012510 	.word	0x08012510
- 801035c:	08012598 	.word	0x08012598
+ 8010358:	08012611 	.word	0x08012611
+ 801035c:	08012699 	.word	0x08012699
 
 08010360 <__hi0bits>:
  8010360:	f5b0 3f80 	cmp.w	r0, #65536	@ 0x10000
@@ -40342,8 +40342,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010416:	6103      	str	r3, [r0, #16]
  8010418:	bd10      	pop	{r4, pc}
  801041a:	bf00      	nop
- 801041c:	08012510 	.word	0x08012510
- 8010420:	08012598 	.word	0x08012598
+ 801041c:	08012611 	.word	0x08012611
+ 8010420:	08012699 	.word	0x08012699
 
 08010424 <__multiply>:
  8010424:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -40462,8 +40462,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  801056a:	e799      	b.n	80104a0 <__multiply+0x7c>
  801056c:	3e01      	subs	r6, #1
  801056e:	e79b      	b.n	80104a8 <__multiply+0x84>
- 8010570:	08012510 	.word	0x08012510
- 8010574:	08012598 	.word	0x08012598
+ 8010570:	08012611 	.word	0x08012611
+ 8010574:	08012699 	.word	0x08012699
 
 08010578 <__pow5mult>:
  8010578:	e92d 43f8 	stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
@@ -40531,9 +40531,9 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010618:	4630      	mov	r0, r6
  801061a:	e8bd 83f8 	ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
  801061e:	bf00      	nop
- 8010620:	080125f4 	.word	0x080125f4
- 8010624:	08012581 	.word	0x08012581
- 8010628:	08012598 	.word	0x08012598
+ 8010620:	080126f4 	.word	0x080126f4
+ 8010624:	08012682 	.word	0x08012682
+ 8010628:	08012699 	.word	0x08012699
 
 0801062c <__lshift>:
  801062c:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -40612,8 +40612,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80106f6:	d8f9      	bhi.n	80106ec <__lshift+0xc0>
  80106f8:	e7ea      	b.n	80106d0 <__lshift+0xa4>
  80106fa:	bf00      	nop
- 80106fc:	08012510 	.word	0x08012510
- 8010700:	08012598 	.word	0x08012598
+ 80106fc:	08012611 	.word	0x08012611
+ 8010700:	08012699 	.word	0x08012699
 
 08010704 <__mcmp>:
  8010704:	690a      	ldr	r2, [r1, #16]
@@ -40749,8 +40749,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010856:	3f01      	subs	r7, #1
  8010858:	e7e7      	b.n	801082a <__mdiff+0xee>
  801085a:	bf00      	nop
- 801085c:	08012510 	.word	0x08012510
- 8010860:	08012598 	.word	0x08012598
+ 801085c:	08012611 	.word	0x08012611
+ 8010860:	08012699 	.word	0x08012699
 
 08010864 <__ulp>:
  8010864:	b082      	sub	sp, #8
@@ -40900,8 +40900,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80109e2:	f7ff fcbd 	bl	8010360 <__hi0bits>
  80109e6:	ebc0 1042 	rsb	r0, r0, r2, lsl #5
  80109ea:	e7e5      	b.n	80109b8 <__d2b+0x74>
- 80109ec:	08012510 	.word	0x08012510
- 80109f0:	08012598 	.word	0x08012598
+ 80109ec:	08012611 	.word	0x08012611
+ 80109f0:	08012699 	.word	0x08012699
 
 080109f4 <__ratio>:
  80109f4:	e92d 4ff0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, fp, lr}
@@ -41287,11 +41287,11 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8010d8c:	4638      	mov	r0, r7
  8010d8e:	f000 f879 	bl	8010e84 <_printf_i>
  8010d92:	e7ed      	b.n	8010d70 <_svfiprintf_r+0x1c0>
- 8010d94:	080127f1 	.word	0x080127f1
- 8010d98:	080127fb 	.word	0x080127fb
+ 8010d94:	080127f0 	.word	0x080127f0
+ 8010d98:	080127fa 	.word	0x080127fa
  8010d9c:	00000000 	.word	0x00000000
  8010da0:	08010afb 	.word	0x08010afb
- 8010da4:	080127f7 	.word	0x080127f7
+ 8010da4:	080127f6 	.word	0x080127f6
 
 08010da8 <_printf_common>:
  8010da8:	e92d 47f0 	stmdb	sp!, {r4, r5, r6, r7, r8, r9, sl, lr}
@@ -41622,8 +41622,8 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80110b4:	f104 0619 	add.w	r6, r4, #25
  80110b8:	e7f5      	b.n	80110a6 <_printf_i+0x222>
  80110ba:	bf00      	nop
- 80110bc:	08012802 	.word	0x08012802
- 80110c0:	08012813 	.word	0x08012813
+ 80110bc:	08012801 	.word	0x08012801
+ 80110c0:	08012812 	.word	0x08012812
 
 080110c4 <__sflush_r>:
  80110c4:	f9b1 200c 	ldrsh.w	r2, [r1, #12]
@@ -41842,9 +41842,9 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  8011298:	e7f4      	b.n	8011284 <__assert_func+0x14>
  801129a:	bf00      	nop
  801129c:	200001c8 	.word	0x200001c8
- 80112a0:	0801285f 	.word	0x0801285f
- 80112a4:	08012831 	.word	0x08012831
- 80112a8:	08012824 	.word	0x08012824
+ 80112a0:	0801285e 	.word	0x0801285e
+ 80112a4:	08012830 	.word	0x08012830
+ 80112a8:	08012823 	.word	0x08012823
 
 080112ac <_calloc_r>:
  80112ac:	b570      	push	{r4, r5, r6, lr}
@@ -42206,11 +42206,11 @@ WCHAR ff_wtoupper (	/* Returns upper converted character */
  80115e8:	4630      	mov	r0, r6
  80115ea:	f7ff fc4b 	bl	8010e84 <_printf_i>
  80115ee:	e7e4      	b.n	80115ba <_vfiprintf_r+0x1e6>
- 80115f0:	080127f1 	.word	0x080127f1
- 80115f4:	080127fb 	.word	0x080127fb
+ 80115f0:	080127f0 	.word	0x080127f0
+ 80115f4:	080127fa 	.word	0x080127fa
  80115f8:	00000000 	.word	0x00000000
  80115fc:	080113b1 	.word	0x080113b1
- 8011600:	080127f7 	.word	0x080127f7
+ 8011600:	080127f6 	.word	0x080127f6
 
 08011604 <__swbuf_r>:
  8011604:	b5f8      	push	{r3, r4, r5, r6, r7, lr}
