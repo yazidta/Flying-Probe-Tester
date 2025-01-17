@@ -344,6 +344,7 @@ uint8_t TMC2209_WaitForReply(uint32_t timeout) {
 uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength) {
 	uint8_t flag = 1;
 	//clear_UART_buffers(&huart2);
+	HAL_Delay(1);
      // Send the command
      if (HAL_UART_Transmit(&huart2, command, writeLength, 10) != HAL_OK) {
          debug_print("Failed to send command.\r\n");
@@ -384,7 +385,6 @@ void TMC2209_writeInit(Motor *tmc2209, uint8_t regAddress, int32_t value){
  	write_request_command[6] = (value      ) & 0xFF;
  	write_request_command[7] = calculate_CRC(write_request_command, 7); // checksum
  	TMC2209_sendCommand(&write_request_command[0], TMC_WRITE_DATAGRAM_SIZE, 0); // We don't actually need receive buffer here when we call ReadWrite so we just pass data
- 	HAL_Delay(2);
 
  }
 
@@ -423,7 +423,6 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
  		debug_print("Invalid data received!(CRC)\r\n");
  		return -1;
  	}
- 	HAL_Delay(2);
  	return (verifyBuffer[3] << 24) | (verifyBuffer[4] << 16) | (verifyBuffer[5] << 8) | verifyBuffer[6];
  }
 
@@ -720,6 +719,31 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
     debug_print("StallGuard threshold set successfully! \r\n");
     debug_print("\r\n");
 }
+
+
+void TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY field uses 4 bits (bits 11..8).
+	// The datasheet recommends SENDDELAY >= 2 in multi-node setups.
+	if (sendDelay > 15) sendDelay = 15; // clamp the value to 4 bits max
+
+	uint32_t nodeconf = TMC2209_readInit(tmc2209, TMC_REG_SENDDELAY);	// Read the existing NODECONF register
+	nodeconf &= ~(0x0F << 8);	// Clear bits 11..8
+	nodeconf |= ((sendDelay & 0x0F) << 8);	// Set bits 11..8 to sendDelay
+	TMC2209_writeInit(tmc2209, TMC2209_REG_SLAVECONF, nodeconf);	// Write back the updated value
+}
+
+void TMC2209_setMotorsConfiguration(Motor motors[], uint8_t sendDelay, bool enableSpreadCycle)
+{
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+        TMC2209_setSendDelay(&motors[i], sendDelay);
+        TMC2209_enable_PDNuart(&motors[i]);
+        uint16_t mstep = motors[i].driver.mstep;
+        setMicrosteppingResolution(&motors[i], mstep);
+        TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
+    }
+}
+
+
+
 void MotorsHoming(Motor *motor){
 	for(int i = 0; i<4; i++){
 		if(i == 0){
