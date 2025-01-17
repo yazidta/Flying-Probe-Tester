@@ -36,4 +36,4 @@
 ../Components/Src/TMC2209.c:708:10:TMC2209_readStallGuardResult	72	static
 ../Components/Src/TMC2209.c:718:6:TMC2209_setStallGuardThreshold	16	static
 ../Components/Src/TMC2209.c:723:6:MotorsHoming	24	static
-../Components/Src/TMC2209.c:788:6:MotorControl_ButtonHandler	32	static
+../Components/Src/TMC2209.c:796:6:MotorControl_ButtonHandler	32	static

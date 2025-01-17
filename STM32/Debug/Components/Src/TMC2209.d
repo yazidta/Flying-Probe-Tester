@@ -38,6 +38,7 @@ Components/Src/TMC2209.o: ../Components/Src/TMC2209.c \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
  ../Core/Inc/main.h
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
@@ -78,4 +79,5 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
 ../Core/Inc/main.h:

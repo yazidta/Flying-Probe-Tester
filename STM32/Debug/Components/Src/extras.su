@@ -1,1 +1,2 @@
-../Components/Src/extras.c:13:6:IsSensorTriggered	24	static
+../Components/Src/extras.c:12:6:CheckConnection	24	static
+../Components/Src/extras.c:28:6:IsSensorTriggered	24	static

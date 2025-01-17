@@ -9,7 +9,22 @@
 
 #include "extras.h"
 
+bool CheckConnection(SERVO_Handle_TypeDef* hservo,SERVO_Handle_TypeDef* hservo1){
 
+	SERVO_WritePosition(hservo, 120);
+	SERVO_WritePosition(hservo1, 120);
+	Hal_delay(1000);
+	bool x =0;
+	if(HAL_GPIO_ReadPin(Probe_GPIO_Port,Probe_Pin) == GPIO_PIN_SET){
+	     x = true;
+	}
+	else{
+		 x=false;
+	}
+	SERVO_WritePosition(hservo, 90);
+	SERVO_WritePosition(hservo1, 90);
+	return x;
+}
 bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin)
 {
     // Read the sensor state
@@ -17,11 +32,11 @@ bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin)
 
     // Small delay to avoid button bounce or noise
     if(sensor_state == GPIO_PIN_SET){
-    	return true;
+    	return false;
 
     }
     else{
-    	return false;
+    	return true;
     }
     // Return true if the sensor is triggered (GPIO_PIN_SET), false otherwise
 

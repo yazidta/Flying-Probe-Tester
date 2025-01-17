@@ -35,5 +35,5 @@
 ../Components/Src/TMC2209.c:672:6:TMC2209_configureSpreadCycle	8
 ../Components/Src/TMC2209.c:708:10:TMC2209_readStallGuardResult	1
 ../Components/Src/TMC2209.c:718:6:TMC2209_setStallGuardThreshold	1
-../Components/Src/TMC2209.c:723:6:MotorsHoming	10
-../Components/Src/TMC2209.c:788:6:MotorControl_ButtonHandler	22
+../Components/Src/TMC2209.c:723:6:MotorsHoming	18
+../Components/Src/TMC2209.c:796:6:MotorControl_ButtonHandler	22

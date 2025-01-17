@@ -76,8 +76,6 @@ void Error_Handler(void);
 #define USER_Btn_EXTI_IRQn EXTI15_10_IRQn
 #define enn4_Pin GPIO_PIN_0
 #define enn4_GPIO_Port GPIOF
-#define step4_Pin GPIO_PIN_6
-#define step4_GPIO_Port GPIOF
 #define dir1_Pin GPIO_PIN_7
 #define dir1_GPIO_Port GPIOF
 #define Servo1PWM_Pin GPIO_PIN_9
@@ -86,6 +84,10 @@ void Error_Handler(void);
 #define MCO_GPIO_Port GPIOH
 #define servoPWM_Pin GPIO_PIN_0
 #define servoPWM_GPIO_Port GPIOA
+#define Probe_Pin GPIO_PIN_3
+#define Probe_GPIO_Port GPIOA
+#define EndStop3_Pin GPIO_PIN_4
+#define EndStop3_GPIO_Port GPIOA
 #define enn2_Pin GPIO_PIN_5
 #define enn2_GPIO_Port GPIOA
 #define step2_Pin GPIO_PIN_6
@@ -142,6 +144,10 @@ void Error_Handler(void);
 #define dir4_GPIO_Port GPIOD
 #define diag1_Pin GPIO_PIN_1
 #define diag1_GPIO_Port GPIOD
+#define EndStop4_Pin GPIO_PIN_3
+#define EndStop4_GPIO_Port GPIOB
+#define step4_Pin GPIO_PIN_8
+#define step4_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
