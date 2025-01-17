@@ -98,6 +98,7 @@ volatile uint32_t lastDebounceTime = 0;  // Tracks the last debounce time
 const uint32_t debounceDelay = 50;
 I2C_HandleTypeDef hi2c1;
 SERVO_Handle_TypeDef hservo1 = { .PwmOut = PWM_INIT_HANDLE(&htim14, TIM_CHANNEL_1) };
+SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim5, TIM_CHANNEL_1) };
 
 
 TIM_HandleTypeDef htim4;
@@ -199,7 +200,9 @@ int main(void)
   MX_TIM10_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-  //SERVO_Init(&hservo1);
+  SERVO_Init(&hservo1);
+  SERVO_Init(&hservo2);
+
   initializeMotors();
   initializeSystem();
    ENC_Init(&henc1);
@@ -308,12 +311,16 @@ int main(void)
 //   //TMC2209_Step(&motors[0], 6400);
 //   TMC2209_Step(&motors[1], 6400);
    //TMC2209_Step(&motors[2], 6400);
-   TMC2209_Step(&motors[3], 6400);
+   //TMC2209_Step(&motors[3], 6400);
    //TMC2209_EnableDriver(&motors[0], 1);
    //TMC2209_EnableDriver(&motors[1], 1);
    //TMC2209_EnableDriver(&motors[2], 1);
    //TMC2209_EnableDriver(&motors[3], 1);
-  while (1){
+   CheckConnection(&hservo2,&hservo1);
+   //SERVO_WritePosition(&hservo1, 0);
+  // HAL_Delay(300);
+   //SERVO_WritePosition(&hservo1, 50);
+   while (1){
 
       if (Flag) // Adjust based on button state
       {
@@ -335,7 +342,9 @@ int main(void)
      es = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
       x = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
       sensorX1=HAL_GPIO_ReadPin(EndStop1_GPIO_Port, EndStop1_Pin);
-      xx =HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
+     // xx =HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
+      //xx= CheckConnection(&hservo2,&hservo1);
+
 
       //xx = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
 
@@ -352,9 +361,7 @@ int main(void)
 //      for(int i =0; i < 3;i++){
 //	         //TMC2209_Step(&motors[0], 6400);
 //	         TMC2209_MoveTo(&axes[0], 0, move[i]);
-//	         SERVO_WritePosition(&hservo1, 90);
-//	         HAL_Delay(300);
-//	         SERVO_WritePosition(&hservo1, 60);
+
 //
 //
 //// Axis X, Motor X1

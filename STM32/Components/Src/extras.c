@@ -11,9 +11,9 @@
 
 bool CheckConnection(SERVO_Handle_TypeDef* hservo,SERVO_Handle_TypeDef* hservo1){
 
-	SERVO_WritePosition(hservo, 120);
-	SERVO_WritePosition(hservo1, 120);
-	Hal_delay(1000);
+	SERVO_WritePosition(hservo, 0);
+	SERVO_WritePosition(hservo1, 0);
+	HAL_Delay(1000);
 	bool x =0;
 	if(HAL_GPIO_ReadPin(Probe_GPIO_Port,Probe_Pin) == GPIO_PIN_SET){
 	     x = true;
@@ -21,8 +21,8 @@ bool CheckConnection(SERVO_Handle_TypeDef* hservo,SERVO_Handle_TypeDef* hservo1)
 	else{
 		 x=false;
 	}
-	SERVO_WritePosition(hservo, 90);
-	SERVO_WritePosition(hservo1, 90);
+	SERVO_WritePosition(hservo, 50);
+	SERVO_WritePosition(hservo1, 50);
 	return x;
 }
 bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin)

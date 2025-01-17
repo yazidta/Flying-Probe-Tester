@@ -8,7 +8,6 @@
 "./Components/Src/lcd_config.o"
 "./Components/Src/sd_card_reader.o"
 "./Components/Src/servo.o"
-"./Components/Src/uart_handler.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f7xx_hal_msp.o"
 "./Core/Src/stm32f7xx_it.o"
