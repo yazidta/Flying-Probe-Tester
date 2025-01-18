@@ -38,14 +38,13 @@
 #include "stm32f7xx_hal.h"
 #include "stdbool.h"
 
-// UART declaration
-extern UART_HandleTypeDef huart2;
+
 
 // Timer Handler declaration
 extern TIM_HandleTypeDef htim2; // Motor 1
-extern TIM_HandleTypeDef htim3; // Motor 1
-extern TIM_HandleTypeDef htim9; // Motor 1
-extern TIM_HandleTypeDef htim10; // Motor 1
+extern TIM_HandleTypeDef htim3; // Motor 2
+extern TIM_HandleTypeDef htim9; // Motor 3
+extern TIM_HandleTypeDef htim10; // Motor 4
 
 // Motors & axis
 #define MAX_MOTORS 4 // Max motors to be added -- You can handle upto 4 TMC2209 drivers on the same UART BUS

@@ -1,0 +1,2 @@
+../Components/Src/uart_handler.c:18:6:HAL_UART_RxCpltCallback	24	static
+../Components/Src/uart_handler.c:36:6:handleUARTCommands	16	static

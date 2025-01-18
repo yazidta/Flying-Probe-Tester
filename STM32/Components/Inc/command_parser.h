@@ -8,6 +8,6 @@
 #ifndef INC_COMMAND_PARSER_H_
 #define INC_COMMAND_PARSER_H_
 
-void parseAndExecuteCommand(char *command);
+void parsePCB2GcodeCommand(char *command);
 
 #endif /* INC_COMMAND_PARSER_H_ */

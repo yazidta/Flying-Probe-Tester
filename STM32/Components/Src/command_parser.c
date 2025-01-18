@@ -15,7 +15,7 @@ extern Motor motors[];
 
 
 // Function to parse and execute commands
-void parseAndExecuteCommand(char *command) {
+void parsePCB2GcodeCommand(char *command) {
     char cmd[20];
     char param1[20];
     char param2[20];

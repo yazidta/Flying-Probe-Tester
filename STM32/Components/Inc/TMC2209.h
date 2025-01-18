@@ -39,12 +39,14 @@
 #include "stm32f7xx_hal.h"
 #include "TMC2209_configs.h"
 #include "TMC2209_register.h"
+#include "extras.h"
+#include "main.h"
+#include "uart_handler.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
-#include "extras.h"
-#include "main.h"
+
 
 
 
@@ -52,8 +54,6 @@
 // Datagrams
 #define TMC_WRITE_DATAGRAM_SIZE  		8
 #define TMC_READ_REQUEST_DATAGRAM_SIZE  4
-#define RX_REPLY_SIZE 					12 	// This should be 8 which is basically TMC_REPLY_SIZE however, the receive interrupt cannot be triggered after transmitting so we have to ignore first 4 bytes that is transmitted for read request
-#define TMC_REPLY_SIZE           		8	// Actual Bytes that TMC2209 sends back
 
 // Macros & other
 #define ENABLE_DEBUG					1
@@ -67,13 +67,9 @@
 
 
 // Variables
-extern UART_HandleTypeDef huart2; // huart which will be used to communicate
-extern UART_HandleTypeDef huart3; // Used for debugging
+
 extern TIM_HandleTypeDef htim3;
 extern uint32_t last_tmc_read_attempt_ms;
-extern uint8_t rxData[TMC_REPLY_SIZE + 1]; // Buffer to track all received data
-extern uint8_t rxBuffer[TMC_REPLY_SIZE]; // Buffer store the actual received 8 bytes
-extern volatile uint8_t dataReadyFlag ; // Flag to indicate data reception
 extern int32_t stepsTaken[MAX_MOTORS];
 extern uint8_t Pressed;
 
