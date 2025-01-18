@@ -38,4 +38,4 @@
 ../Components/Src/TMC2209.c:725:6:TMC2209_setSendDelay	24	static
 ../Components/Src/TMC2209.c:735:6:TMC2209_setMotorsConfiguration	24	static
 ../Components/Src/TMC2209.c:748:6:MotorsHoming	24	static
-../Components/Src/TMC2209.c:821:6:MotorControl_ButtonHandler	32	static
+../Components/Src/TMC2209.c:823:6:MotorControl_ButtonHandler	32	static

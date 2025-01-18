@@ -208,73 +208,14 @@ int main(void)
    ENC_Init(&henc1);
    //HAL_TIM_Encoder_Start_IT(&htim4,TIM_CHANNEL_ALL);
 
-    TMC2209_enable_PDNuart(&motors[0]);
-    TMC2209_enable_PDNuart(&motors[1]);
-    TMC2209_enable_PDNuart(&motors[2]);
-    TMC2209_enable_PDNuart(&motors[3]);
 
-    //TMC2209_read_ifcnt(&motors[0]);
-    configureGCONF(&motors[0]);
-    TMC2209_SetSpreadCycle(&motors[0], 1);
-    configureGCONF(&motors[1]);
-    TMC2209_SetSpreadCycle(&motors[1], 1);
-    configureGCONF(&motors[2]);
-    TMC2209_SetSpreadCycle(&motors[2], 1);
-    configureGCONF(&motors[3]);
-    TMC2209_SetSpreadCycle(&motors[3], 1);
-    //TMC2209_read_ifcnt(&motors[0]);
-    //TMC2209_EnableDriver(&motors[0], 1);
-    HAL_Delay(2);
-    //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
-
-   TMC2209_read_ifcnt(&motors[0]);
-    HAL_Delay(2);
-    setMicrosteppingResolution(&motors[0], 16);
-    setMicrosteppingResolution(&motors[2], 16);
-//    HAL_Delay(2);
-
-    checkMicrosteppingResolution(&motors[0]);
-    HAL_Delay(2);
-  //  TMC2209_SetSpreadCycle(&motors[0], 1);
-   // HAL_Delay(2);
-   // TMC2209_setStallGuardThreshold(&motors[0], 10);
-//    HAL_Delay(2);
-    TMC2209_SetDirection(&motors[0], dir);
-    TMC2209_SetSpeed(&motors[0], 5000);
-    //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1
-   // TMC2209_RampUp(&motors[0], 500,3000, 200);
-    //TMC2209_Step(&motors[0], 1600);
-    //TMC2209_Start(&motors[0]);
-
-  //  testIHOLDIRUN(&motors[0], 31, 16, 8);
-  //  HAL_Delay(2);
-    TMC2209_enable_PDNuart(&motors[1]);
-
-        //TMC2209_read_ifcnt(&motors[0]);
-        //configureGCONF(&motors[0]);
-       // TMC2209_SetSpreadCycle(&motors[1], 1);
-        //TMC2209_read_ifcnt(&motors[0]);
-      //  TMC2209_EnableDriver(&motors[1], 1);
-        HAL_Delay(2);
-        //TMC2209_configureSpreadCycle(&motors[0], 5, 2, 10, 13);
-
-       TMC2209_read_ifcnt(&motors[1]);
-        HAL_Delay(2);
-        setMicrosteppingResolution(&motors[1], 16);
-        HAL_Delay(2);
-        setMicrosteppingResolution(&motors[3], 16);
-
-    //    HAL_Delay(2);
-
-        checkMicrosteppingResolution(&motors[1]);
-        HAL_Delay(2);
-      //  TMC2209_SetSpreadCycle(&motors[0], 1);
-       // HAL_Delay(2);
-       // TMC2209_setStallGuardThreshold(&motors[0], 10);
-    //    HAL_Delay(2);
-        TMC2209_SetDirection(&motors[1], dir);
-        TMC2209_SetSpeed(&motors[1], 16000);
         //TMC2209_Step(&motors[1], 16000);
+   TMC2209_setMotorsConfiguration(&motors,8,1);
+   TMC2209_SetSpeed(&motors[0], 26000);
+   TMC2209_SetSpeed(&motors[1], 16000);
+   TMC2209_SetSpeed(&motors[2], 26000);
+   TMC2209_SetSpeed(&motors[3], 16000);
+
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);
@@ -301,13 +242,12 @@ int main(void)
  // Axis X, Motor X1
    //TMC2209_Step(&motors[1], 3200);
 //   TMC2209_SetDirection(&motors[0], dir);
-//   TMC2209_SetSpeed(&motors[0], 5000);
+     TMC2209_SetSpeed(&motors[0], 25000);
 //   TMC2209_SetDirection(&motors[1], dir);
-//   TMC2209_SetSpeed(&motors[1], 5000);
+     TMC2209_SetSpeed(&motors[1], 12000);
 //   TMC2209_SetDirection(&motors[2], dir);
-//   TMC2209_SetSpeed(&motors[2], 5000);
-   TMC2209_SetDirection(&motors[3], dir);
-   TMC2209_SetSpeed(&motors[3], 5000);
+   TMC2209_SetSpeed(&motors[2], 25000);
+   TMC2209_SetSpeed(&motors[3], 12000);
 //   //TMC2209_Step(&motors[0], 6400);
 //   TMC2209_Step(&motors[1], 6400);
    //TMC2209_Step(&motors[2], 6400);
@@ -358,14 +298,14 @@ int main(void)
 //
      es = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
       x = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
-      //sensorX1=HAL_GPIO_ReadPin(EndStop1_GPIO_Port, EndStop1_Pin);
-      //xx =HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
+      sensorX1=IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
+      xx =IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
       //xx= CheckConnection(&hservo2,&hservo1);
 
 
       sensorX1 = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
 
-      if(es && x){
+      if(es && x &&sensorX1 && xx){
       xx =+1;
       }
       else{
@@ -866,7 +806,7 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 215;
+  htim10.Init.Prescaler = 216-1;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim10.Init.Period = 1000;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -880,7 +820,7 @@ static void MX_TIM10_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 500;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim10, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
