@@ -18,4 +18,9 @@
 ../Components/Src/LCD.c:442:9:LCD_I2C_MainMenu	80	dynamic
 ../Components/Src/LCD.c:509:9:LCD_I2C_MainMenu_Encoder	96	static
 ../Components/Src/LCD.c:570:6:read_buttons	8	static
-../Components/Src/LCD.c:578:6:LCD_I2C_DisplaySDMenu	976	static
+../Components/Src/LCD.c:579:9:MountSDCard	16	static
+../Components/Src/LCD.c:583:9:OpenRootDir	16	static
+../Components/Src/LCD.c:587:9:ReadFiles	312	static
+../Components/Src/LCD.c:604:6:AddBackOption	16	static
+../Components/Src/LCD.c:608:6:DisplayMenu	56	static
+../Components/Src/LCD.c:644:6:LCD_I2C_DisplaySDMenu	880	static

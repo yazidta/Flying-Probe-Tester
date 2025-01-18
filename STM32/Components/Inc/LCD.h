@@ -81,7 +81,9 @@ typedef struct {
 #define LCD_I2C_BIT_E                  0x04
 #define LCD_I2C_BIT_BACKIGHT_ON        0x08
 #define LCD_I2C_BIT_BACKIGHT_OFF       0x00
-
+#define MAX_FILES 10
+#define LCD_ROWS 4
+//#define LCD_WIDTH 20
 
 /**
  * @brief LCD initialization procedure.
@@ -159,6 +161,13 @@ uint8_t LCD_I2C_MainMenu_Encoder(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef
 void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd);
 void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc);
 void LCD_I2C_Cursor(LCD_I2C_HandleTypeDef* hlcd, uint8_t row, uint8_t col);
+void DisplayMenu(LCD_I2C_HandleTypeDef* hlcd, char fileList[][20 + 1], uint8_t fileCount, uint8_t selectedIndex);
+void AddBackOption(char fileList[][20 + 1], uint8_t index);
+uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles);
+FRESULT OpenRootDir(DIR* dir);
+FRESULT MountSDCard(FATFS* FatFs);
+
+
 
 
 #endif
