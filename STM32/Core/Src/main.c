@@ -341,22 +341,22 @@ int main(void)
 //
      es = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
       x = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
-      sensorX1=HAL_GPIO_ReadPin(EndStop1_GPIO_Port, EndStop1_Pin);
-     // xx =HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
+      //sensorX1=HAL_GPIO_ReadPin(EndStop1_GPIO_Port, EndStop1_Pin);
+      //xx =HAL_GPIO_ReadPin(EndStop2_GPIO_Port, EndStop2_Pin);
       //xx= CheckConnection(&hservo2,&hservo1);
 
 
-      //xx = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
+      sensorX1 = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
 
-//      if(es && x){
-//      xx =+1;
-//      }
-//      else{
-//    	  xx = 0;
-//      }
-//      while(xx >= 1){
-//      MotorControl_ButtonHandler(&motors);
-//      }
+      if(es && x){
+      xx =+1;
+      }
+      else{
+    	  xx = 0;
+      }
+      while(xx >= 1){
+      MotorControl_ButtonHandler(&motors);
+      }
 ////           //TMC2209_SetDirection(&motors[0], 1);
 //      for(int i =0; i < 3;i++){
 //	         //TMC2209_Step(&motors[0], 6400);
@@ -1086,8 +1086,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(dir4_GPIO_Port, dir4_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : EndStop1_Pin EndStop2_Pin BtnCtr_Pin */
-  GPIO_InitStruct.Pin = EndStop1_Pin|EndStop2_Pin|BtnCtr_Pin;
+  /*Configure GPIO pins : EndStop1_Pin EndStop2_Pin */
+  GPIO_InitStruct.Pin = EndStop1_Pin|EndStop2_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -1148,6 +1148,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : BtnCtr_Pin */
+  GPIO_InitStruct.Pin = BtnCtr_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(BtnCtr_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : enn1_Pin */
   GPIO_InitStruct.Pin = enn1_Pin;

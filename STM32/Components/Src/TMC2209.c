@@ -49,6 +49,7 @@ uint32_t LastSteps[3] = {0,0,0,0};
 
 uint8_t Pressed = 0;
 volatile uint8_t direction = 0; // Flag to indicate data reception
+uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
 
 
 
@@ -825,8 +826,7 @@ void MotorControl_ButtonHandler(Motor *motors) {
     uint32_t currentTime = HAL_GetTick();
     static uint32_t lastPressTime = 0;  // Last valid press timestamp
 
-    uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
-    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_RESET) {
+    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_SET) {
     	if (CtrPressedFlag == 0) {  // Only increment on first press
     	                Pressed += 1;
     	                CtrPressedFlag = 1;  // Set flag to avoid multiple increments
