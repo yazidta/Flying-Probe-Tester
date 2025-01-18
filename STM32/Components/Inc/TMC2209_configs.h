@@ -108,7 +108,7 @@ typedef struct {
 
 
 extern Motor motors[MAX_MOTORS]; // Global motor array
-extern Axis axes[MAX_MOTORS_PER_AXIS - 1];
+extern Axis axes[MAX_MOTORS_PER_AXIS];
 
 
 // Function declarations

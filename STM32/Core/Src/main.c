@@ -41,13 +41,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-//void HAL_TIM_EncoderCallback(TIM_HandleTypeDef *htim)
-//{
-//    if (htim->Instance == TIM4) {
-//        // Get the current position (counter value)
-//    	g_EncoderPosition = __HAL_TIM_GET_COUNTER(htim);
-//    }
-//}
 
 
 
@@ -75,7 +68,9 @@ TIM_HandleTypeDef htim14;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
+UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_usart6_rx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -108,7 +103,7 @@ UART_HandleTypeDef huart3;
 volatile uint32_t spiPre;
 uint8_t flag;
 Motor motors[MAX_MOTORS]; // Global motor array
-Axis axes[MAX_MOTORS_PER_AXIS - 1];
+Axis axes[MAX_MOTORS_PER_AXIS];
 
 
 /* USER CODE BEGIN PV */
@@ -132,6 +127,7 @@ static void MX_TIM5_Init(void);
 static void MX_TIM9_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_I2C1_Init(void);
+static void MX_USART6_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -199,6 +195,7 @@ int main(void)
   MX_TIM9_Init();
   MX_TIM10_Init();
   MX_I2C1_Init();
+  MX_USART6_UART_Init();
   /* USER CODE BEGIN 2 */
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -210,7 +207,9 @@ int main(void)
 
 
         //TMC2209_Step(&motors[1], 16000);
-   TMC2209_setMotorsConfiguration(&motors,8,1);
+
+   TMC2209_setMotorsConfiguration(motors,8,1);
+   //checkMicrosteppingResolution(&motors[2]);
    TMC2209_SetSpeed(&motors[0], 26000);
    TMC2209_SetSpeed(&motors[1], 16000);
    TMC2209_SetSpeed(&motors[2], 26000);
@@ -223,7 +222,7 @@ int main(void)
 
    spiPre = SD_SPI_HANDLE.Instance->CR1;
 
-   sd_card_read_gcode();
+   //sd_card_read_gcode();
    spiPre = SD_SPI_HANDLE.Instance->CR1;
 
 
@@ -806,7 +805,7 @@ static void MX_TIM10_Init(void)
 
   /* USER CODE END TIM10_Init 1 */
   htim10.Instance = TIM10;
-  htim10.Init.Prescaler = 216-1;
+  htim10.Init.Prescaler = 215;
   htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim10.Init.Period = 1000;
   htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -931,7 +930,7 @@ static void MX_USART3_UART_Init(void)
 
   /* USER CODE END USART3_Init 1 */
   huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
+  huart3.Init.BaudRate = 256000;
   huart3.Init.WordLength = UART_WORDLENGTH_8B;
   huart3.Init.StopBits = UART_STOPBITS_1;
   huart3.Init.Parity = UART_PARITY_NONE;
@@ -947,6 +946,41 @@ static void MX_USART3_UART_Init(void)
   /* USER CODE BEGIN USART3_Init 2 */
 
   /* USER CODE END USART3_Init 2 */
+
+}
+
+/**
+  * @brief USART6 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART6_UART_Init(void)
+{
+
+  /* USER CODE BEGIN USART6_Init 0 */
+
+  /* USER CODE END USART6_Init 0 */
+
+  /* USER CODE BEGIN USART6_Init 1 */
+
+  /* USER CODE END USART6_Init 1 */
+  huart6.Instance = USART6;
+  huart6.Init.BaudRate = 115200;
+  huart6.Init.WordLength = UART_WORDLENGTH_8B;
+  huart6.Init.StopBits = UART_STOPBITS_1;
+  huart6.Init.Parity = UART_PARITY_NONE;
+  huart6.Init.Mode = UART_MODE_TX_RX;
+  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart6.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart6.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart6) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART6_Init 2 */
+
+  /* USER CODE END USART6_Init 2 */
 
 }
 
@@ -993,11 +1027,15 @@ static void MX_DMA_Init(void)
 
   /* DMA controller clock enable */
   __HAL_RCC_DMA1_CLK_ENABLE();
+  __HAL_RCC_DMA2_CLK_ENABLE();
 
   /* DMA interrupt init */
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA2_Stream1_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 
 }
 
@@ -1043,8 +1081,8 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(dir4_GPIO_Port, dir4_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : EndStop1_Pin EndStop2_Pin */
-  GPIO_InitStruct.Pin = EndStop1_Pin|EndStop2_Pin;
+  /*Configure GPIO pins : EndStop1_Pin EndStop2_Pin BtnCtr_Pin */
+  GPIO_InitStruct.Pin = EndStop1_Pin|EndStop2_Pin|BtnCtr_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
@@ -1105,12 +1143,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : BtnCtr_Pin */
-  GPIO_InitStruct.Pin = BtnCtr_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(BtnCtr_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : enn1_Pin */
   GPIO_InitStruct.Pin = enn1_Pin;

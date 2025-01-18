@@ -93,7 +93,7 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM);
 
 //// UART TMC2209 ////
 uint8_t calculate_CRC(uint8_t *datagram, uint8_t length);
-uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength);
+uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength, Motor *tmc2209);
 void TMC2209_writeInit(Motor *tmc2209, uint8_t regAddress, int32_t value);
 int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress);
 uint8_t TMC2209_waitForReply(uint32_t timeout);
@@ -111,6 +111,7 @@ uint8_t TMC2209_readIRUN(Motor *tmc2209);
 void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay);
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209);
 void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs);
+void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
 
 //// Debug ////
 void debug_print(const char* msg);
@@ -120,7 +121,7 @@ void MotorsHoming(Motor *motor);
 void MotorControl_ButtonHandler(Motor *motors);
 void TMC2209_Start_C(Motor *motor);
 static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
-void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
+
 
 
 #endif // TMC2209_H

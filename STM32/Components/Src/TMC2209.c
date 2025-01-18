@@ -262,8 +262,8 @@ void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArr
 
 
 
- void debug_print(const char* msg) {
-    HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), 200);
+void debug_print(const char* msg) {
+        HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
  void debug_print_hex(uint8_t* data, uint8_t length) {
@@ -329,12 +329,11 @@ uint8_t TMC2209_WaitForReply(uint32_t timeout) {
  }
 
 
-uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength) {
+uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength, Motor *tmc2209) {
 	uint8_t flag = 1;
 	//clear_UART_buffers(&huart2);
-	HAL_Delay(1);
      // Send the command
-     if (HAL_UART_Transmit(&huart2, command, writeLength, 10) != HAL_OK) {
+     if (HAL_UART_Transmit(tmc2209->driver.huart, command, writeLength, HAL_MAX_DELAY) != HAL_OK) {
          debug_print("Failed to send command.\r\n");
          return 0;
      }
@@ -343,12 +342,14 @@ uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLe
      if(readLength){
 
      // Wait for reply
-     HAL_UART_Receive_DMA(&huart2, rxData, readLength + 1);
+     HAL_UART_Receive_DMA(tmc2209->driver.huart, rxData, readLength + 1);
      if (!TMC2209_WaitForReply(200)) { // Wait 200ms if no reply, timeout
          debug_print("No reply received.\r\n");
          return 0; // command failed
      }
+     /// DEBUG ///
      // Send transmitted data -- Note: this can't be called before receiving or else it will interfere with huart2
+
      debug_print("Data Transmitted: ");
      debug_print_hex(command, writeLength);
      // Process received data in rxBuffer
@@ -372,7 +373,7 @@ void TMC2209_writeInit(Motor *tmc2209, uint8_t regAddress, int32_t value){
  	write_request_command[5] = (value >> 8 ) & 0xFF;
  	write_request_command[6] = (value      ) & 0xFF;
  	write_request_command[7] = calculate_CRC(write_request_command, 7); // checksum
- 	TMC2209_sendCommand(&write_request_command[0], TMC_WRITE_DATAGRAM_SIZE, 0); // We don't actually need receive buffer here when we call ReadWrite so we just pass data
+ 	TMC2209_sendCommand(&write_request_command[0], TMC_WRITE_DATAGRAM_SIZE, 0, tmc2209); // We don't actually need receive buffer here when we call ReadWrite so we just pass data
 
  }
 
@@ -387,7 +388,7 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
  	read_request_command[2] = regAddress;
  	read_request_command[3] = calculate_CRC(read_request_command, 3);
 
- 	uint8_t *verifyBuffer = TMC2209_sendCommand(read_request_command, TMC_READ_REQUEST_DATAGRAM_SIZE, TMC_REPLY_SIZE);
+ 	uint8_t *verifyBuffer = TMC2209_sendCommand(read_request_command, TMC_READ_REQUEST_DATAGRAM_SIZE, TMC_REPLY_SIZE, tmc2209);
  	// Byte 0: Sync nibble correct?
  	if (verifyBuffer[0] != 0x05){
  		// If first byte equals 0 then it means no reply so return
@@ -416,10 +417,16 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
 
 
 uint8_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable) {
+	HAL_Delay(1);
 	uint32_t gconf;
 	uint32_t check_gconf;
 
-	debug_print("Read current SpreadCycle value...");
+	uint8_t driverID = motor->driver.id;
+	char debug_msg[150];
+	snprintf(debug_msg, sizeof(debug_msg), "----- Setting SpreadCycle Mode for Driver: %u -----\r\n", driverID);
+	debug_print(debug_msg);
+    memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
+
 	gconf = TMC2209_readInit(motor, TMC2209_REG_GCONF);
 
     if(gconf == TMC_ERROR){
@@ -449,6 +456,7 @@ uint8_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable) {
 }
 
 uint8_t checkSpreadCycle(Motor *tmc2209) {
+	HAL_Delay(1);
     // Read the GCONF register
     uint32_t gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
 
@@ -467,12 +475,15 @@ uint8_t checkSpreadCycle(Motor *tmc2209) {
 }
 
 void TMC2209_enable_PDNuart(Motor *tmc2209){
-	  // Enable the driver by writing to the GCONF register
-	  debug_print("Enabling driver via GCONF register...\r\n");
-	  TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
+	HAL_Delay(1);
+	 uint8_t driverID = tmc2209->driver.id;
+	 char debug_msg[150];
+	 snprintf(debug_msg, sizeof(debug_msg), "----- Enabling driver via GCONF registe Driver: %u -----\r\n", driverID);
+	 debug_print(debug_msg);
+	 TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
 }
 uint8_t TMC2209_read_ifcnt(Motor *tmc2209) {
-
+	HAL_Delay(1);
      debug_print("Reading IFCNT register...\r\n");
      int32_t ifcnt_value = TMC2209_readInit(tmc2209, TMC2209_REG_IFCNT); // IFCNT register address is 0x02
 
@@ -491,11 +502,18 @@ uint8_t TMC2209_read_ifcnt(Motor *tmc2209) {
 
 // Function to set the microstepping resolution through UART
 void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
+	HAL_Delay(1);
+    uint8_t driverID = tmc2209->driver.id;
+    char debug_msg[150];
+
+    snprintf(debug_msg, sizeof(debug_msg), "----- Setting Microstepping For Driver ID: %u -----\r\n", driverID);
+    debug_print(debug_msg);
+    memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
     // Ensure GCONF is set to enable UART control for microstepping resolution
     uint8_t gconf = 0x80; // Bit 7 (mstep_reg_select) set to 1. This to change the option to control mstepping using UART instead of MS1 & MS2 pins
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
 
-
+    HAL_Delay(2);
     // Read the current CHOPCONF register value
     uint32_t currentCHOPCONF = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
 
@@ -543,13 +561,12 @@ void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
         debug_print("Resolution unchanged, no update needed.\n");
         return;
     }
-
+    HAL_Delay(2);
     // Update the CHOPCONF register with the new MRES value
     uint32_t updatedCHOPCONF = (currentCHOPCONF & ~(0x0F << 24)) | (newMRES << 24);
     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, updatedCHOPCONF);
 
     // Debug
-    char debug_msg[50];
     sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
     debug_print(debug_msg);
 
@@ -557,6 +574,7 @@ void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
 
 
 uint16_t checkMicrosteppingResolution(Motor *tmc2209) {
+	HAL_Delay(2);
     // Read the CHOPCONF register
     uint32_t chopconf = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
     // Extract the MRES bits (bits 24–27 in CHOPCONF)
@@ -579,15 +597,16 @@ uint16_t checkMicrosteppingResolution(Motor *tmc2209) {
 
     // Debug
     char debug_msg[50];
-    sprintf(debug_msg, "Current microstepping resolution: %u\n", resolution);
-    debug_print(debug_msg);
-
+    uint8_t driverID = tmc2209->driver.id;
+    //sprintf(debug_msg, "Current microstepping resolution for Driver ID: %u, Resolution: %u\n", driverID, resolution);
+    //debug_print(debug_msg);
     return resolution;
 }
 
 
 
 void TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
+	HAL_Delay(1);
     if (irun_value > 31) {
         irun_value = 31; // Limit IRUN value to the maximum allowed (5 bits)
     }
@@ -605,6 +624,7 @@ void TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
 
 
 uint8_t TMC2209_readIRUN(Motor *tmc2209) {
+	HAL_Delay(1);
     uint32_t registerValue = TMC2209_readInit(tmc2209, TMC2209_REG_IHOLD_IRUN);
 
     // Extract IRUN (Bits 8-12)
@@ -617,12 +637,14 @@ uint8_t TMC2209_readIRUN(Motor *tmc2209) {
 }
 
 void configureGCONF(Motor *tmc2209) {
+	HAL_Delay(1);
     uint32_t gconf = 0x000000C0; // pdn_disable = 1, mstep_reg_select = 1
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
     HAL_Delay(1);
 }
 
 void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay) {
+	HAL_Delay(1);
     // Combine IHOLDDELAY, IRUN, and IHOLD into a single 32-bit value
     uint32_t testValue = ((iholddelay & 0x0F) << 16) | ((irun & 0x1F) << 8) | (ihold & 0x1F);
 
@@ -657,7 +679,7 @@ void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddel
 
 // Function to configure the SPREADCYCLE mode parameters in the CHOPCONF register
 void TMC2209_configureSpreadCycle(Motor *tmc2209, uint8_t toff, uint8_t tbl, uint8_t hend, uint8_t hstart) {
-
+	HAL_Delay(1);
     // Validate and clamp the input parameters to their allowed ranges
     if (toff < 2) toff = 2;      // Minimum TOFF value is 2
     if (toff > 15) toff = 15;    // Maximum TOFF value is 15
@@ -693,6 +715,7 @@ void TMC2209_configureSpreadCycle(Motor *tmc2209, uint8_t toff, uint8_t tbl, uin
 }
 
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
+	HAL_Delay(1);
     uint32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
    // sg_result = (sg_result >> 10) & 0x1FF;
     char debug_msg[50];
@@ -703,6 +726,7 @@ uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
 }
 
 void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
+	HAL_Delay(1);
     TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs); // SGTHRS register
     debug_print("StallGuard threshold set successfully! \r\n");
     debug_print("\r\n");
@@ -711,21 +735,28 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
 
 void TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY field uses 4 bits (bits 11..8).
 	// The datasheet recommends SENDDELAY >= 2 in multi-node setups.
+	HAL_Delay(1);
 	if (sendDelay > 15) sendDelay = 15; // clamp the value to 4 bits max
-
+	debug_print("----- Reading Send Delay ----- \r\n");
 	uint32_t nodeconf = TMC2209_readInit(tmc2209, TMC_REG_SENDDELAY);	// Read the existing NODECONF register
 	nodeconf &= ~(0x0F << 8);	// Clear bits 11..8
 	nodeconf |= ((sendDelay & 0x0F) << 8);	// Set bits 11..8 to sendDelay
 	TMC2209_writeInit(tmc2209, TMC2209_REG_SLAVECONF, nodeconf);	// Write back the updated value
+	debug_print("Send Delay set successfully! \r\n");
+
 }
 
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle)
 {
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
-        TMC2209_setSendDelay(&motors[i], sendDelay);
+    	HAL_Delay(2000);
         TMC2209_enable_PDNuart(&motors[i]);
-        uint16_t mstep = motors[i].driver.mstep;
+    	HAL_Delay(1000);
+    	uint16_t mstep = motors[i].driver.mstep;
         setMicrosteppingResolution(&motors[i], mstep);
+        HAL_Delay(1000);
+        checkMicrosteppingResolution(&motors[i]);
+        HAL_Delay(1000);
         TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
     }
 }

@@ -34,7 +34,8 @@ Components/Src/uart_handler.o: ../Components/Src/uart_handler.c \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_uart_ex.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h \
  ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
- ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h
+ ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/command_parser.h
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -71,3 +72,4 @@ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/In
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/command_parser.h:

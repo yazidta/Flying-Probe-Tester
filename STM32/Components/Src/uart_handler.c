@@ -18,17 +18,10 @@ volatile bool uart3_commandReceived = false;
 // UART Receive Complete Callback
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// UART callback for read from TMC2209
-    if (huart->Instance == USART2) {
-        for (uint8_t i = 0; i < TMC_REPLY_SIZE + 1 ; i++) {
-            rxBuffer[i] = rxData[i + 1];
-        }
+    if (huart->Instance == USART2 || huart->Instance == USART6) {
+        // Prevent buffer overflow by iterating only up to TMC_REPLY_SIZE
+        memcpy(rxBuffer, rxData + 1, TMC_REPLY_SIZE+1);
         rxBufferReady = 1;
-    }
-    // UART callback for read from PCB2Gcode
-    if (huart->Instance == USART3) {
-        // Process received data
-    	uart3_commandReceived = true;
-        HAL_UART_Receive_IT(&huart3, uart3_rxData, PCB2GCODE_REPLY_SIZE);
     }
 
 }

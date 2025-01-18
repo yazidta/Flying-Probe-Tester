@@ -4,3 +4,4 @@
 *.o
 *.su
 STM32/Debug/Flying-Probe_tester.elf
+/STM32/Debug
