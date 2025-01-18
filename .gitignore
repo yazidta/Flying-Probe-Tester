@@ -1,7 +1,17 @@
 
-*.d
-*.cyclo
-*.o
-*.su
-STM32/Debug/Flying-Probe_tester.elf
-/STM32/Debug
+STM32/*.d
+STM32/*.cyclo
+STM32/*.o
+STM32/*.su
+STM32/*.elf 
+STM32/*.bin 
+STM32/*.hex  
+STM32/*.map 
+STM32/*.tmp
+
+STM32/.settings/
+STM32/Debug/
+STM32/Release/
+STM32/build/
+STM32/*.tmp
+STM32/*.ld
