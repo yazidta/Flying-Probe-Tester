@@ -46,6 +46,7 @@ uint32_t LastSteps[3] = {0,0,0,0};
 
 uint8_t Pressed = 0;
 volatile uint8_t direction = 0; // Flag to indicate data reception
+uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
 
 
 
@@ -718,7 +719,7 @@ void TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY 
 	TMC2209_writeInit(tmc2209, TMC2209_REG_SLAVECONF, nodeconf);	// Write back the updated value
 }
 
-void TMC2209_setMotorsConfiguration(Motor motors[], uint8_t sendDelay, bool enableSpreadCycle)
+void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle)
 {
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
         TMC2209_setSendDelay(&motors[i], sendDelay);
@@ -777,6 +778,8 @@ void MotorsHoming(Motor *motor){
 					motor[i].currentPositionMM = 0;
 					motor[i].stepsTaken = 0;
 				    motor[i].StepsFront = 0;
+				    motor[i].StepsBack = 0;
+
 				}
 			}
 			TMC2209_Stop(&motor[2]);
@@ -791,7 +794,7 @@ void MotorsHoming(Motor *motor){
 					TMC2209_Stop(&motor[3]);
 					motor[i].currentPositionMM = 450;
 					motor[i].stepsTaken = 0;
-				    motor[i].StepsFront = 0;
+				    motor[i].StepsBack = 0;
 				}
 			}
 			TMC2209_Stop(&motor[3]);
@@ -805,34 +808,31 @@ void MotorsHoming(Motor *motor){
 }
 }
 void MotorControl_ButtonHandler(Motor *motors) {
-    static uint8_t CtrPressedFlag = 0;  // Flag to detect button press edge
-	//StepsFront[0] = 0;
-    uint32_t pressStartTime = 0;
-    uint32_t debounceTime = 50;
-    uint32_t currentTime = HAL_GetTick();
-    static uint32_t lastPressTime = 0;  // Last valid press timestamp
+	static uint8_t CtrPressedFlag = 0; // Flag to detect button press edge
+	    // StepsFront[0] = 0;
+	    uint32_t pressStartTime = 0;
+	    uint32_t debounceTime = 50;
+	    uint32_t currentTime = HAL_GetTick();
+	    static uint32_t lastPressTime = 0; // Last valid press timestamp
 
-    uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
-    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_RESET) {
-    	if (CtrPressedFlag == 0) {  // Only increment on first press
-    	                Pressed += 1;
-    	                CtrPressedFlag = 1;  // Set flag to avoid multiple increments
-    	            }
-    	        } else {
-    	            CtrPressedFlag = 0;  // Reset flag when button is released
-    	        }
-
-    	        // Debounce and process after button release
-
-    	        if (currentTime - lastPressTime > 50 && Pressed > 0) {
-    	            lastPressTime = currentTime;
+	    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_SET) {
+	        if (CtrPressedFlag == 0) { // Only increment on first press
+	            pressStartTime = currentTime;
+	            CtrPressedFlag = 1; // Set flag to avoid multiple increments
+	        }
+	    } else {
+	        if (CtrPressedFlag == 1 && (currentTime - pressStartTime) >= debounceTime) {
+	            Pressed += 1;
+	            lastPressTime = currentTime; // Update the last valid press time
+	              }
+	        CtrPressedFlag = 0; // Reset flag when button is released
         switch (Pressed) {
             case 1:
                 // Save calibration for first press
                 motors[motorGroup * 2].currentPositionMM =
-                    (motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160;
+                    abs(motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160;
                 motors[motorGroup * 2 + 1].currentPositionMM =
-                    (motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400;
+                    abs(motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400;
 
                 motors[motorGroup * 2].calib[0] = motors[motorGroup * 2].currentPositionMM;
                 motors[motorGroup * 2 + 1].calib[0] = motors[motorGroup * 2 + 1].currentPositionMM;
@@ -844,25 +844,33 @@ void MotorControl_ButtonHandler(Motor *motors) {
             case 2:
                 // Save calibration for second press
                 motors[motorGroup * 2].currentPositionMM =
-                    (motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160;
+                    abs(motors[motorGroup * 2].StepsFront - motors[motorGroup * 2].StepsBack) / 160.0f;
                 motors[motorGroup * 2 + 1].currentPositionMM =
-                    (motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400;
+                    abs(motors[motorGroup * 2 + 1].StepsBack - motors[motorGroup * 2 + 1].StepsFront) / 400.0f;
 
                 motors[motorGroup * 2].calib[1] = motors[motorGroup * 2].currentPositionMM;
                 motors[motorGroup * 2 + 1].calib[1] = motors[motorGroup * 2 + 1].currentPositionMM;
-                break;
+                motorGroup += 1;
+                if (motorGroup >= 2) {
+                       motorGroup = 0;  // Reset or handle as per your system's requirement
+                  }
+                // Perform homing for all motors
+                  MotorsHoming(motors);
 
-            case 3:
-                // Switch motor group on third press
-                TMC2209_Stop(&motors[motorGroup * 2]);
-                TMC2209_Stop(&motors[motorGroup * 2 + 1]);
-                motorGroup = 1 - motorGroup;
-                Pressed = 0;  // Reset press counter after processing// Toggle motor group
-                break;
+               // Move all motors to their saved calibrated positions
+//                for(int i = 0; i < 4; i++) {
+//                TMC2209_MoveTo(axis,motorIndex,targetPositionMM);
+//              }
 
-            default:
-                break;
-        }
+           // Reset Pressed counter to prevent further calibration steps
+                Pressed = 0;
+                    break;
+
+                 default:
+                                // Handle unexpected Pressed value
+                   Pressed = 0;
+                   break;
+                        }
 
     }
 

@@ -71,6 +71,8 @@
 extern TIM_HandleTypeDef htim3;
 extern uint32_t last_tmc_read_attempt_ms;
 extern int32_t stepsTaken[MAX_MOTORS];
+extern uint8_t Pressed;
+
 //extern uint32_t StepsFront[4];
 //extern int32_t StepsBack[4] ;
 //extern volatile uint32_t stepsTaken;
@@ -118,6 +120,7 @@ void MotorsHoming(Motor *motor);
 void MotorControl_ButtonHandler(Motor *motors);
 void TMC2209_Start_C(Motor *motor);
 static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
+void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
 
 
 #endif // TMC2209_H
