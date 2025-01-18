@@ -43,20 +43,20 @@
 // UART_HandleTypeDef huart2; in my case it's already generated in main.c
 
 
+// Motors & axis
+extern Motor motors[MAX_MOTORS];
+extern Axis axes[MAX_MOTORS_PER_AXIS];
+
+
 void initializeMotors() {
     // Initialize each motor in the array
     for (int i = 0; i < MAX_MOTORS; i++) {
     	// Setting all for all drivers/motors
-    	if( i < 2){
-        	motors[i].driver.huart = &huart2; // UART handler for drivers (0, 1)
-    	}
-    	else{
-        	motors[i].driver.huart = &huart6; // UART handler for drivers (2, 3)
-    	}
+    	motors[i].driver.huart = &huart2; // UART handler
     	motors[i].driver.address = 0x00+i; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2
 
     	// Motor Parameters
-    	motors[i].driver.id = i;
+    	motors[i].driver.id = i + 1;
 
         motors[i].stepsTaken = 0;
         motors[i].nextTotalSteps = 0;
@@ -136,7 +136,7 @@ void initializeMotors() {
             // TIMER configurations
             motors[i].driver.htim = &htim10;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
-            motors[i].driver.mstep = 8;
+            motors[i].driver.mstep = 16;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
             motors[i].driver.step_port = GPIOB;

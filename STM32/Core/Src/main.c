@@ -165,7 +165,9 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -328,13 +330,13 @@ int main(void)
 //       c = axes[0].motors[0]->currentPositionMM;
 
 	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
-//	  uint32_t encode = ENC_GetCounter(&henc1);
+	  //uint32_t encode = ENC_GetCounter(&henc1);
 //          // Show the menu and get the user's choice
-//         uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
+         //uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
 //
 ////
 ////          // Handle the selected option using the encapsulated function
-//          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
+          //LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
 
 
 
@@ -395,7 +397,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
   {

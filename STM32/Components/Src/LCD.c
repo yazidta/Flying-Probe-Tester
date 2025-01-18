@@ -575,30 +575,89 @@ bool read_buttons(void)
 
 }
 
+
+FRESULT MountSDCard(FATFS* FatFs) {
+    return f_mount(FatFs, "", 1);
+}
+
+FRESULT OpenRootDir(DIR* dir) {
+    return f_opendir(dir, "/");
+}
+
+uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles) {
+    FILINFO fno;
+    uint8_t count = 0;
+    FRESULT fres;
+
+    while (count < maxFiles) {
+        fres = f_readdir(dir, &fno);
+        if (fres != FR_OK || fno.fname[0] == '\0') break;
+        if (!(fno.fattrib & AM_DIR)) {
+            snprintf(fileList[count], 20 + 1, "%-20s", fno.fname);
+            count++;
+        }
+    }
+
+    return count;
+}
+
+void AddBackOption(char fileList[][20 + 1], uint8_t index) {
+    snprintf(fileList[index], 20 + 1, "%-20s", "Back");
+}
+
+void DisplayMenu(LCD_I2C_HandleTypeDef* hlcd, char fileList[][20 + 1], uint8_t fileCount, uint8_t selectedIndex) {
+    // Clear the LCD
+    for (uint8_t i = 0; i < LCD_ROWS; i++) {
+        LCD_I2C_SetCursor(hlcd, i, 0);
+        LCD_I2C_printStr(hlcd, "                    "); // Clear line
+    }
+
+    // Determine the window of files to display
+    uint8_t startIdx = 0;
+    if (selectedIndex >= LCD_ROWS) {
+        startIdx = selectedIndex - (LCD_ROWS - 1);
+    }
+
+    for (uint8_t i = 0; i < LCD_ROWS; i++) {
+        uint8_t displayIdx = startIdx + i;
+        if (displayIdx >= fileCount) {
+            // Clear remaining lines if any
+            LCD_I2C_SetCursor(hlcd, i, 0);
+            LCD_I2C_printStr(hlcd, "                    ");
+            continue;
+        }
+
+        // Prepare the formatted line with cursor
+        char formattedLine[20 + 1] = {0};
+        if (displayIdx == selectedIndex) {
+            snprintf(formattedLine, sizeof(formattedLine), "> %-19s", fileList[displayIdx]);
+        } else {
+            snprintf(formattedLine, sizeof(formattedLine), "  %-19s", fileList[displayIdx]);
+        }
+
+        // Write to the LCD
+        LCD_I2C_SetCursor(hlcd, i, 0);
+        LCD_I2C_printStr(hlcd, formattedLine);
+    }
+}
+
 void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc) {
     FATFS FatFs;
     FRESULT fres;
     DIR dir;
-    FILINFO fno;
-    uint8_t LCD_ROWS = 4;  // LCD rows
-    uint8_t LCD_WIDTH = 20;
+    char fileList[MAX_FILES + 1][20 + 1]; // +1 for "Back"
+    uint8_t fileCount = 0;
 
-    // Mount SD Card
-    fres = f_mount(&FatFs, "", 1);
+    fres = MountSDCard(&FatFs);
     if (fres != FR_OK) {
-        LCD_I2C_SetCursor(hlcd, 0, 0);
-        LCD_I2C_printStr(hlcd, "                    "); // Clear row by printing spaces
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Failed to mount");
         HAL_Delay(2000);
         return;
     }
 
-    // Open root directory
-    fres = f_opendir(&dir, "/");
+    fres = OpenRootDir(&dir);
     if (fres != FR_OK) {
-        LCD_I2C_SetCursor(hlcd, 0, 0);
-        LCD_I2C_printStr(hlcd, "                    ");
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Open dir failed");
         f_mount(NULL, "", 0);
@@ -606,84 +665,58 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
         return;
     }
 
-    // Read files into buffer
-    while (fileCount < 10) {
-        fres = f_readdir(&dir, &fno);
-        if (fres != FR_OK || fno.fname[0] == '\0') break;
-        if (!(fno.fattrib & AM_DIR)) {
-            snprintf(fileList[fileCount], LCD_WIDTH + 1, "%-20s", fno.fname);
-            fileCount++;
-        }
-    }
-
+    fileCount = ReadFiles(&dir, fileList, MAX_FILES);
     f_closedir(&dir);
     f_mount(NULL, "", 0);
 
-    if (fileCount == 0) {
-        LCD_I2C_SetCursor(hlcd, 0, 0);
-        LCD_I2C_printStr(hlcd, "                    ");
+    // Add "Back" option
+    AddBackOption(fileList, fileCount);
+    fileCount++;
+
+    if (fileCount == 1) { // Only "Back" is available
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "No files found");
         HAL_Delay(2000);
         return;
     }
 
-    uint8_t selectedOption = 0;
-    uint8_t previousOption = 255;
+    uint8_t selectedIndex = 0;
+    uint8_t previousIndex = 255;
 
-    // Display file list and handle encoder input
     while (1) {
         uint32_t encoderStep = ENC_GetCounter(henc);
-        selectedOption = encoderStep % fileCount;
+        selectedIndex = encoderStep % fileCount;
 
-        if (selectedOption != previousOption) {
-            previousOption = selectedOption;
-
-            for (uint8_t i = 0; i < LCD_ROWS; i++) {
-                uint8_t displayIndex = (selectedOption + i) % fileCount;
-
-
-
-                // Prepare the formatted line
-                char formattedLine[20 + 1] = {0};
-                snprintf(formattedLine, LCD_WIDTH + 1, "%c%-19s", (i == 0 ? '>' :' '), fileList[displayIndex]);
-
-
-                if(i >= 2){
-                // Write to the LCD
-                LCD_I2C_SetCursor(hlcd, i, 0);
-                LCD_I2C_printStr(hlcd, formattedLine);
-
-            }else{
-            	// Write to the LCD
-                LCD_I2C_SetCursor(hlcd, i, 0);
-                LCD_I2C_printStr(hlcd, formattedLine);
-            }
-            }
-
+        if (selectedIndex != previousIndex) {
+            previousIndex = selectedIndex;
+            DisplayMenu(hlcd, fileList, fileCount, selectedIndex);
         }
 
         // Handle button press for selection
+        if (read_buttons() == 0) {
+            HAL_Delay(200); // Debounce
+            // Clear the LCD
+            for (uint8_t i = 0; i < LCD_ROWS; i++) {
+                LCD_I2C_SetCursor(hlcd, i, 0);
+                LCD_I2C_printStr(hlcd, "                    "); // Clear line
+            }
 
-
-            if (read_buttons() == 0) {
+            if (selectedIndex == fileCount - 1) {
+                // "Back" selected
+                return; // Exit the menu to go back to the previous menu
+            } else {
+                // "Loading..." selected
                 LCD_I2C_SetCursor(hlcd, 0, 0);
-                LCD_I2C_printStr(hlcd, "                    ");
-                LCD_I2C_SetCursor(hlcd, 0, 0);
-                for(int i =0;i<4 ; i++){
-                   LCD_I2C_SetCursor(hlcd, i, 0);
-                   LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
-                                  	}
                 LCD_I2C_printStr(hlcd, "Loading...");
                 HAL_Delay(2000);
-                // process_file(fileList[selectedOption]);
-                break;
+                // process_file(fileList[selectedIndex]);
+                // Add your file processing logic here
+                return;
             }
+        }
 
         HAL_Delay(100);
     }
-
-
 }
 
 
