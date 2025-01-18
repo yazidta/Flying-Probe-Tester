@@ -36,10 +36,7 @@
 
 
 uint32_t last_tmc_read_attempt_ms = 0;
-uint8_t rxData[TMC_REPLY_SIZE + 1]; // +1 for TX
-uint8_t rxBuffer[TMC_REPLY_SIZE];
-volatile uint8_t dataReady = 0; // Flag to indicate data reception
-volatile uint8_t rxBufferReady = 0;
+
 //static uint8_t motorGroup = 0; // 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
 int8_t motor1Cali[2];
 int8_t motor2Cali[2];
@@ -72,16 +69,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 		 }
       }
 
-    }
-}
-
-// UART callback for read from TMC2209
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
-    if (huart->Instance == USART2) {
-        for (uint8_t i = 0; i < TMC_REPLY_SIZE + 1 ; i++) {
-            rxBuffer[i] = rxData[i + 1];
-        }
-        rxBufferReady = 1;
     }
 }
 
