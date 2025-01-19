@@ -52,11 +52,11 @@ void initializeMotors() {
     // Initialize each motor in the array
     for (int i = 0; i < MAX_MOTORS; i++) {
     	// Setting all for all drivers/motors
-    	motors[i].driver.huart = &huart2; // UART handler
-    	motors[i].driver.address = 0x00+i; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2
+    	 // UART handler
+    	motors[i].driver.address = 0x00; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2
 
     	// Motor Parameters
-    	motors[i].driver.id = i + 1;
+    	motors[i].driver.id = i ;
 
         motors[i].stepsTaken = 0;
         motors[i].nextTotalSteps = 0;
@@ -73,6 +73,7 @@ void initializeMotors() {
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
         motors[i].driver.mstep = 16;
+        motors[i].driver.huart = &huart4;
         motors[i].stepsPerRevolution = 400;
         // GPIO PINS
         motors[i].driver.step_port = GPIOB;
@@ -94,6 +95,7 @@ void initializeMotors() {
             motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
+            motors[i].driver.huart = &huart2;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
             motors[i].driver.step_port = GPIOA;
@@ -115,6 +117,7 @@ void initializeMotors() {
             motors[i].driver.htim = &htim9;				 // TIMER HANDLER
         	motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
+            motors[i].driver.huart = &huart5;
         	motors[i].stepsPerRevolution = 400;
         	            // GPIO PINS
             motors[i].driver.step_port = GPIOE;
@@ -137,6 +140,7 @@ void initializeMotors() {
             motors[i].driver.htim = &htim10;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
+            motors[i].driver.huart = &huart6;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
             motors[i].driver.step_port = GPIOB;

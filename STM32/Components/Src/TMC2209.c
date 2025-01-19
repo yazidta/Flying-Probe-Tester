@@ -750,14 +750,14 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
 {
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	HAL_Delay(2000);
-        TMC2209_enable_PDNuart(&motors[i]);
+    	configureGCONF(&motors[i]);
     	HAL_Delay(1000);
     	uint16_t mstep = motors[i].driver.mstep;
         setMicrosteppingResolution(&motors[i], mstep);
-        HAL_Delay(1000);
-        checkMicrosteppingResolution(&motors[i]);
-        HAL_Delay(1000);
-        TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
+       // HAL_Delay(1000);
+       // checkMicrosteppingResolution(&motors[i]);
+       // HAL_Delay(1000);
+       // TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
     }
 }
 

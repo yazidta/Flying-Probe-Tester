@@ -36,5 +36,5 @@
 ../Components/Src/TMC2209.c:728:6:TMC2209_setStallGuardThreshold	1
 ../Components/Src/TMC2209.c:736:6:TMC2209_setSendDelay	2
 ../Components/Src/TMC2209.c:749:6:TMC2209_setMotorsConfiguration	2
-../Components/Src/TMC2209.c:766:6:MotorsHoming	18
-../Components/Src/TMC2209.c:841:6:MotorControl_ButtonHandler	21
+../Components/Src/TMC2209.c:768:6:MotorsHoming	18
+../Components/Src/TMC2209.c:843:6:MotorControl_ButtonHandler	21

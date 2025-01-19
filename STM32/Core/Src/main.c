@@ -66,10 +66,13 @@ TIM_HandleTypeDef htim9;
 TIM_HandleTypeDef htim10;
 TIM_HandleTypeDef htim14;
 
+UART_HandleTypeDef huart4;
+UART_HandleTypeDef huart5;
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
-DMA_HandleTypeDef hdma_usart2_rx;
+DMA_HandleTypeDef hdma_uart4_rx;
+DMA_HandleTypeDef hdma_uart5_rx;
 DMA_HandleTypeDef hdma_usart6_rx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -128,6 +131,8 @@ static void MX_TIM9_Init(void);
 static void MX_TIM10_Init(void);
 static void MX_I2C1_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_UART4_Init(void);
+static void MX_UART5_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -165,9 +170,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-
-	HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -198,6 +201,8 @@ int main(void)
   MX_TIM10_Init();
   MX_I2C1_Init();
   MX_USART6_UART_Init();
+  MX_UART4_Init();
+  MX_UART5_Init();
   /* USER CODE BEGIN 2 */
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -208,15 +213,17 @@ int main(void)
    //HAL_TIM_Encoder_Start_IT(&htim4,TIM_CHANNEL_ALL);
 
 
-        //TMC2209_Step(&motors[1], 16000);
 
-   TMC2209_setMotorsConfiguration(motors,8,1);
-   //checkMicrosteppingResolution(&motors[2]);
+  TMC2209_setMotorsConfiguration(motors,8,1);
+
+   //TMC2209_enable_PDNuart(&motors[2]);
+   //TMC2209_read_ifcnt(&motors[2]);
+  // configureGCONF(&motors[2]);
    TMC2209_SetSpeed(&motors[0], 26000);
    TMC2209_SetSpeed(&motors[1], 16000);
    TMC2209_SetSpeed(&motors[2], 26000);
-   TMC2209_SetSpeed(&motors[3], 16000);
-
+   TMC2209_SetSpeed(&motors[3], 12000);
+  // TMC2209_Step(&motors[2], 16000);
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);
@@ -248,7 +255,6 @@ int main(void)
      TMC2209_SetSpeed(&motors[1], 12000);
 //   TMC2209_SetDirection(&motors[2], dir);
    TMC2209_SetSpeed(&motors[2], 25000);
-   TMC2209_SetSpeed(&motors[3], 12000);
 //   //TMC2209_Step(&motors[0], 6400);
 //   TMC2209_Step(&motors[1], 6400);
    //TMC2209_Step(&motors[2], 6400);
@@ -882,6 +888,76 @@ static void MX_TIM14_Init(void)
 }
 
 /**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 115200;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_TX_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
+
+}
+
+/**
+  * @brief UART5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART5_Init(void)
+{
+
+  /* USER CODE BEGIN UART5_Init 0 */
+
+  /* USER CODE END UART5_Init 0 */
+
+  /* USER CODE BEGIN UART5_Init 1 */
+
+  /* USER CODE END UART5_Init 1 */
+  huart5.Instance = UART5;
+  huart5.Init.BaudRate = 115200;
+  huart5.Init.WordLength = UART_WORDLENGTH_8B;
+  huart5.Init.StopBits = UART_STOPBITS_1;
+  huart5.Init.Parity = UART_PARITY_NONE;
+  huart5.Init.Mode = UART_MODE_TX_RX;
+  huart5.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart5.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart5.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart5.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart5) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART5_Init 2 */
+
+  /* USER CODE END UART5_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -1028,13 +1104,16 @@ static void MX_DMA_Init(void)
 {
 
   /* DMA controller clock enable */
-  __HAL_RCC_DMA1_CLK_ENABLE();
   __HAL_RCC_DMA2_CLK_ENABLE();
+  __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
-  /* DMA1_Stream5_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  /* DMA1_Stream2_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
   /* DMA2_Stream1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);

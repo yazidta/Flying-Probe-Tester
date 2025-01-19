@@ -18,10 +18,11 @@ volatile bool uart3_commandReceived = false;
 // UART Receive Complete Callback
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart) {
 	// UART callback for read from TMC2209
-    if (huart->Instance == USART2 || huart->Instance == USART6) {
+    if (huart->Instance == USART2 || huart->Instance == USART6 || huart->Instance == UART4 || huart->Instance == UART5) {
         // Prevent buffer overflow by iterating only up to TMC_REPLY_SIZE
         memcpy(rxBuffer, rxData + 1, TMC_REPLY_SIZE+1);
         rxBufferReady = 1;
+
     }
 
 }
