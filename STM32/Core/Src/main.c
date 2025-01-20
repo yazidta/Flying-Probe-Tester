@@ -521,9 +521,9 @@ static void MX_TIM1_Init(void)
 
   /* USER CODE END TIM1_Init 1 */
   htim1.Instance = TIM1;
-  htim1.Init.Prescaler = 0;
+  htim1.Init.Prescaler = 215;
   htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim1.Init.Period = 65535;
+  htim1.Init.Period = 1000;
   htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim1.Init.RepetitionCounter = 0;
   htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
@@ -548,7 +548,7 @@ static void MX_TIM1_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 500;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   sConfigOC.OCIdleState = TIM_OCIDLESTATE_RESET;
@@ -624,7 +624,7 @@ static void MX_TIM2_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 500;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim2, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
@@ -683,7 +683,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 0;
+  sConfigOC.Pulse = 500;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_3) != HAL_OK)
@@ -1195,9 +1195,6 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(BtnCtr_GPIO_Port, BtnCtr_Pin, GPIO_PIN_RESET);
-
   /*Configure GPIO pins : DIR3_Pin ENN3_Pin ENN4_Pin ENN2_Pin
                            DIR2_Pin DIR1_Pin DIR4_Pin */
   GPIO_InitStruct.Pin = DIR3_Pin|ENN3_Pin|ENN4_Pin|ENN2_Pin
@@ -1213,23 +1210,25 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USER_Btn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BtnDown_Pin BtnUp_Pin EndStop1_Pin */
-  GPIO_InitStruct.Pin = BtnDown_Pin|BtnUp_Pin|EndStop1_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : EndStop4_Pin BtnDownF15_Pin */
-  GPIO_InitStruct.Pin = EndStop4_Pin|BtnDownF15_Pin;
+  /*Configure GPIO pins : BtnDown_Pin BtnUp_Pin EndStop1_Pin EndStop4_Pin
+                           BtnDownF15_Pin */
+  GPIO_InitStruct.Pin = BtnDown_Pin|BtnUp_Pin|EndStop1_Pin|EndStop4_Pin
+                          |BtnDownF15_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EndStop2_Pin EndStop3_Pin Probe_Pin */
-  GPIO_InitStruct.Pin = EndStop2_Pin|EndStop3_Pin|Probe_Pin;
+  /*Configure GPIO pins : EndStop2_Pin EndStop3_Pin */
+  GPIO_InitStruct.Pin = EndStop2_Pin|EndStop3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : Probe_Pin */
+  GPIO_InitStruct.Pin = Probe_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOE, &GPIO_InitStruct);
+  HAL_GPIO_Init(Probe_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ENN1_Pin SPI_CS_Pin */
   GPIO_InitStruct.Pin = ENN1_Pin|SPI_CS_Pin;
@@ -1238,11 +1237,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : EncoderBtn_Pin BtnRight_Pin */
-  GPIO_InitStruct.Pin = EncoderBtn_Pin|BtnRight_Pin;
+  /*Configure GPIO pin : EncoderBtn_Pin */
+  GPIO_InitStruct.Pin = EncoderBtn_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
+  HAL_GPIO_Init(EncoderBtn_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : USB_PowerSwitchOn_Pin */
   GPIO_InitStruct.Pin = USB_PowerSwitchOn_Pin;
@@ -1257,12 +1256,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : BtnCtr_Pin */
-  GPIO_InitStruct.Pin = BtnCtr_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(BtnCtr_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pins : BtnCtr_Pin BtnRight_Pin */
+  GPIO_InitStruct.Pin = BtnCtr_Pin|BtnRight_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOD, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
