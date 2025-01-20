@@ -214,16 +214,17 @@ int main(void)
 
 
 
-  TMC2209_setMotorsConfiguration(motors,8,1);
+  //TMC2209_setMotorsConfiguration(motors,8,1);
 
-   //TMC2209_enable_PDNuart(&motors[2]);
-   //TMC2209_read_ifcnt(&motors[2]);
+   TMC2209_enable_PDNuart(&motors[3]);
+   TMC2209_read_ifcnt(&motors[3]);
+   TMC2209_SetSpreadCycle(&motors[3], 1);
   // configureGCONF(&motors[2]);
    TMC2209_SetSpeed(&motors[0], 26000);
    TMC2209_SetSpeed(&motors[1], 16000);
    TMC2209_SetSpeed(&motors[2], 26000);
    TMC2209_SetSpeed(&motors[3], 12000);
-  // TMC2209_Step(&motors[2], 16000);
+   //TMC2209_Step(&motors[0], 10000);
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);

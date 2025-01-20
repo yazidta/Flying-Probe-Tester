@@ -73,7 +73,7 @@ void initializeMotors() {
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
         motors[i].driver.mstep = 16;
-        motors[i].driver.huart = &huart4;
+        motors[i].driver.huart = &huart2;
         motors[i].stepsPerRevolution = 400;
         // GPIO PINS
         motors[i].driver.step_port = GPIOB;

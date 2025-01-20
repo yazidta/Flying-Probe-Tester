@@ -260,6 +260,22 @@ void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArr
     }
 }
 
+void clear_UART_buffers(UART_HandleTypeDef *huart) {
+    debug_print("Clearing UART buffers...\r\n");
+
+    // Clear UART flags
+    __HAL_UART_CLEAR_PEFLAG(huart);
+    __HAL_UART_CLEAR_FEFLAG(huart);
+    __HAL_UART_CLEAR_NEFLAG(huart);
+    __HAL_UART_CLEAR_OREFLAG(huart);
+
+    // Flush receive buffer
+    uint8_t dummy;
+    while(__HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE)) {
+        dummy = (uint8_t)(huart->Instance->RDR & 0x00FF);
+    }
+    (void)dummy;
+}
 
 
 void debug_print(const char* msg) {
@@ -267,7 +283,7 @@ void debug_print(const char* msg) {
 }
 
  void debug_print_hex(uint8_t* data, uint8_t length) {
-    char buffer[100];
+    char buffer[256];
     char* ptr = buffer;
 
     ptr += sprintf(ptr, "[");
@@ -293,24 +309,6 @@ uint8_t calculate_CRC(uint8_t *datagram, uint8_t length) {
         }
     }
     return crc;
-}
-
-
-void clear_UART_buffers(UART_HandleTypeDef *huart) {
-    debug_print("Clearing UART buffers...\r\n");
-
-    // Clear UART flags
-    __HAL_UART_CLEAR_PEFLAG(huart);
-    __HAL_UART_CLEAR_FEFLAG(huart);
-    __HAL_UART_CLEAR_NEFLAG(huart);
-    __HAL_UART_CLEAR_OREFLAG(huart);
-
-    // Flush receive buffer
-    uint8_t dummy;
-    while(__HAL_UART_GET_FLAG(huart, UART_FLAG_RXNE)) {
-        dummy = (uint8_t)(huart->Instance->RDR & 0x00FF);
-    }
-    (void)dummy;
 }
 
 
@@ -422,7 +420,7 @@ uint8_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable) {
 	uint32_t check_gconf;
 
 	uint8_t driverID = motor->driver.id;
-	char debug_msg[150];
+	char debug_msg[256];
 	snprintf(debug_msg, sizeof(debug_msg), "----- Setting SpreadCycle Mode for Driver: %u -----\r\n", driverID);
 	debug_print(debug_msg);
     memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
@@ -477,7 +475,7 @@ uint8_t checkSpreadCycle(Motor *tmc2209) {
 void TMC2209_enable_PDNuart(Motor *tmc2209){
 	HAL_Delay(1);
 	 uint8_t driverID = tmc2209->driver.id;
-	 char debug_msg[150];
+	 char debug_msg[256];
 	 snprintf(debug_msg, sizeof(debug_msg), "----- Enabling driver via GCONF registe Driver: %u -----\r\n", driverID);
 	 debug_print(debug_msg);
 	 TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
@@ -488,8 +486,8 @@ uint8_t TMC2209_read_ifcnt(Motor *tmc2209) {
      int32_t ifcnt_value = TMC2209_readInit(tmc2209, TMC2209_REG_IFCNT); // IFCNT register address is 0x02
 
      if (ifcnt_value >= 0) { // This value gets incremented with every sucessful UART write access 0 to 255 then wraps around.
-         char debug_msg[50];
-         sprintf(debug_msg, "IFCNT Value: %d\r\n",  (int)ifcnt_value);
+         char debug_msg[256];
+         snprintf(debug_msg, "IFCNT Value: %d\r\n",  (int)ifcnt_value);
          debug_print(debug_msg);
          return ifcnt_value;
      } else {
@@ -504,7 +502,7 @@ uint8_t TMC2209_read_ifcnt(Motor *tmc2209) {
 void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
 	HAL_Delay(1);
     uint8_t driverID = tmc2209->driver.id;
-    char debug_msg[150];
+    char debug_msg[256];
 
     snprintf(debug_msg, sizeof(debug_msg), "----- Setting Microstepping For Driver ID: %u -----\r\n", driverID);
     debug_print(debug_msg);
@@ -567,7 +565,7 @@ void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, updatedCHOPCONF);
 
     // Debug
-    sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
+    snprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
     debug_print(debug_msg);
 
 }
@@ -596,9 +594,9 @@ uint16_t checkMicrosteppingResolution(Motor *tmc2209) {
     }
 
     // Debug
-    char debug_msg[50];
+    char debug_msg[256];
     uint8_t driverID = tmc2209->driver.id;
-    //sprintf(debug_msg, "Current microstepping resolution for Driver ID: %u, Resolution: %u\n", driverID, resolution);
+    //snprintf(debug_msg, "Current microstepping resolution for Driver ID: %u, Resolution: %u\n", driverID, resolution);
     //debug_print(debug_msg);
     return resolution;
 }
@@ -629,8 +627,8 @@ uint8_t TMC2209_readIRUN(Motor *tmc2209) {
 
     // Extract IRUN (Bits 8-12)
     uint8_t irun_value = (registerValue >> 8) & 0x1F; // Mask and shift bits
-    char debug_msg[50];
-    sprintf(debug_msg, "Current IRUN value: %u\n", irun_value);
+    char debug_msg[256];
+    snprintf(debug_msg, "Current IRUN value: %u\n", irun_value);
     debug_print(debug_msg);
 
     return irun_value;
@@ -672,7 +670,7 @@ void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddel
     // Debugging IFCNT to confirm communication success
     uint8_t ifcnt_value = TMC2209_read_ifcnt(tmc2209);
     char debug_msg[50];
-    sprintf(debug_msg, "IFCNT Value: %d\r\n", ifcnt_value);
+    snprintf(debug_msg, "IFCNT Value: %d\r\n", ifcnt_value);
     debug_print(debug_msg);
 }
 
@@ -718,8 +716,8 @@ uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
 	HAL_Delay(1);
     uint32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
    // sg_result = (sg_result >> 10) & 0x1FF;
-    char debug_msg[50];
-    sprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);
+    char debug_msg[256];
+    snprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);
     debug_print(debug_msg);
 
     return sg_result; // SG_RESULT is bits 10–20
