@@ -279,7 +279,7 @@ void clear_UART_buffers(UART_HandleTypeDef *huart) {
 
 
 void debug_print(const char* msg) {
-        HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
 }
 
  void debug_print_hex(uint8_t* data, uint8_t length) {
