@@ -16,7 +16,7 @@
  *             conditions:
  *
  *             The above copyright notice and this permission notice shall
- *             be included in all copies or substantial portions of the
+ *             be included in all copies or substantial Portions of the
  *             Software.
  *
  *             THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY
@@ -78,9 +78,9 @@ void initializeMotors() {
         // GPIO PINS
         motors[i].driver.step_port = STEP1_GPIO_Port;
         motors[i].driver.step_pin = STEP1_Pin;
-        motors[i].driver.dir_port = DIR1_GPIO_PORT;
+        motors[i].driver.dir_port = DIR1_GPIO_Port;
         motors[i].driver.dir_pin = DIR1_Pin;
-        motors[i].driver.enn_port = ENN1_GPIO_PORT;
+        motors[i].driver.enn_port = ENN1_GPIO_Port;
         motors[i].driver.enn_pin = ENN1_Pin;
 
         }
@@ -92,14 +92,14 @@ void initializeMotors() {
             motors[i].driver.htim = &htim1;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_4; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
-            motors[i].driver.huart = &huart2;
+            motors[i].driver.huart = &huart4;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
             motors[i].driver.step_port = STEP2_GPIO_Port;
             motors[i].driver.step_pin = STEP2_Pin;
-            motors[i].driver.dir_port = DIR2_GPIO_PORT;
+            motors[i].driver.dir_port = DIR2_GPIO_Port;
             motors[i].driver.dir_pin = DIR2_Pin;
-            motors[i].driver.enn_port = ENN2_GPIO_PORT;
+            motors[i].driver.enn_port = ENN2_GPIO_Port;
             motors[i].driver.enn_pin = ENN2_Pin;
 
 
@@ -115,9 +115,9 @@ void initializeMotors() {
         	            // GPIO PINS
             motors[i].driver.step_port = STEP3_GPIO_Port;
             motors[i].driver.step_pin = STEP3_Pin;
-            motors[i].driver.dir_port = DIR3_GPIO_PORT;
+            motors[i].driver.dir_port = DIR3_GPIO_Port;
             motors[i].driver.dir_pin = DIR3_Pin;
-            motors[i].driver.enn_port = ENN3_GPIO_PORT;
+            motors[i].driver.enn_port = ENN3_GPIO_Port;
             motors[i].driver.enn_pin = ENN3_Pin;
 
 
@@ -134,7 +134,7 @@ void initializeMotors() {
             // GPIO PINS
             motors[i].driver.step_port = STEP4_GPIO_Port;
             motors[i].driver.step_pin = STEP4_Pin;
-            motors[i].driver.dir_port = DIR4_GPIO_PORT;
+            motors[i].driver.dir_port = DIR4_GPIO_Port;
             motors[i].driver.dir_pin = DIR4_Pin;
             motors[i].driver.enn_port = ENN4_GPIO_Port;
             motors[i].driver.enn_pin = ENN4_Pin;

@@ -73,6 +73,7 @@ UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_uart4_rx;
 DMA_HandleTypeDef hdma_uart5_rx;
+DMA_HandleTypeDef hdma_usart2_rx;
 DMA_HandleTypeDef hdma_usart6_rx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -81,8 +82,8 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 volatile uint8_t es = 0;
 volatile uint8_t x = 0;
-uint8_t xx = 0;
-uint8_t sensorX1;
+volatile uint8_t xx = 0;
+volatile uint8_t sensorX1 =0;
  uint8_t c = 0;
  float move[] = {100, 40 , 250};
 
@@ -96,7 +97,7 @@ volatile uint32_t lastDebounceTime = 0;  // Tracks the last debounce time
 const uint32_t debounceDelay = 50;
 I2C_HandleTypeDef hi2c1;
 SERVO_Handle_TypeDef hservo1 = { .PwmOut = PWM_INIT_HANDLE(&htim14, TIM_CHANNEL_1) };
-SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim5, TIM_CHANNEL_1) };
+SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim9, TIM_CHANNEL_1) };
 
 
 TIM_HandleTypeDef htim4;
@@ -216,9 +217,9 @@ int main(void)
 
   //TMC2209_setMotorsConfiguration(motors,8,1);
 
-   TMC2209_enable_PDNuart(&motors[3]);
-   TMC2209_read_ifcnt(&motors[3]);
-   TMC2209_SetSpreadCycle(&motors[3], 1);
+   TMC2209_enable_PDNuart(&motors[0]);
+   TMC2209_read_ifcnt(&motors[0]);
+   TMC2209_SetSpreadCycle(&motors[0], 1);
   // configureGCONF(&motors[2]);
    TMC2209_SetSpeed(&motors[0], 26000);
    TMC2209_SetSpeed(&motors[1], 16000);
@@ -311,17 +312,16 @@ int main(void)
       //xx= CheckConnection(&hservo2,&hservo1);
 
 
-      sensorX1 = HAL_GPIO_ReadPin(BtnLeft_GPIO_Port,BtnLeft_Pin);
 
-      if(es && x &&sensorX1 && xx){
-      xx =+1;
-      }
-      else{
-    	  xx = 0;
-      }
-      while(xx >= 1){
-      MotorControl_ButtonHandler(&motors);
-      }
+//      if(es && x &&sensorX1 && xx){
+//      xx =+1;
+//      }
+//      else{
+//    	  xx = 0;
+//      }
+//      while(xx >= 1){
+//      MotorControl_ButtonHandler(&motors);
+//      }
 ////           //TMC2209_SetDirection(&motors[0], 1);
 //      for(int i =0; i < 3;i++){
 //	         //TMC2209_Step(&motors[0], 6400);
@@ -1158,6 +1158,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream2_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream2_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream2_IRQn);
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 0, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA2_Stream1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
@@ -1182,15 +1185,15 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOG_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOE, DIR3_Pin|ENN3_Pin|ENN4_Pin|ENN2_Pin
                           |DIR2_Pin|DIR1_Pin|DIR4_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, ENN1_Pin|SPI_CS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, ENN1_Pin|SPI_cs_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(USB_PowerSwitchOn_GPIO_Port, USB_PowerSwitchOn_Pin, GPIO_PIN_RESET);
@@ -1218,6 +1221,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : BtnLeft_Pin USB_OverCurrent_Pin */
+  GPIO_InitStruct.Pin = BtnLeft_Pin|USB_OverCurrent_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+
   /*Configure GPIO pins : EndStop2_Pin EndStop3_Pin */
   GPIO_InitStruct.Pin = EndStop2_Pin|EndStop3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -1230,8 +1239,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(Probe_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : ENN1_Pin SPI_CS_Pin */
-  GPIO_InitStruct.Pin = ENN1_Pin|SPI_CS_Pin;
+  /*Configure GPIO pins : ENN1_Pin SPI_cs_Pin */
+  GPIO_InitStruct.Pin = ENN1_Pin|SPI_cs_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -1249,12 +1258,6 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : USB_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BtnCtr_Pin BtnRight_Pin */
   GPIO_InitStruct.Pin = BtnCtr_Pin|BtnRight_Pin;

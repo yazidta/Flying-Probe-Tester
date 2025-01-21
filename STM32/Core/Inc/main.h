@@ -86,6 +86,8 @@ void Error_Handler(void);
 #define EndStop4_GPIO_Port GPIOF
 #define BtnDownF15_Pin GPIO_PIN_15
 #define BtnDownF15_GPIO_Port GPIOF
+#define BtnLeft_Pin GPIO_PIN_0
+#define BtnLeft_GPIO_Port GPIOG
 #define ENN3_Pin GPIO_PIN_7
 #define ENN3_GPIO_Port GPIOE
 #define ENN4_Pin GPIO_PIN_8
@@ -108,8 +110,8 @@ void Error_Handler(void);
 #define STEP1_GPIO_Port GPIOB
 #define ENN1_Pin GPIO_PIN_11
 #define ENN1_GPIO_Port GPIOB
-#define SPI_CS_Pin GPIO_PIN_12
-#define SPI_CS_GPIO_Port GPIOB
+#define SPI_cs_Pin GPIO_PIN_12
+#define SPI_cs_GPIO_Port GPIOB
 #define STLK_RX_Pin GPIO_PIN_8
 #define STLK_RX_GPIO_Port GPIOD
 #define STLK_TX_Pin GPIO_PIN_9
