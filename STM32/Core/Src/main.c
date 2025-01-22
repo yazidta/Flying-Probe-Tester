@@ -215,17 +215,39 @@ int main(void)
 
 
 
-  //TMC2209_setMotorsConfiguration(motors,8,1);
-
-   TMC2209_enable_PDNuart(&motors[0]);
-   TMC2209_read_ifcnt(&motors[0]);
-   TMC2209_SetSpreadCycle(&motors[0], 1);
+// TMC2209_setMotorsConfiguration(motors,8,1);
+	configureGCONF(&motors[3]);
+  setMicrosteppingResolution(&motors[3], 16);
+  checkMicrosteppingResolution(&motors[3]);
+	configureGCONF(&motors[2]);
+setMicrosteppingResolution(&motors[2], 16);
+checkMicrosteppingResolution(&motors[2]);
+configureGCONF(&motors[0]);
+setMicrosteppingResolution(&motors[0], 16);
+checkMicrosteppingResolution(&motors[0]);
+//   TMC2209_enable_PDNuart(&motors[0]);
+//   TMC2209_read_ifcnt(&motors[0]);
+//   TMC2209_SetSpreadCycle(&motors[0], 1);
   // configureGCONF(&motors[2]);
-   TMC2209_SetSpeed(&motors[0], 26000);
-   TMC2209_SetSpeed(&motors[1], 16000);
-   TMC2209_SetSpeed(&motors[2], 26000);
-   TMC2209_SetSpeed(&motors[3], 12000);
-   //TMC2209_Step(&motors[0], 10000);
+   TMC2209_SetSpeed(&motors[0], 15000);
+   TMC2209_SetSpeed(&motors[1], 15000);
+   TMC2209_SetSpeed(&motors[2], 15000);
+   TMC2209_SetSpeed(&motors[3], 15000);
+   TMC2209_SetDirection(&motors[2], 0);
+   TMC2209_Step(&motors[0], 10000);
+   //TMC2209_Step(&motors[1], 6000);
+   TMC2209_Step(&motors[2], 6000);
+   TMC2209_Step(&motors[3], 6000);
+//	TMC2209_EnableDriver(&motors[0], 1);
+//	TMC2209_EnableDriver(&motors[1], 1);
+//	TMC2209_EnableDriver(&motors[2], 1);
+//	TMC2209_EnableDriver(&motors[3], 1);
+
+
+
+
+  // TMC2209_Step(&motors[2], 10000);
+  // TMC2209_Step(&motors[3], 1000);
 
    LCD_I2C_Init(&hlcd3);
    LCD_I2C_Clear(&hlcd3);

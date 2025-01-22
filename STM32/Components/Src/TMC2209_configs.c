@@ -126,7 +126,7 @@ void initializeMotors() {
         if(i == 3){
         	// Configure motor 4 Y-axis
             // TIMER configurations
-            motors[i].driver.htim = &htim2;				 // TIMER HANDLER
+            motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
             motors[i].driver.huart = &huart6;
