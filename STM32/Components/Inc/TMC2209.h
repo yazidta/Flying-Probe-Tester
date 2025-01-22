@@ -117,8 +117,6 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
-void MotorsHoming(Motor *motor);
-void MotorControl_ButtonHandler(Motor *motors);
 void TMC2209_Start_C(Motor *motor);
 static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
 

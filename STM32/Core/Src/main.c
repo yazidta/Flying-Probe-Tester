@@ -31,6 +31,7 @@
 #include "TMC2209_configs.h"
 #include "servo.h"
 #include "fatfs.h"
+#include "calibration.h"
 
 /* USER CODE END Includes */
 
@@ -261,46 +262,13 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-//   /*c = axes[0].motors[0]->currentPositionMM;
-   //TMC2209_MoveTo(&axes[0], 0, 100); // Axis X, Motor X1*/
-   //TMC2209_MoveTo(&axes[1], 0, -100); // Axis X, Motor X1
- // Axis X, Motor X1
-   //TMC2209_Step(&motors[1], 3200);
-//   TMC2209_SetDirection(&motors[0], dir);
-     TMC2209_SetSpeed(&motors[0], 25000);
-//   TMC2209_SetDirection(&motors[1], dir);
-     TMC2209_SetSpeed(&motors[1], 12000);
-//   TMC2209_SetDirection(&motors[2], dir);
+   TMC2209_SetSpeed(&motors[0], 25000);
+   TMC2209_SetSpeed(&motors[1], 12000);
    TMC2209_SetSpeed(&motors[2], 25000);
-//   //TMC2209_Step(&motors[0], 6400);
-//   TMC2209_Step(&motors[1], 6400);
-   //TMC2209_Step(&motors[2], 6400);
-   //TMC2209_Step(&motors[3], 6400);
-   //TMC2209_EnableDriver(&motors[0], 1);
-   //TMC2209_EnableDriver(&motors[1], 1);
-   //TMC2209_EnableDriver(&motors[2], 1);
-   //TMC2209_EnableDriver(&motors[3], 1);
+
    CheckConnection(&hservo2,&hservo1);
 
-//   SERVO_WritePosition(&hservo1, 70);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo1, 50);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo1, 90);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo2, 72);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo2, 52);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo2, 92);
-//   HAL_Delay(300);
 
-//   SERVO_WritePosition(&hservo2, 50);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo2, 60);
-//   HAL_Delay(300);
-//   SERVO_WritePosition(&hservo2, 40);
-//   HAL_Delay(300);
    while (1){
 
       if (Flag) // Adjust based on button state
