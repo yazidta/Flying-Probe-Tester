@@ -95,7 +95,16 @@ volatile uint8_t ES1 = 0;
 volatile uint8_t ES2 = 0;
 volatile uint8_t ES3 = 0;
 volatile uint8_t ES4 =0;
-uint8_t c = 0;
+
+volatile uint8_t Btn1 = 0;
+volatile uint8_t Btn2 = 0;
+volatile uint8_t Btn3 = 0;
+volatile uint8_t Btn4 =0;
+volatile uint8_t Btn5 =0;
+
+// Homing Flags
+
+volatile uint8_t homingFlag = 0;
 
 
 
@@ -134,15 +143,10 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
     if (GPIO_Pin == USER_Btn_Pin) // Check if the interrupt is for the correct button
     {
-        // Disable further interrupts for the button
 
-        // Reset the motor steps and trigger motion
-    	Flag = 1;
+    flagUserBtn = 1;
+    }
 
-
-        // Re-enable the interrupt after the motion is complete (done in a later step)
-
-}
 }
 /* USER CODE END 0 */
 
@@ -214,31 +218,35 @@ int main(void)
   /* USER CODE BEGIN WHILE */
    while (1){
 
-      if (flagUserBtn) // Adjust based on button state
-      {
+	   /// DEBUG ///
+	      ES1 =IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
+	      ES2 =IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
+	      ES3= IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
+	      ES4 = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
 
-    	MotorsHoming(&motors);
+	      Btn1 = IsSensorTriggered(BtnLeft_GPIO_Port, BtnLeft_Pin);
+	      Btn2 = IsSensorTriggered(BtnRight_GPIO_Port, BtnRight_Pin);
+	      Btn3 = IsSensorTriggered(BtnDown_GPIO_Port, BtnDown_Pin);
+	      Btn4 = IsSensorTriggered(BtnUp_GPIO_Port, BtnUp_Pin);
+	      Btn5 = IsSensorTriggered(BtnCtr_GPIO_Port, BtnCtr_Pin);
+	   /// DEBUG ///
+
+      if (flagUserBtn)	{
+    	homingFlag = MotorsHoming(&motors);
+
     	flagUserBtn = 0;
-
       }
-     es = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
-      x = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
-      sensorX1=IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
-      xx =IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
-
-      if(es && x &&sensorX1 && xx){
-    	  c++;
-      while(c){
-      MotorControl_ButtonHandler(&motors);
-      	  }
+  	if (homingFlag){
+    	  MotorControl_ButtonHandler(&motors);
       }
+
+
 
 //	  uint32_t encode = ENC_GetCounter(&henc1);
 //		uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
 
 // 		Handle the selected option using the encapsulated function
           //LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
-
       }
 
     /* USER CODE END WHILE */
@@ -1113,11 +1121,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : BtnLeft_Pin USB_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = BtnLeft_Pin|USB_OverCurrent_Pin;
+  /*Configure GPIO pin : BtnLeft_Pin */
+  GPIO_InitStruct.Pin = BtnLeft_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(BtnLeft_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EndStop2_Pin EndStop3_Pin */
   GPIO_InitStruct.Pin = EndStop2_Pin|EndStop3_Pin;
@@ -1150,6 +1158,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : USB_OverCurrent_Pin */
+  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BtnCtr_Pin BtnRight_Pin */
   GPIO_InitStruct.Pin = BtnCtr_Pin|BtnRight_Pin;

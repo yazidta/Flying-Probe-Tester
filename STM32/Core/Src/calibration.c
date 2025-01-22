@@ -7,7 +7,7 @@ int32_t StepsBack[4]={0,0};
 uint32_t LastSteps[3] = {0,0,0,0};
 
 
-void MotorsHoming(Motor *motor){
+bool MotorsHoming(Motor *motor){
 	for(int i = 0; i<4; i++){
 		if(i == 0){
 			TMC2209_SetDirection(&motor[0],1);
@@ -56,6 +56,7 @@ void MotorsHoming(Motor *motor){
 				    motor[i].StepsBack = 0;
 
 				}
+
 			}
 			TMC2209_Stop(&motor[2]);
 	}
@@ -71,16 +72,14 @@ void MotorsHoming(Motor *motor){
 					motor[i].stepsTaken = 0;
 				    motor[i].StepsBack = 0;
 				}
+
 			}
 			TMC2209_Stop(&motor[3]);
 		}
 
-
-
-
-
-
 	}
+
+	return true;
 }
 
 

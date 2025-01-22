@@ -43,8 +43,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h \
- C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
- C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h \
+ ../Core/Inc/calibration.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
@@ -52,8 +51,10 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h \
  C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
- C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
- ../Core/Inc/calibration.h ../Core/Inc/main.h
+ ../Core/Inc/main.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -102,8 +103,7 @@ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/In
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h:
-C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
-C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h:
+../Core/Inc/calibration.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
@@ -111,6 +111,7 @@ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/In
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h:
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
-C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
-../Core/Inc/calibration.h:
 ../Core/Inc/main.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h:

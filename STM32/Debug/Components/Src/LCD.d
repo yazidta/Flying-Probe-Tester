@@ -42,7 +42,16 @@ Components/Src/LCD.o: ../Components/Src/LCD.c \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
  ../Middlewares/Third_Party/FatFs/src/diskio.h \
- ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h
+ ../Middlewares/Third_Party/FatFs/src/ff.h ../FATFS/Target/user_diskio.h \
+ ../Core/Inc/calibration.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/extras.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h \
+ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
+ ../Core/Inc/main.h
 C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
 ../Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -90,3 +99,12 @@ C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/In
 ../Middlewares/Third_Party/FatFs/src/diskio.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../FATFS/Target/user_diskio.h:
+../Core/Inc/calibration.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h:
+C:/Users/ahmed/OneDrive/Desktop/Projects/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
+../Core/Inc/main.h:

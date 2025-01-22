@@ -32,6 +32,7 @@
 //Make sure you set #define SD_CS_GPIO_Port as some GPIO port in main.h
 //Make sure you set #define SD_CS_Pin as some GPIO pin in main.h
 extern SPI_HandleTypeDef SD_SPI_HANDLE;
+flag = 0;
 
 /* Function prototypes */
 
