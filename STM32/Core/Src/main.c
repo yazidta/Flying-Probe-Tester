@@ -215,16 +215,9 @@ int main(void)
 
 
 
-// TMC2209_setMotorsConfiguration(motors,8,1);
-	configureGCONF(&motors[3]);
-  setMicrosteppingResolution(&motors[3], 16);
-  checkMicrosteppingResolution(&motors[3]);
-	configureGCONF(&motors[2]);
-setMicrosteppingResolution(&motors[2], 16);
-checkMicrosteppingResolution(&motors[2]);
-configureGCONF(&motors[0]);
-setMicrosteppingResolution(&motors[0], 16);
-checkMicrosteppingResolution(&motors[0]);
+ TMC2209_setMotorsConfiguration(motors,8,1);
+
+
 //   TMC2209_enable_PDNuart(&motors[0]);
 //   TMC2209_read_ifcnt(&motors[0]);
 //   TMC2209_SetSpreadCycle(&motors[0], 1);
@@ -235,9 +228,9 @@ checkMicrosteppingResolution(&motors[0]);
    TMC2209_SetSpeed(&motors[3], 15000);
    TMC2209_SetDirection(&motors[2], 0);
    TMC2209_Step(&motors[0], 10000);
-   TMC2209_Step(&motors[1], 6000);
-   TMC2209_Step(&motors[2], 6000);
-   TMC2209_Step(&motors[3], 6000);
+//   TMC2209_Step(&motors[1], 6000);
+//   TMC2209_Step(&motors[2], 6000);
+//   TMC2209_Step(&motors[3], 6000);
 //	TMC2209_EnableDriver(&motors[0], 1);
 //	TMC2209_EnableDriver(&motors[1], 1);
 //	TMC2209_EnableDriver(&motors[2], 1);
@@ -335,15 +328,12 @@ checkMicrosteppingResolution(&motors[0]);
 
 
 
-//      if(es && x &&sensorX1 && xx){
-//      xx =+1;
-//      }
-//      else{
-//    	  xx = 0;
-//      }
-//      while(xx >= 1){
-//      MotorControl_ButtonHandler(&motors);
-//      }
+      if(es && x &&sensorX1 && xx){
+    	  c++;
+      while(c){
+      MotorControl_ButtonHandler(&motors);
+      	  }
+      }
 ////           //TMC2209_SetDirection(&motors[0], 1);
 //      for(int i =0; i < 3;i++){
 //	         //TMC2209_Step(&motors[0], 6400);

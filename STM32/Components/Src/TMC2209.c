@@ -764,12 +764,12 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
 void MotorsHoming(Motor *motor){
 	for(int i = 0; i<4; i++){
 		if(i == 0){
-			TMC2209_SetDirection(&motor[0],0);
+			TMC2209_SetDirection(&motor[0],1);
 			TMC2209_SetSpeed(&motor[0],16000);
-			if(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
+			if(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
 					TMC2209_Start(&motor[0]);
-					while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0);
-					if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
+					while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0);
+					if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
 						TMC2209_Stop(&motor[0]);
 						motor[0].currentPositionMM = 0;
 						motor[0].stepsTaken = 0;
@@ -782,12 +782,12 @@ void MotorsHoming(Motor *motor){
 
 		}
 		if(i == 1){
-			TMC2209_SetDirection(&motor[1],1);
+			TMC2209_SetDirection(&motor[1],0);
 			TMC2209_SetSpeed(&motor[1],10000);
-			if(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
+			if(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
 				TMC2209_Start(&motor[1]);
-				while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0);
-				if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
+				while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0);
+				if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
 					TMC2209_Stop(&motor[1]);
 					motor[i].currentPositionMM = 0;
 					motor[i].stepsTaken = 0;
@@ -797,7 +797,7 @@ void MotorsHoming(Motor *motor){
 			TMC2209_Stop(&motor[1]);
 		}
 		if(i == 2){
-			TMC2209_SetDirection(&motor[2],1);
+			TMC2209_SetDirection(&motor[2],0);
 			TMC2209_SetSpeed(&motor[2],16000);
 			if(IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 0){
 				TMC2209_Start(&motor[2]);
