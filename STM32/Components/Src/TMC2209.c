@@ -745,6 +745,11 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
     	HAL_Delay(1000);
     	uint16_t mstep = motors[i].driver.mstep;
         setMicrosteppingResolution(&motors[i], mstep);
+
+        TMC2209_SetSpeed(&motors[0], 15000);
+        TMC2209_SetSpeed(&motors[1], 15000);
+        TMC2209_SetSpeed(&motors[2], 15000);
+        TMC2209_SetSpeed(&motors[3], 15000);
        // HAL_Delay(1000);
        // checkMicrosteppingResolution(&motors[i]);
        // HAL_Delay(1000);

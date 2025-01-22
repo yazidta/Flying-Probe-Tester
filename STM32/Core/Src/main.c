@@ -81,34 +81,22 @@ PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
 
-volatile uint8_t es = 0;
-volatile uint8_t x = 0;
-volatile uint8_t xx = 0;
-volatile uint8_t sensorX1 =0;
- uint8_t c = 0;
- float move[] = {100, 40 , 250};
 
-
-volatile uint8_t Flag =0 ;
-int32_t speed = 2000;
-int32_t stepsRequired = 30000;
-uint32_t SG_RESULT = 0;
-uint8_t dir = 0;
-volatile uint32_t lastDebounceTime = 0;  // Tracks the last debounce time
-const uint32_t debounceDelay = 50;
-I2C_HandleTypeDef hi2c1;
 SERVO_Handle_TypeDef hservo1 = { .PwmOut = PWM_INIT_HANDLE(&htim14, TIM_CHANNEL_1) };
 SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim9, TIM_CHANNEL_1) };
 
-
-TIM_HandleTypeDef htim4;
-
-UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart3;
-volatile uint32_t spiPre;
-uint8_t flag;
 Motor motors[MAX_MOTORS]; // Global motor array
-Axis axes[MAX_MOTORS_PER_AXIS];
+Axis axes[MAX_MOTORS_PER_AXIS]; // Global axes array
+
+volatile uint8_t flagUserBtn = 0;
+
+// ENDTOP FLAGS:
+volatile uint8_t ES1 = 0;
+volatile uint8_t ES2 = 0;
+volatile uint8_t ES3 = 0;
+volatile uint8_t ES4 =0;
+uint8_t c = 0;
+
 
 
 /* USER CODE BEGIN PV */
@@ -206,95 +194,37 @@ int main(void)
   MX_UART5_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
+
+  LCD_I2C_Init(&hlcd3);
+  LCD_I2C_Clear(&hlcd3);
+  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
+
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
   initializeMotors();
   initializeSystem();
-   ENC_Init(&henc1);
-   //HAL_TIM_Encoder_Start_IT(&htim4,TIM_CHANNEL_ALL);
+  ENC_Init(&henc1);
 
+  TMC2209_setMotorsConfiguration(motors,8,1);
 
-
- TMC2209_setMotorsConfiguration(motors,8,1);
-
-
-//   TMC2209_enable_PDNuart(&motors[0]);
-//   TMC2209_read_ifcnt(&motors[0]);
-//   TMC2209_SetSpreadCycle(&motors[0], 1);
-  // configureGCONF(&motors[2]);
-   TMC2209_SetSpeed(&motors[0], 15000);
-   TMC2209_SetSpeed(&motors[1], 15000);
-   TMC2209_SetSpeed(&motors[2], 15000);
-   TMC2209_SetSpeed(&motors[3], 15000);
-   TMC2209_SetDirection(&motors[2], 0);
-   TMC2209_Step(&motors[0], 10000);
-//   TMC2209_Step(&motors[1], 6000);
-//   TMC2209_Step(&motors[2], 6000);
-//   TMC2209_Step(&motors[3], 6000);
-//	TMC2209_EnableDriver(&motors[0], 1);
-//	TMC2209_EnableDriver(&motors[1], 1);
-//	TMC2209_EnableDriver(&motors[2], 1);
-//	TMC2209_EnableDriver(&motors[3], 1);
-
-
-
-
-  // TMC2209_Step(&motors[2], 10000);
-  // TMC2209_Step(&motors[3], 1000);
-
-   LCD_I2C_Init(&hlcd3);
-   LCD_I2C_Clear(&hlcd3);
-   LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
-
-   spiPre = SD_SPI_HANDLE.Instance->CR1;
-
-   //sd_card_read_gcode();
-   spiPre = SD_SPI_HANDLE.Instance->CR1;
-
-
-
-  //LCD_I2C_DisplayGlossyText(&hlcd3,1);
-//   HAL_Delay(200);
-//   LCD_I2C_Clear(&hlcd3);
-//Display "Position:" in the first row
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-   TMC2209_SetSpeed(&motors[0], 25000);
-   TMC2209_SetSpeed(&motors[1], 12000);
-   TMC2209_SetSpeed(&motors[2], 25000);
-
-   CheckConnection(&hservo2,&hservo1);
-
-
    while (1){
 
-      if (Flag) // Adjust based on button state
+      if (flagUserBtn) // Adjust based on button state
       {
 
-    	         //TMC2209_Step(&motors[1], 16000);
-    	         //TMC2209_Start(&motors[0]);
-    	         //TMC2209_Start(&motors[1]);
-
-
-    	         MotorsHoming(&motors);
-//    	         stepsTaken[0] = 0;
-//    	         HAL_Delay(200);
-    	         //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
-    	  	  	 Flag = 0;
+    	MotorsHoming(&motors);
+    	flagUserBtn = 0;
 
       }
-      //TMC2209_MoveTo(&axes[0], 0, -100); // Axis X, Motor X1
-//
      es = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
       x = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
       sensorX1=IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
       xx =IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
-      //xx= CheckConnection(&hservo2,&hservo1);
-
-
 
       if(es && x &&sensorX1 && xx){
     	  c++;
@@ -302,30 +232,12 @@ int main(void)
       MotorControl_ButtonHandler(&motors);
       	  }
       }
-////           //TMC2209_SetDirection(&motors[0], 1);
-//      for(int i =0; i < 3;i++){
-//	         //TMC2209_Step(&motors[0], 6400);
-//	         TMC2209_MoveTo(&axes[0], 0, move[i]);
 
-//
-//
-//// Axis X, Motor X1
-//	         //TMC2209_Stop(&motors[0]);
-//      }
-//       }
+//	  uint32_t encode = ENC_GetCounter(&henc1);
+//		uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
 
-//       c = axes[0].motors[0]->currentPositionMM;
-
-	  //Flag = HAL_GPIO_ReadPin(GPIOC,USER_Btn_Pin);
-	  //uint32_t encode = ENC_GetCounter(&henc1);
-//          // Show the menu and get the user's choice
-         //uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
-//
-////
-////          // Handle the selected option using the encapsulated function
+// 		Handle the selected option using the encapsulated function
           //LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
-
-
 
       }
 
