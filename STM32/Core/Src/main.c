@@ -235,7 +235,7 @@ checkMicrosteppingResolution(&motors[0]);
    TMC2209_SetSpeed(&motors[3], 15000);
    TMC2209_SetDirection(&motors[2], 0);
    TMC2209_Step(&motors[0], 10000);
-   //TMC2209_Step(&motors[1], 6000);
+   TMC2209_Step(&motors[1], 6000);
    TMC2209_Step(&motors[2], 6000);
    TMC2209_Step(&motors[3], 6000);
 //	TMC2209_EnableDriver(&motors[0], 1);
