@@ -6,86 +6,42 @@ uint32_t StepsFront[4]={0,0,0,0};
 int32_t StepsBack[4]={0,0};
 uint32_t LastSteps[3] = {0,0,0,0};
 
+void motorHoming(Motor *motor, GPIO_TypeDef *GPIO_Port, uint16_t GPIO_Pin, int direction, int speed, int homePositionMM) {
+    TMC2209_SetDirection(motor, direction);
+    TMC2209_SetSpeed(motor, speed);
 
-bool MotorsHoming(Motor *motor){
-	for(int i = 0; i<4; i++){
-		if(i == 0){
-			TMC2209_SetDirection(&motor[0],1);
-			TMC2209_SetSpeed(&motor[0],16000);
-			if(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0){
-					TMC2209_Start(&motor[0]);
-					while(IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 0);
-					if((IsSensorTriggered(EndStop1_GPIO_Port,EndStop1_Pin) == 1)){
-						TMC2209_Stop(&motor[0]);
-						motor[0].currentPositionMM = 0;
-						motor[0].stepsTaken = 0;
-						motor[i].StepsBack = 0;
+    if (IsSensorTriggered(GPIO_Port, GPIO_Pin) == 0) {
+        TMC2209_Start(motor);
 
-					}
+        while (IsSensorTriggered(GPIO_Port, GPIO_Pin) == 0);
 
-				}
-			TMC2209_Stop(&motor[0]);
+        if (IsSensorTriggered(GPIO_Port, GPIO_Pin) == 1) {
+            TMC2209_Stop(motor);
+            motor->currentPositionMM = homePositionMM;
+            motor->stepsTaken = 0;
+            motor->StepsBack = 0;
+            motor->StepsFront = 0;
+        }
+    }
 
-		}
-		if(i == 1){
-			TMC2209_SetDirection(&motor[1],0);
-			TMC2209_SetSpeed(&motor[1],10000);
-			if(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0){
-				TMC2209_Start(&motor[1]);
-				while(IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 0);
-				if((IsSensorTriggered(EndStop2_GPIO_Port,EndStop2_Pin) == 1)){
-					TMC2209_Stop(&motor[1]);
-					motor[i].currentPositionMM = 0;
-					motor[i].stepsTaken = 0;
-	                motor[i].StepsFront = 0;
-				}
-			}
-			TMC2209_Stop(&motor[1]);
-		}
-		if(i == 2){
-			TMC2209_SetDirection(&motor[2],0);
-			TMC2209_SetSpeed(&motor[2],16000);
-			if(IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 0){
-				TMC2209_Start(&motor[2]);
-				while(IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 0);
-				if((IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin) == 1)){
-					TMC2209_Stop(&motor[2]);
-					motor[i].currentPositionMM = 0;
-					motor[i].stepsTaken = 0;
-				    motor[i].StepsFront = 0;
-				    motor[i].StepsBack = 0;
+    TMC2209_Stop(motor);
+}
 
-				}
+bool MotorsHoming(Motor *motor) {
+    motorHoming(&motor[0], EndStop1_GPIO_Port, EndStop1_Pin, 1, 8000, 0);
+    motorHoming(&motor[1], EndStop2_GPIO_Port, EndStop2_Pin, 0, 14000, 0);
+    motorHoming(&motor[2], EndStop3_GPIO_Port, EndStop3_Pin, 0, 10000, 0);
+    motorHoming(&motor[3], EndStop4_GPIO_Port, EndStop4_Pin, 0, 8000, 450);
 
-			}
-			TMC2209_Stop(&motor[2]);
-	}
-		if(i == 3){
-			TMC2209_SetDirection(&motor[3],0);
-			TMC2209_SetSpeed(&motor[3],10000);
-			if(IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin) == 0){
-				TMC2209_Start(&motor[3]);
-				while(IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin) == 0);
-				if((IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin) == 1)){
-					TMC2209_Stop(&motor[3]);
-					motor[i].currentPositionMM = 450;
-					motor[i].stepsTaken = 0;
-				    motor[i].StepsBack = 0;
-				}
-
-			}
-			TMC2209_Stop(&motor[3]);
-		}
-
-	}
-
-	return true;
+    return true;
 }
 
 
-void MotorControl_ButtonHandler(Motor *motors) {
+void MotorControl_ButtonHandler(Axis *axes,Motor *motors) {
 	static uint8_t CtrPressedFlag = 0; // Flag to detect button press edge
 	    // StepsFront[0] = 0;
+	//TMC2209_SetSpeed(&motors[0],10000);
+	//TMC2209_SetSpeed(&motors[2],10000);
 	    uint32_t pressStartTime = 0;
 	    uint32_t debounceTime = 50;
 	    uint32_t currentTime = HAL_GetTick();
@@ -126,17 +82,23 @@ void MotorControl_ButtonHandler(Motor *motors) {
 
                 motors[motorGroup * 2].calib[1] = motors[motorGroup * 2].currentPositionMM;
                 motors[motorGroup * 2 + 1].calib[1] = motors[motorGroup * 2 + 1].currentPositionMM;
-                motorGroup += 1;
                 if (motorGroup >= 2) {
                        motorGroup = 0;  // Reset or handle as per your system's requirement
                   }
                 // Perform homing for all motors
-                  MotorsHoming(motors);
+                  //MotorsHoming(motors);
 
                // Move all motors to their saved calibrated positions
-//                for(int i = 0; i < 4; i++) {
-//                TMC2209_MoveTo(axis,motorIndex,targetPositionMM);
-//              }
+                if(motorGroup == 0){
+                   TMC2209_MoveTo(&axes[0],0,motors[0].calib[1]);
+                   TMC2209_MoveTo(&axes[1],0,-motors[1].calib[0]);
+//                TMC2209_MoveTo(&axes[1],1,-400);
+                }
+                else {
+                	TMC2209_MoveTo(&axes[0],1,motors[2].calib[1]);
+                    TMC2209_MoveTo(&axes[1],1,-motors[3].calib[0]);
+                }
+                motorGroup += 1;
 
            // Reset Pressed counter to prevent further calibration steps
                 Pressed = 0;

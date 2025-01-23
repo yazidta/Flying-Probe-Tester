@@ -164,9 +164,9 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
 
     // Decide the direction based on the sign of the steps
     if (stepsToMove > 0) {
-        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_SET); // Forward direction
+        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_RESET); // Forward direction
     } else {
-        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_RESET); // Reverse direction
+        TMC2209_SetDirection(axis->motors[motorIndex], GPIO_PIN_SET); // Reverse direction
         stepsToMove = -stepsToMove; // Convert to positive for step count
     }
 
@@ -771,9 +771,9 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
     	uint16_t mstep = motors[i].driver.mstep;
         setMicrosteppingResolution(&motors[i], mstep);
 
-        TMC2209_SetSpeed(&motors[0], 15000);
+        TMC2209_SetSpeed(&motors[0], 5000);
         TMC2209_SetSpeed(&motors[1], 15000);
-        TMC2209_SetSpeed(&motors[2], 15000);
+        TMC2209_SetSpeed(&motors[2], 5000);
         TMC2209_SetSpeed(&motors[3], 15000);
        // HAL_Delay(1000);
        // checkMicrosteppingResolution(&motors[i]);
