@@ -159,7 +159,7 @@ void MotorControl_ButtonHandler(Motor *motors) {
 			//StepsFront[0] = 0;
             //LastSteps[0] += StepsFront[0];
 			TMC2209_SetDirection(&motors[motorGroup * 2], GPIO_PIN_SET);
-		    TMC2209_Start_C(&motors[motorGroup * 2]);
+		    TMC2209_Start(&motors[motorGroup * 2]);
 		    while(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET){
     		    //StepsFront[0] = motors[motorGroup *2].stepsTaken + LastSteps[0];
 		    }
@@ -181,7 +181,7 @@ void MotorControl_ButtonHandler(Motor *motors) {
 		//StepsBack[0] = 0;
 		//StepsBack[0] += motors[motorGroup*2].stepsTaken;
 		TMC2209_SetDirection(&motors[motorGroup * 2], GPIO_PIN_RESET);
-		TMC2209_Start_C(&motors[motorGroup * 2]);
+		TMC2209_Start(&motors[motorGroup * 2]);
 		while(HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET){
     	//StepsBack[0] = -(int)(motors[motorGroup *2].stepsTaken);
 		}
@@ -204,7 +204,7 @@ void MotorControl_ButtonHandler(Motor *motors) {
 
 	if(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET){
         TMC2209_SetDirection(&motors[motorGroup * 2+1], GPIO_PIN_SET);
-        TMC2209_Start_C(&motors[motorGroup * 2+1]);
+        TMC2209_Start(&motors[motorGroup * 2+1]);
         while(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET);
 }
     if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_SET) {
@@ -215,7 +215,7 @@ void MotorControl_ButtonHandler(Motor *motors) {
 
 	if(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET){
         TMC2209_SetDirection(&motors[motorGroup * 2+1], GPIO_PIN_RESET);
-        TMC2209_Start_C(&motors[motorGroup * 2+1]);
+        TMC2209_Start(&motors[motorGroup * 2+1]);
         while(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET);
 }
     if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_SET) {

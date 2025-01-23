@@ -57,12 +57,22 @@ extern TIM_HandleTypeDef htim5;
 // Driver structure
 typedef struct {
 	uint8_t id;                      // Motor ID to identify each motor -- this is useless now ince we have address for uart
-	uint16_t mstep;					//	Microstepping setting of the driver
+					//	Microstepping setting of the driver
     UART_HandleTypeDef *huart;
     uint8_t address;                // UART address
-
+    uint32_t STATUS;
     TIM_HandleTypeDef *htim;        // Timer handle for PWM generation
-    uint32_t step_channel;           // PWM channel
+    uint32_t step_channel;          // PWM channel
+
+    // Motor Configurations
+    uint16_t mstep;	     // Microstepping: 2,8,16,256, or FULLSTEP
+    uint8_t chopperMode; // 1 for StealthChop, 0 for SpreadCycle. Default: 1
+    uint8_t sendDelay;
+    uint32_t IFCNT; // Sucessful write incrementing counter(This value gets incremented with every sucessful UART write access 0 to 255 then wraps around.)
+    uint8_t GCONF;
+    uint16_t IRUN;
+    uint16_t IHOLD;
+    uint16_t IDELAY;
 
     // GPIO PINS
     GPIO_TypeDef *step_port;
@@ -75,6 +85,8 @@ typedef struct {
     uint16_t diag_pin;
     GPIO_TypeDef *index_port;
     uint16_t index_pin;
+
+
 
 
 } TMC2209_Driver;

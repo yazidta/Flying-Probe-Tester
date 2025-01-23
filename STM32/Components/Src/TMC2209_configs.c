@@ -57,6 +57,10 @@ void initializeMotors() {
 
     	// Motor Parameters
     	motors[i].driver.id = i ;
+    	motors[i].driver.STATUS = TMC_OK;
+        motors[i].driver.GCONF = 0;
+        motors[i].driver.IFCNT = 0;
+        motors[i].driver.chopperMode = 0;
 
         motors[i].stepsTaken = 0;
         motors[i].nextTotalSteps = 0;
@@ -70,10 +74,12 @@ void initializeMotors() {
          // Configure motor 1 X-axis
 
         // TIMER configurations
+        motors[i].driver.huart = &huart2;
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
         motors[i].driver.mstep = 16;
-        motors[i].driver.huart = &huart2;
+        motors[i].driver.IRUN = 16;
+        motors[i].driver.IHOLD = 16;
         motors[i].stepsPerRevolution = 400;
         // GPIO PINS
         motors[i].driver.step_port = STEP1_GPIO_Port;

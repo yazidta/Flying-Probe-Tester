@@ -41,8 +41,6 @@ uint32_t last_tmc_read_attempt_ms = 0;
 uint8_t Pressed = 0;
 volatile uint8_t direction = 0; // Flag to indicate data reception
 
-
-
 int32_t stepsTaken[MAX_MOTORS];
 uint32_t CurrentPosition;
 ////////// HAL FUNCTIONS //////////
@@ -117,15 +115,6 @@ void TMC2209_Start(Motor *motor) {
     HAL_TIM_PWM_Start_IT(htim, channel);
     motor->isStepping = true;
 }
-void TMC2209_Start_C(Motor *motor) {
-	TIM_HandleTypeDef *htim = motor->driver.htim;
-	uint32_t channel = motor->driver.step_channel;
-   //motor->stepsTaken = 0;
-	TMC2209_EnableDriver(motor, GPIO_PIN_RESET);
-    HAL_TIM_PWM_Start_IT(htim, channel);
-    motor->isStepping = true;
-}
-
 
 
 static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
@@ -135,16 +124,7 @@ static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
 	motor->nextTotalSteps = 0;
 }
-static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
-	motor->nextTotalSteps = totalSteps;
-	motor->stepsTaken = 0;
-	while (motor->stepsTaken < motor->nextTotalSteps || motor->stepsTaken > motor->nextTotalSteps); // Wait until we reach required steps
-	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
-	motor->nextTotalSteps = 0;
 
-	TMC2209_Stop(motor);
-
-}
 
 void TMC2209_Step(Motor *motor, uint32_t steps){ // This doesn't work anymore since we have MoveTo
 	TMC2209_Start(motor);
@@ -204,7 +184,6 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     axis->motors[motorIndex]->currentPositionMM = targetPositionMM;
 
 }
-
 
 
 void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArray[], size_t gcodeCount) {
@@ -321,36 +300,34 @@ uint8_t TMC2209_WaitForReply(uint32_t timeout) {
 
 
 uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength, Motor *tmc2209) {
-	uint8_t flag = 1;
 	//clear_UART_buffers(&huart2);
      // Send the command
      if (HAL_UART_Transmit(tmc2209->driver.huart, command, writeLength, HAL_MAX_DELAY) != HAL_OK) {
-         debug_print("Failed to send command.\r\n");
-         return 0;
+         if(ENABLE_DEBUG) debug_print("Failed to send command to driver.\r\n");
+         tmc2209->driver.STATUS = TMC_SEND_ERROR;
+         return	NULL;
      }
 
-
-     if(readLength){
+     if(readLength && (tmc2209->driver.STATUS == TMC_OK)){
 
      // Wait for reply
      HAL_UART_Receive_DMA(tmc2209->driver.huart, rxData, readLength + 1);
      if (!TMC2209_WaitForReply(200)) { // Wait 200ms if no reply, timeout
-         debug_print("No reply received.\r\n");
-         return 0; // command failed
+    	 if(ENABLE_DEBUG) debug_print("No reply received from driver.\r\n");
+    	 tmc2209->driver.STATUS = TMC_NOREPLY_ERROR;
+         return NULL; // command failed
      }
-     /// DEBUG ///
-     // Send transmitted data -- Note: this can't be called before receiving or else it will interfere with huart2
 
+     // Send transmitted data -- Note: this can't be called before receiving or else it will interfere with huart2
+     if(ENABLE_DEBUG){
      debug_print("Data Transmitted: ");
      debug_print_hex(command, writeLength);
      // Process received data in rxBuffer
      debug_print("Reply received:\r\n");
      debug_print_hex(rxBuffer, TMC_REPLY_SIZE);
-
+     }
      return rxBuffer; // Success
      }
-
-     return flag;
  }
 
 
@@ -369,11 +346,8 @@ void TMC2209_writeInit(Motor *tmc2209, uint8_t regAddress, int32_t value){
  }
 
 int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
+	if(tmc2209->driver.STATUS != TMC_OK) return tmc2209->driver.STATUS;
  	uint8_t read_request_command[8] = { 0 };
-
-// 	if (!TMC_IS_READABLE(tmc2209->registerAccess[address]))
-// 		return tmc2209->config->shadowRegister[address];
-
  	read_request_command[0] = SYNC;
  	read_request_command[1] = tmc2209->driver.address;
  	read_request_command[2] = regAddress;
@@ -383,45 +357,93 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
  	// Byte 0: Sync nibble correct?
  	if (verifyBuffer[0] != 0x05){
  		// If first byte equals 0 then it means no reply so return
- 		if (verifyBuffer[0] == 0)
- 			return -1;
- 		debug_print("Invalid data received!(SYNC Byte)\r\n");
- 		return -1;
+ 		if(ENABLE_DEBUG) debug_print("Invalid data received!(SYNC Byte)\r\n");
+ 		return tmc2209->driver.STATUS = TMC_SYNC_REPLY_ERROR;
  	}
  	// Byte 1: Master address correct?
  	if (verifyBuffer[1] != 0xFF){
- 		debug_print("Invalid data received!(MCU Address)\r\n");
- 		return -1;
+ 		if(ENABLE_DEBUG) debug_print("Invalid data received!(MCU Address)\r\n");
+ 		return tmc2209->driver.STATUS = TMC_MCU_REPLY_ERROR;
  	}
  	// Byte 2: Register address correct?
  	if (verifyBuffer[2] != regAddress){
- 		debug_print("Invalid data received!(Register Address)\r\n");
- 		return -1;
+ 		if(ENABLE_DEBUG) debug_print("Invalid data received!(Register Address)\r\n");
+ 		return tmc2209->driver.STATUS = TMC_REG_REPLY_ERROR;
  	}
  	// Byte 7: CRC correct?
  	if (verifyBuffer[7] != calculate_CRC(verifyBuffer, 7)){
- 		debug_print("Invalid data received!(CRC)\r\n");
- 		return -1;
+ 		if(ENABLE_DEBUG) debug_print("Invalid data received!(CRC)\r\n");
+ 		return tmc2209->driver.STATUS = TMC_CRC_REPLY_ERROR;
  	}
  	return (verifyBuffer[3] << 24) | (verifyBuffer[4] << 16) | (verifyBuffer[5] << 8) | verifyBuffer[6];
  }
 
-
-uint8_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable) {
+bool TMC2209_enable_PDNuart(Motor *tmc2209){
 	HAL_Delay(1);
+	 uint8_t driverID = tmc2209->driver.id;
+	 uint8_t IFCNT = tmc2209->driver.IFCNT;
+	 if(ENABLE_DEBUG){
+	 char debug_msg[150];
+	 sprintf(debug_msg, sizeof(debug_msg), "Enabling driver via GCONF registe Driver: %u \r\n", driverID);
+	 debug_print(debug_msg);
+	 }
+	 TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
+	 if (IFCNT <= tmc2209->driver.IFCNT){
+		 return false;
+	 }
+	 return true;
+}
+
+
+void TMC2209_read_ifcnt(Motor *tmc2209) {
+     int32_t ifcnt_value = TMC2209_readInit(tmc2209, TMC2209_REG_IFCNT); // IFCNT register address is 0x02
+     if (ifcnt_value >= 0) { // This value gets incremented with every sucessful UART write access 0 to 255 then wraps around.
+    	 if(ENABLE_DEBUG){
+         char debug_msg[100];
+         sprintf(debug_msg, "IFCNT Value: %d\r\n",  (int)ifcnt_value);
+         debug_print(debug_msg);
+    	 }
+         tmc2209->driver.IFCNT = ifcnt_value;
+     } else {
+    	 if (ENABLE_DEBUG)
+         debug_print("Failed to read IFCNT register!\r\n");
+         tmc2209->driver.IFCNT = TMC_IFCNT_ERROR;
+     }
+
+ }
+
+bool configureGCONF(Motor *tmc2209) {
+	int ifcntCheck = tmc2209->driver.IFCNT;
+	if (ifcntCheck == TMC_IFCNT_ERROR){
+        if (ENABLE_DEBUG) debug_print("Failed to configure GCONF! (Failed to read IFCNT register)\r\n");
+		return 0;
+	}
+    uint32_t gconf = 0x000000C0; // pdn_disable = 1, mstep_reg_select = 1
+    TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
+    TMC2209_read_ifcnt(tmc2209);
+    if (tmc2209->driver.IFCNT <= ifcntCheck){
+    	if (ENABLE_DEBUG) debug_print("Failed to configure GCONF!(IFCNT DID NOT INCREMENT CHECK TMC_STATUS)\r\n");
+    	tmc2209->driver.GCONF = TMC_GCONF_ERROR;
+		return 0;
+    }
+    return (tmc2209->driver.GCONF = true);
+}
+
+
+uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
 	uint32_t gconf;
 	uint32_t check_gconf;
-
-	uint8_t driverID = motor->driver.id;
+	uint8_t driverID = tmc2209->driver.id;
+	int32_t IFCNT = tmc2209->driver.IFCNT;
+	if (ENABLE_DEBUG){
 	char debug_msg[150];
 	snprintf(debug_msg, sizeof(debug_msg), "----- Setting SpreadCycle Mode for Driver: %u -----\r\n", driverID);
 	debug_print(debug_msg);
-    memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
+	}
+	gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
 
-	gconf = TMC2209_readInit(motor, TMC2209_REG_GCONF);
-
-    if(gconf == TMC_ERROR){
-    	debug_print("Failed to set SpreadCycle Mode!(Invalid Reply 1)\r\n");
+    if(gconf == TMC_SPREADCYCLE_ERROR1){
+    	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(Invalid Reply 1)\r\n");
     	return gconf;
     }
 
@@ -433,21 +455,28 @@ uint8_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable) {
     }
 
     if(gconf == check_gconf){ //Setpread is already EN/DIS ABLED so skip and return
-    	debug_print("Failed to set SpreadCycle Mode! (Spread is already on that Mode!)\r\n");
+    	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode! (Spread is already on that Mode!)\r\n");
     	return enable;
     }
 
-    TMC2209_writeInit(motor, TMC2209_REG_GCONF, gconf);
-
-    check_gconf = TMC2209_readInit(motor, TMC2209_REG_GCONF);
-    if(check_gconf != gconf){
-    	debug_print("Failed to set SpreadCycle Mode!(invalid Reply 2)\r\n");
+    TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
+    TMC2209_read_IFCNT(tmc2209);
+    if(tmc2209->driver.IFCNT <= IFCNT){
+    	tmc2209->driver.chopperMode = 1;
+    	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!\r\n");
+    	return TMC_SET_SPREADCYCLE_ERROR;
     }
-    return check_gconf;
+
+    check_gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
+    if(check_gconf != gconf){
+    	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(invalid Reply 2)\r\n");
+    }
+
+    tmc2209->driver.chopperMode = check_gconf;
+    return TMC_OK;
 }
 
-uint8_t checkSpreadCycle(Motor *tmc2209) {
-	HAL_Delay(1);
+void checkSpreadCycle(Motor *tmc2209) {
     // Read the GCONF register
     uint32_t gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
 
@@ -456,50 +485,26 @@ uint8_t checkSpreadCycle(Motor *tmc2209) {
 
     // Debug message
     if (spreadCycleEnabled) {
-        debug_print("SpreadCycle is ENABLED.\n");
+    	if (ENABLE_DEBUG) debug_print("SpreadCycle is ENABLED.\n");
     } else {
-        debug_print("SpreadCycle is DISABLED (StealthChop is active).\n");
-
+    	if (ENABLE_DEBUG) debug_print("SpreadCycle is DISABLED (StealthChop is active).\n");
     }
 
-    return spreadCycleEnabled; // Return 1 if SpreadCycle is enabled, 0 otherwise
+    tmc2209->driver.chopperMode = spreadCycleEnabled; // Return 1 if SpreadCycle is enabled, 0 otherwise
 }
-
-void TMC2209_enable_PDNuart(Motor *tmc2209){
-	HAL_Delay(1);
-	 uint8_t driverID = tmc2209->driver.id;
-	 char debug_msg[150];
-	 sprintf(debug_msg, sizeof(debug_msg), "----- Enabling driver via GCONF registe Driver: %u -----\r\n", driverID);
-	 debug_print(debug_msg);
-	 TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
-}
-uint8_t TMC2209_read_ifcnt(Motor *tmc2209) {
-	HAL_Delay(1);
-     debug_print("Reading IFCNT register...\r\n");
-     int32_t ifcnt_value = TMC2209_readInit(tmc2209, TMC2209_REG_IFCNT); // IFCNT register address is 0x02
-
-     if (ifcnt_value >= 0) { // This value gets incremented with every sucessful UART write access 0 to 255 then wraps around.
-         char debug_msg[100];
-         sprintf(debug_msg, "IFCNT Value: %d\r\n",  (int)ifcnt_value);
-         debug_print(debug_msg);
-         return ifcnt_value;
-     } else {
-         debug_print("Failed to read IFCNT register!\r\n");
-         return 0;
-     }
-
- }
 
 
 // Function to set the microstepping resolution through UART
-void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
-	HAL_Delay(1);
+uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     uint8_t driverID = tmc2209->driver.id;
+    int32_t IFCNT = tmc2209->driver.IFCNT;
     char debug_msg[150];
 
+    if (ENABLE_DEBUG){
     snprintf(debug_msg, sizeof(debug_msg), "----- Setting Microstepping For Driver ID: %u -----\r\n", driverID);
     debug_print(debug_msg);
     memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
+    }
     // Ensure GCONF is set to enable UART control for microstepping resolution
     uint8_t gconf = 0x80; // Bit 7 (mstep_reg_select) set to 1. This to change the option to control mstepping using UART instead of MS1 & MS2 pins
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
@@ -549,22 +554,29 @@ void setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
 
     // If the resolution has not changed, do nothing
     if (newMRES == currentMRES) {
-        debug_print("Resolution unchanged, no update needed.\n");
-        return;
+    	if (ENABLE_DEBUG) debug_print("Resolution unchanged, no update needed.\r\n");
+        return resolution;
     }
     HAL_Delay(2);
     // Update the CHOPCONF register with the new MRES value
     uint32_t updatedCHOPCONF = (currentCHOPCONF & ~(0x0F << 24)) | (newMRES << 24);
     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, updatedCHOPCONF);
+    TMC2209_read_ifcnt(tmc2209);
 
+    if(tmc2209->driver.IFCNT <= IFCNT){
+    	if (ENABLE_DEBUG) debug_print("Failed to set microstepping.\r\n");
+    	return tmc2209->driver.mstep = TMC_SET_MSTEP_ERROR;
+    }
     // Debug
+    tmc2209->driver.mstep = resolution;
     sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
-    debug_print(debug_msg);
+    if (ENABLE_DEBUG) debug_print(debug_msg);
+    return TMC_OK;
 
 }
 
 
-uint16_t checkMicrosteppingResolution(Motor *tmc2209) {
+void checkMicrosteppingResolution(Motor *tmc2209) {
 	HAL_Delay(2);
     // Read the CHOPCONF register
     uint32_t chopconf = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
@@ -587,17 +599,19 @@ uint16_t checkMicrosteppingResolution(Motor *tmc2209) {
     }
 
     // Debug
+    if (ENABLE_DEBUG){
     char debug_msg[150];
     uint8_t driverID = tmc2209->driver.id;
     sprintf(debug_msg, "Current microstepping resolution for Driver ID: %u, Resolution: %u\n", driverID, resolution);
     debug_print(debug_msg);
-    return resolution;
+    }
+    tmc2209->driver.mstep = resolution;
 }
 
 
 
-void TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
-	HAL_Delay(1);
+uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
+	int IFCNT = tmc2209->driver.IFCNT;
     if (irun_value > 31) {
         irun_value = 31; // Limit IRUN value to the maximum allowed (5 bits)
     }
@@ -611,107 +625,111 @@ void TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
 
     // Write back the updated register value
     TMC2209_writeInit(tmc2209, TMC2209_REG_IHOLD_IRUN, registerValue);
+    if(tmc2209->driver.IFCNT < IFCNT){
+    	if (ENABLE_DEBUG) debug_print("Failed to set IRUN.\r\n");
+    	return tmc2209->driver.IRUN = TMC2209_IRUN_ERROR;
+    }
+
+    tmc2209->driver.IRUN = irun_value;
+    return TMC_OK;
 }
 
 
-uint8_t TMC2209_readIRUN(Motor *tmc2209) {
+void TMC2209_readIRUN(Motor *tmc2209) {
 	HAL_Delay(1);
     uint32_t registerValue = TMC2209_readInit(tmc2209, TMC2209_REG_IHOLD_IRUN);
 
     // Extract IRUN (Bits 8-12)
-    uint8_t irun_value = (registerValue >> 8) & 0x1F; // Mask and shift bits
+    uint8_t irunValue = (registerValue >> 8) & 0x1F; // Mask and shift bits
+    if (ENABLE_DEBUG){
     char debug_msg[100];
-    sprintf(debug_msg, "Current IRUN value: %u\n", irun_value);
+    sprintf(debug_msg, "Current IRUN value: %u\n", irunValue);
     debug_print(debug_msg);
-
-    return irun_value;
-}
-
-void configureGCONF(Motor *tmc2209) {
-	HAL_Delay(1);
-    uint32_t gconf = 0x000000C0; // pdn_disable = 1, mstep_reg_select = 1
-    TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
-    HAL_Delay(1);
-}
-
-void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay) {
-	HAL_Delay(1);
-    // Combine IHOLDDELAY, IRUN, and IHOLD into a single 32-bit value
-    uint32_t testValue = ((iholddelay & 0x0F) << 16) | ((irun & 0x1F) << 8) | (ihold & 0x1F);
-
-    // Write to IHOLD_IRUN register
-    TMC2209_writeInit(tmc2209, TMC2209_REG_IHOLD_IRUN, testValue);
-    HAL_Delay(2); // Allow time for the write to complete
-
-    // Read back the IHOLD_IRUN register
-    uint32_t regValue = TMC2209_readInit(tmc2209, TMC2209_REG_IHOLD_IRUN);
-    HAL_Delay(2);
-    // Debugging: Check if the write and read values match
-    if (regValue == testValue) {
-        debug_print("IHOLD_IRUN register set and read successfully.\r\n");
-    } else {
-        debug_print("IHOLD_IRUN register mismatch!\r\n");
-
-        // Debug the values
-        debug_print("Expected value: ");
-        debug_print_hex((uint8_t*)&testValue, sizeof(testValue));
-
-        debug_print("Read value: ");
-        debug_print_hex((uint8_t*)&regValue, sizeof(regValue));
     }
 
-    // Debugging IFCNT to confirm communication success
-    uint8_t ifcnt_value = TMC2209_read_ifcnt(tmc2209);
-    char debug_msg[50];
-    sprintf(debug_msg, "IFCNT Value: %d\r\n", ifcnt_value);
-    debug_print(debug_msg);
+    tmc2209->driver.IRUN = irunValue;
 }
+
+
+//void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay) {
+//	HAL_Delay(1);
+//    // Combine IHOLDDELAY, IRUN, and IHOLD into a single 32-bit value
+//    uint32_t testValue = ((iholddelay & 0x0F) << 16) | ((irun & 0x1F) << 8) | (ihold & 0x1F);
+//
+//    // Write to IHOLD_IRUN register
+//    TMC2209_writeInit(tmc2209, TMC2209_REG_IHOLD_IRUN, testValue);
+//    HAL_Delay(2); // Allow time for the write to complete
+//
+//    // Read back the IHOLD_IRUN register
+//    uint32_t regValue = TMC2209_readInit(tmc2209, TMC2209_REG_IHOLD_IRUN);
+//    HAL_Delay(2);
+//    // Debugging: Check if the write and read values match
+//    if (regValue == testValue) {
+//        debug_print("IHOLD_IRUN register set and read successfully.\r\n");
+//    } else {
+//        debug_print("IHOLD_IRUN register mismatch!\r\n");
+//
+//        // Debug the values
+//        debug_print("Expected value: ");
+//        debug_print_hex((uint8_t*)&testValue, sizeof(testValue));
+//
+//        debug_print("Read value: ");
+//        debug_print_hex((uint8_t*)&regValue, sizeof(regValue));
+//    }
+//
+//    // Debugging IFCNT to confirm communication success
+//    uint8_t ifcnt_value = TMC2209_read_ifcnt(tmc2209);
+//    char debug_msg[50];
+//    sprintf(debug_msg, "IFCNT Value: %d\r\n", ifcnt_value);
+//    debug_print(debug_msg);
+//}
 
 
 // Function to configure the SPREADCYCLE mode parameters in the CHOPCONF register
-void TMC2209_configureSpreadCycle(Motor *tmc2209, uint8_t toff, uint8_t tbl, uint8_t hend, uint8_t hstart) {
-	HAL_Delay(1);
-    // Validate and clamp the input parameters to their allowed ranges
-    if (toff < 2) toff = 2;      // Minimum TOFF value is 2
-    if (toff > 15) toff = 15;    // Maximum TOFF value is 15
-
-    if (tbl > 3) tbl = 3;        // TBL has a range of 0 to 3 (2-bit field)
-
-    if (hend > 15) hend = 15;    // HEND has a range of 0 to 15 (4-bit field)
-    if (hstart < hend) hstart = hend + 1; // HSTART must be greater than HEND
-    if (hstart > 15) hstart = 15; // Maximum HSTART value is 15
-    // Read the current CHOPCONF value
-     uint32_t chopconf = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
-     if (chopconf == -1) {
-         debug_print("Error reading CHOPCONF register.\r\n");
-         return;
-     }
-
-     // Preserve MRES (bits 24–27) and other existing settings
-     chopconf &= 0xF0000000; // Clear TOFF, TBL, HEND, and HSTART bits while preserving MRES
-
-     // Set new values for TOFF, TBL, HEND, and HSTART
-     chopconf |= (toff & 0xF) << 0;  // TOFF (bits 0–3)
-     chopconf |= (tbl & 0x3) << 15;  // TBL (bits 15–16)
-     chopconf |= (hend & 0xF) << 7;  // HEND (bits 7–11)
-     chopconf |= (hstart & 0xF) << 4; // HSTART (bits 4–6)
-
-     // Write the modified CHOPCONF value back to the driver
-     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, chopconf);
-
-    // Debug: Print the configured CHOPCONF value
-    debug_print("SPREADCYCLE parameters configured: ");
-    debug_print_hex((uint8_t *)&chopconf, 4);
-    debug_print("\r\n");
-}
+//void TMC2209_configureSpreadCycle(Motor *tmc2209, uint8_t toff, uint8_t tbl, uint8_t hend, uint8_t hstart) {
+//	HAL_Delay(1);
+//    // Validate and clamp the input parameters to their allowed ranges
+//    if (toff < 2) toff = 2;      // Minimum TOFF value is 2
+//    if (toff > 15) toff = 15;    // Maximum TOFF value is 15
+//
+//    if (tbl > 3) tbl = 3;        // TBL has a range of 0 to 3 (2-bit field)
+//
+//    if (hend > 15) hend = 15;    // HEND has a range of 0 to 15 (4-bit field)
+//    if (hstart < hend) hstart = hend + 1; // HSTART must be greater than HEND
+//    if (hstart > 15) hstart = 15; // Maximum HSTART value is 15
+//    // Read the current CHOPCONF value
+//     uint32_t chopconf = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
+//     if (chopconf == -1) {
+//    	 if (ENABLE_DEBUG) debug_print("Error reading CHOPCONF register.\r\n");
+//         return 0;
+//     }
+//
+//     // Preserve MRES (bits 24–27) and other existing settings
+//     chopconf &= 0xF0000000; // Clear TOFF, TBL, HEND, and HSTART bits while preserving MRES
+//
+//     // Set new values for TOFF, TBL, HEND, and HSTART
+//     chopconf |= (toff & 0xF) << 0;  // TOFF (bits 0–3)
+//     chopconf |= (tbl & 0x3) << 15;  // TBL (bits 15–16)
+//     chopconf |= (hend & 0xF) << 7;  // HEND (bits 7–11)
+//     chopconf |= (hstart & 0xF) << 4; // HSTART (bits 4–6)
+//
+//     // Write the modified CHOPCONF value back to the driver
+//     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, chopconf);
+//
+//    // Debug: Print the configured CHOPCONF value
+//    debug_print("SPREADCYCLE parameters configured: ");
+//    debug_print_hex((uint8_t *)&chopconf, 4);
+//    debug_print("\r\n");
+//}
 
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
 	HAL_Delay(1);
     uint32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
-   // sg_result = (sg_result >> 10) & 0x1FF;
+    if(ENABLE_DEBUG){
     char debug_msg[100];
     sprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);
     debug_print(debug_msg);
+    }
 
     return sg_result; // SG_RESULT is bits 10–20
 }
@@ -720,20 +738,27 @@ void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
 	HAL_Delay(1);
     TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs); // SGTHRS register
     debug_print("StallGuard threshold set successfully! \r\n");
-    debug_print("\r\n");
 }
 
 
-void TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY field uses 4 bits (bits 11..8).
+uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY field uses 4 bits (bits 11..8).
 	// The datasheet recommends SENDDELAY >= 2 in multi-node setups.
-	HAL_Delay(1);
+
 	if (sendDelay > 15) sendDelay = 15; // clamp the value to 4 bits max
-	debug_print("----- Reading Send Delay ----- \r\n");
+	if (ENABLE_DEBUG) debug_print("----- Reading Send Delay ----- \r\n");
 	uint32_t nodeconf = TMC2209_readInit(tmc2209, TMC_REG_SENDDELAY);	// Read the existing NODECONF register
 	nodeconf &= ~(0x0F << 8);	// Clear bits 11..8
 	nodeconf |= ((sendDelay & 0x0F) << 8);	// Set bits 11..8 to sendDelay
+	int32_t IFCNT = tmc2209->driver.IFCNT;
 	TMC2209_writeInit(tmc2209, TMC2209_REG_SLAVECONF, nodeconf);	// Write back the updated value
-	debug_print("Send Delay set successfully! \r\n");
+    TMC2209_read_ifcnt(tmc2209);
+    if (tmc2209->driver.IFCNT <= IFCNT){
+    	if(ENABLE_DEBUG) debug_print("Failed to set Send Delay! \r\n");
+    	return tmc2209->driver.sendDelay = TMC2209_SENDELAY_ERROR;
+    }
+    tmc2209->driver.sendDelay = sendDelay;
+    if(ENABLE_DEBUG) debug_print("Send Delay set successfully! \r\n");
+    return TMC_OK;
 
 }
 
