@@ -211,7 +211,7 @@ int main(void)
   ENC_Init(&henc1);
 
   TMC2209_setMotorsConfiguration(motors,8,1);
-
+  TMC2209_MoveTo(&axes[1],1,30);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -237,7 +237,7 @@ int main(void)
     	flagUserBtn = 0;
       }
   	if (homingFlag){
-    	  MotorControl_ButtonHandler(&motors);
+    	  MotorControl_ButtonHandler(&axes,&motors);
       }
 
 

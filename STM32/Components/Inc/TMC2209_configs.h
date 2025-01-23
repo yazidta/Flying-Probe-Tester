@@ -92,7 +92,7 @@ typedef struct {
     bool isStepping;               // State to track if the motor is currently stepping
     uint32_t StepsFront;           // Tracking Steps Based on direction
     int32_t StepsBack;
-    uint16_t calib[2];
+    float calib[2];
 } Motor;
 
 // Axis structure
