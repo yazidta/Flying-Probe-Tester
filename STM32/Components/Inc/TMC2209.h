@@ -76,19 +76,16 @@
 #define TMC_SET_MSTEP_ERROR				110
 #define TMC2209_IRUN_ERROR				120
 #define TMC2209_SENDELAY_ERROR			130
-
-
 #define TMC_OK							0
+
 
 
 
 
 // Variables
 
-extern TIM_HandleTypeDef htim3;
 extern uint32_t last_tmc_read_attempt_ms;
-extern int32_t stepsTaken[MAX_MOTORS];
-extern uint8_t Pressed;
+extern Axis axes[MAX_MOTORS_PER_AXIS];
 
 // Function prototypes
 
@@ -103,6 +100,7 @@ void TMC2209_Start(Motor *motor);
 void TMC2209_checkStatus(Motor *motor, bool *isStepping, uint32_t *nextTotalSteps);
 void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM);
 
+uint8_t getStepPerUnit(Motor *motor);
 
 //// UART TMC2209 ////
 uint8_t calculate_CRC(uint8_t *datagram, uint8_t length);
@@ -126,12 +124,12 @@ uint16_t TMC2209_readStallGuardResult(Motor *tmc2209);
 void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs);
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
 
+
 //// Debug ////
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
 void TMC2209_Start_C(Motor *motor);
-static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
 
 
 

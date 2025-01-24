@@ -112,7 +112,7 @@ typedef struct {
     Motor *motors[MAX_MOTORS_PER_AXIS];           // Pointing to which motors controlling this axis
     float lengthMM;         // Total length of the axis in millimeters
     uint32_t totalSteps;    // Total steps the motor takes to cover the axis length -- You can get this value using limit switches
-    float stepPerUnit;      // How much one step would move on the axis -- Calculate this
+    float stepPerUnit;      // How much one step would move on the axis
     char id[MAX_MOTORS_PER_AXIS][10];          //  Axis name with Motor ID (e.g., "X1", Y1", "Z1") "1" stands for the motor ID which control the axis
 } Axis;
 

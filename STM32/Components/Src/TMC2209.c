@@ -36,13 +36,8 @@
 
 
 uint32_t last_tmc_read_attempt_ms = 0;
+uint8_t direction = 0;
 
-
-uint8_t Pressed = 0;
-volatile uint8_t direction = 0; // Flag to indicate data reception
-
-int32_t stepsTaken[MAX_MOTORS];
-uint32_t CurrentPosition;
 ////////// HAL FUNCTIONS //////////
 
 // PWM callback for step counting
@@ -51,14 +46,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-		  stepsTaken[i] = motors[i].stepsTaken;
-		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
-		  motors[i].StepsFront++;
-		  }
-		  else if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_RESET){
-
-			  		  motors[i].StepsBack++;
-		 }
       }
 
     }
@@ -120,10 +107,13 @@ void TMC2209_Start(Motor *motor) {
 static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
 	motor->nextTotalSteps = totalSteps;
 	motor->stepsTaken = 0;
-	while (motor->stepsTaken < motor->nextTotalSteps); // Wait until we reach required steps
+
+	while (motor->stepsTaken < motor->nextTotalSteps) motor->currentPositionMM += getStepPerUnit(motor); // Wait until we reach required steps and increment position on every step
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
+
 	motor->nextTotalSteps = 0;
 }
+
 
 
 void TMC2209_Step(Motor *motor, uint32_t steps){ // This doesn't work anymore since we have MoveTo
@@ -145,7 +135,6 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     }
 
     // Select the motor from the axis
-    Motor *motor = axis->motors[motorIndex];
 //    if (!motor) {
 //        debug_print("Motor not assigned.\r\n");
 //        return;
@@ -231,6 +220,21 @@ void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArr
       //  HAL_Delay(10);
     }
 }
+
+
+uint8_t getStepPerUnit(Motor *motor){ // Gets the stepPerUnit of that motor based on the axis it's in
+	uint8_t motorID = motor->driver.id;
+	if(motorID == 0 || motorID == 2){
+		return axes[1].stepPerUnit;
+	}
+	return axes[2].stepPerUnit;
+}
+
+
+
+
+
+/// TMC2209 UART Function ///
 
 void clear_UART_buffers(UART_HandleTypeDef *huart) {
     debug_print("Clearing UART buffers...\r\n");
@@ -328,6 +332,7 @@ uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLe
      }
      return rxBuffer; // Success
      }
+     return NULL;
  }
 
 
@@ -437,7 +442,7 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
 	int32_t IFCNT = tmc2209->driver.IFCNT;
 	if (ENABLE_DEBUG){
 	char debug_msg[150];
-	snprintf(debug_msg, sizeof(debug_msg), "----- Setting SpreadCycle Mode for Driver: %u -----\r\n", driverID);
+	snprintf(debug_msg, sizeof(debug_msg), "Setting SpreadCycle Mode for Driver: %u\r\n", driverID);
 	debug_print(debug_msg);
 	}
 	gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
@@ -460,7 +465,7 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
     }
 
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
-    TMC2209_read_IFCNT(tmc2209);
+    TMC2209_read_ifcnt(tmc2209);
     if(tmc2209->driver.IFCNT <= IFCNT){
     	tmc2209->driver.chopperMode = 1;
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!\r\n");
@@ -724,7 +729,7 @@ void TMC2209_readIRUN(Motor *tmc2209) {
 
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
 	HAL_Delay(1);
-    uint32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
+    int32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
     if(ENABLE_DEBUG){
     char debug_msg[100];
     sprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);

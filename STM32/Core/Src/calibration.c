@@ -1,5 +1,6 @@
 #include "Calibration.h"
 uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
+uint8_t Pressed = 0;
 int8_t motor1Cali[2];
 int8_t motor2Cali[2];
 uint32_t StepsFront[4]={0,0,0,0};
