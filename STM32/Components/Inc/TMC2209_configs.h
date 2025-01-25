@@ -99,6 +99,7 @@ typedef struct {
     uint32_t totalStepsPerRevolution; // we will calculate this later based on the mstep option the driver has
     int32_t stepsTaken;           // Count of steps taken
     uint32_t nextTotalSteps;           // Total steps the motor should take
+    uint32_t direction;				// Direction of the Motor
     float currentPositionMM; // Current position on the axis in millimeters
     float nextPositionMM;
     bool isStepping;               // State to track if the motor is currently stepping

@@ -55,7 +55,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 // Set the direction of the motor
 void TMC2209_SetDirection(Motor *motor, GPIO_PinState state) {
     HAL_GPIO_WritePin(motor->driver.dir_port, motor->driver.dir_pin, state);
-    direction = state;
+    motor->direction = state;
 }
 
 // Enable or disable the driver
@@ -108,7 +108,14 @@ static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for
 	motor->nextTotalSteps = totalSteps;
 	motor->stepsTaken = 0;
 
-	while (motor->stepsTaken < motor->nextTotalSteps) motor->currentPositionMM += getStepPerUnit(motor); // Wait until we reach required steps and increment position on every step
+	while (motor->stepsTaken <= motor->nextTotalSteps) {// Wait until we reach required steps and increment position on every step
+		if(motor->direction != 0){
+			motor->currentPositionMM += getStepPerUnit(motor);
+		}
+		else {
+			motor->currentPositionMM -= getStepPerUnit(motor);
+		}
+	}
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
 
 	motor->nextTotalSteps = 0;
