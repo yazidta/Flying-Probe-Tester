@@ -56,8 +56,7 @@
 #define TMC_READ_REQUEST_DATAGRAM_SIZE  4
 
 // Macros & other
-#define ENABLE_DEBUG					1
-#define DISABLE_DEBUG					0
+#define ENABLE_DEBUG					0		// If this is set to 1 then UART debug will be enabled
 #define SYNC 							0x05     // Sync byte value for communication
 #define SENDDELAY_MULTIPLIER 			8 		// 8-bit times per SENDDELAY unit
 #define BAUD_RATE 						115200
@@ -113,9 +112,9 @@ uint8_t TMC2209_waitForReply(uint32_t timeout);
 bool TMC2209_enable_PDNuart(Motor *tmc2209);
 bool configureGCONF(Motor *tmc2209);
 void TMC2209_read_ifcnt(Motor *tmc2209);
-uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
+uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
 void checkMicrosteppingResolution(Motor *tmc2209);
-uint16_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable);
+uint16_t TMC2209_setSpreadCycle(Motor *motor, uint8_t enable);
 void checkSpreadCycle(Motor *tmc2209);
 uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value);
 void TMC2209_readIRUN(Motor *tmc2209);

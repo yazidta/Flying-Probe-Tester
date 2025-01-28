@@ -166,7 +166,7 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
     uint32_t totalStepsPerRevolution = motor1->stepsPerRevolution * motor1->driver.mstep; // Both motors use the same microstepping
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;
-    axis->stepPerUnit = totalStepsPerRevolution / circumference;;
+    axis->stepPerUnit = totalStepsPerRevolution / circumference;
 
     // IDs for motors controlling the axis, eg. X1, X2
     snprintf(axis->id[0], sizeof(axis->id[0]), "%s%d", axisName, motor1->driver.id);

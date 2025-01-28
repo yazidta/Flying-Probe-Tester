@@ -442,19 +442,21 @@ bool configureGCONF(Motor *tmc2209) {
 }
 
 
-uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
+uint16_t TMC2209_setSpreadCycle(Motor *tmc2209, uint8_t enable) {
 	uint32_t gconf;
 	uint32_t check_gconf;
 	uint8_t driverID = tmc2209->driver.id;
 	int32_t IFCNT = tmc2209->driver.IFCNT;
+
 	if (ENABLE_DEBUG){
 	char debug_msg[150];
 	snprintf(debug_msg, sizeof(debug_msg), "Setting SpreadCycle Mode for Driver: %u\r\n", driverID);
 	debug_print(debug_msg);
 	}
+
 	gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
 
-    if(gconf == TMC_SPREADCYCLE_ERROR1){
+    if(tmc2209->driver.STATUS != TMC_OK){
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(Invalid Reply 1)\r\n");
     	return gconf;
     }
@@ -474,7 +476,7 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
     TMC2209_read_ifcnt(tmc2209);
     if(tmc2209->driver.IFCNT <= IFCNT){
-    	tmc2209->driver.chopperMode = 1;
+    	tmc2209->driver.chopperMode = 0;
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!\r\n");
     	return TMC_SET_SPREADCYCLE_ERROR;
     }
@@ -484,7 +486,7 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(invalid Reply 2)\r\n");
     }
 
-    tmc2209->driver.chopperMode = check_gconf;
+    tmc2209->driver.chopperMode = 1;
     return TMC_OK;
 }
 
@@ -507,13 +509,13 @@ void checkSpreadCycle(Motor *tmc2209) {
 
 
 // Function to set the microstepping resolution through UART
-uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
+uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     uint8_t driverID = tmc2209->driver.id;
     int32_t IFCNT = tmc2209->driver.IFCNT;
-    char debug_msg[150];
 
+    char debug_msg[150];
     if (ENABLE_DEBUG){
-    snprintf(debug_msg, sizeof(debug_msg), "----- Setting Microstepping For Driver ID: %u -----\r\n", driverID);
+    snprintf(debug_msg, sizeof(debug_msg), "Setting Microstepping For Driver ID: %u \r\n", driverID);
     debug_print(debug_msg);
     memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
     }
@@ -581,8 +583,11 @@ uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     }
     // Debug
     tmc2209->driver.mstep = resolution;
-    sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
-    if (ENABLE_DEBUG) debug_print(debug_msg);
+
+    if (ENABLE_DEBUG) {
+    	sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
+    	debug_print(debug_msg);
+    }
     return TMC_OK;
 
 }
@@ -781,7 +786,7 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
     	configureGCONF(&motors[i]);
     	HAL_Delay(1000);
     	uint16_t mstep = motors[i].driver.mstep;
-        setMicrosteppingResolution(&motors[i], mstep);
+    	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
 
         TMC2209_SetSpeed(&motors[0], 5000);
         TMC2209_SetSpeed(&motors[1], 15000);
