@@ -779,6 +779,24 @@ uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDE
 
 }
 
+float TMC2209_readTemperature(UART_HandleTypeDef *huart)
+{
+    uint32_t drv_status = TMC2209_readInit(huart, TMC2209_REG_DRVSTATUS);
+    // Extract temperature flags <sup className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px]"><a href="https://www.klipper3d.org/Config_Reference.html?h=tmc">7</a></sup>
+    uint8_t t120 = (drv_status >> 10) & 0x01;
+    uint8_t t143 = (drv_status >> 9) & 0x01;
+    uint8_t t150 = (drv_status >> 8) & 0x01;
+    uint8_t t157 = (drv_status >> 7) & 0x01;
+
+    if(t157) return 157.0f;
+    if(t150) return 150.0f;
+    if(t143) return 143.0f;
+    if(t120) return 120.0f;
+
+    return 0.0f;
+}
+
+
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
@@ -797,7 +815,7 @@ void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to De
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
     	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
-        TMC2209_SetSpreadCycle(&motors[i], DEFAULT_CHOPPERMODE);
+        TMC2209_setSpreadCycle(&motors[i], DEFAULT_CHOPPERMODE);
 
         TMC2209_SetSpeed(&motors[0], DEFAULT_Y_SPEED);
         TMC2209_SetSpeed(&motors[1], DEFAULT_Y_SPEED);
