@@ -61,6 +61,8 @@
 #define SENDDELAY_MULTIPLIER 			8 		// 8-bit times per SENDDELAY unit
 #define BAUD_RATE 						115200
 #define TMC_ERROR						-1
+#define TMC_ENABLESTALL_ERROR			10
+#define TMC_STALL_ERROR					15
 #define TMC_SEND_ERROR					20
 #define TMC_NOREPLY_ERROR				30
 #define TMC_SYNC_REPLY_ERROR			40
@@ -75,6 +77,7 @@
 #define TMC_SET_MSTEP_ERROR				110
 #define TMC2209_IRUN_ERROR				120
 #define TMC2209_SENDELAY_ERROR			130
+
 #define TMC_OK							0
 
 
@@ -112,7 +115,10 @@ uint8_t TMC2209_waitForReply(uint32_t timeout);
 bool TMC2209_enable_PDNuart(Motor *tmc2209);
 bool configureGCONF(Motor *tmc2209);
 void TMC2209_read_ifcnt(Motor *tmc2209);
-float TMC2209_readTemperature(UART_HandleTypeDef *huart);
+float TMC2209_readTemperature(Motor *tmc2209);
+uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs);
+void TMC2209_checkStall(Motor *tmc2209);
+
 uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
 void checkMicrosteppingResolution(Motor *tmc2209);
 uint16_t TMC2209_setSpreadCycle(Motor *motor, uint8_t enable);

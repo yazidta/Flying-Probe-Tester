@@ -779,10 +779,9 @@ uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDE
 
 }
 
-float TMC2209_readTemperature(UART_HandleTypeDef *huart)
+float TMC2209_readTemperature(Motor *tmc2209)
 {
-    uint32_t drv_status = TMC2209_readInit(huart, TMC2209_REG_DRVSTATUS);
-    // Extract temperature flags <sup className="inline select-none [&>a]:rounded-2xl [&>a]:border [&>a]:px-1.5 [&>a]:py-0.5 [&>a]:transition-colors shadow [&>a]:bg-ds-bg-subtle [&>a]:text-xs [&>svg]:w-4 [&>svg]:h-4 relative -top-[2px]"><a href="https://www.klipper3d.org/Config_Reference.html?h=tmc">7</a></sup>
+    uint32_t drv_status = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS);
     uint8_t t120 = (drv_status >> 10) & 0x01;
     uint8_t t143 = (drv_status >> 9) & 0x01;
     uint8_t t150 = (drv_status >> 8) & 0x01;
@@ -793,15 +792,45 @@ float TMC2209_readTemperature(UART_HandleTypeDef *huart)
     if(t143) return 143.0f;
     if(t120) return 120.0f;
 
-    return 0.0f;
+    return 25.0f;
 }
 
 
+uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs) {
+	int32_t IFCNT = tmc2209->driver.IFCNT;
+    TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs);    // Set StallGuard threshold (SGTHRS)
+
+    TMC2209_read_ifcnt(tmc2209);
+    if (tmc2209->driver.IFCNT <= IFCNT){
+    	if(ENABLE_DEBUG) debug_print("Failed to set Send Delay! \r\n");
+    	return tmc2209->driver.stallEnabled = TMC_ENABLESTALL_ERROR;
+    }
+
+    return tmc2209->driver.stallEnabled = 1;
+
+}
+
+
+void TMC2209_checkStall(Motor *tmc2209) {
+    uint32_t drv_status = 0;
+
+    // Read the DRV_STATUS register (address 0x6F)
+    drv_status = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS);
+
+    if (drv_status == tmc2209->driver.STATUS) {
+        tmc2209->driver.STALL = TMC_STALL_ERROR;
+    }
+
+    // Extract StallGuard and Diagnostic flags from DRV_STATUS
+    uint8_t stall = (drv_status >> 17) & 0x01;
+    tmc2209->driver.STALL = stall; // Stall detected
+}
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
     	uint16_t mstep = motors[i].driver.mstep;
     	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
+    	TMC2209_enableStallDetection(&motors[i], 10);
 
         TMC2209_SetSpeed(&motors[0], 5000);
         TMC2209_SetSpeed(&motors[1], 15000);

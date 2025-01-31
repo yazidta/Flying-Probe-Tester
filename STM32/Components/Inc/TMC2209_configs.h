@@ -90,6 +90,9 @@ typedef struct {
     uint16_t IRUN;
     uint16_t IHOLD;
     uint16_t IDELAY;
+    uint8_t stallEnabled;
+    uint8_t STALL;
+
 
     // GPIO PINS
     GPIO_TypeDef *step_port;
