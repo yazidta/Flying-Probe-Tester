@@ -53,6 +53,23 @@ extern TIM_HandleTypeDef htim5;
 #define Y_AXIS_LENGTH 	300
 
 
+// DEFAULT DRIVERS CONFIGURATIONS
+
+#define DEFAULT_MSTEP	16
+#define DEFAULT_CHOPPERMODE	0
+#define DEFAULT_SENDDELAY 16
+
+
+// DEFAULT MOTOR SPEED
+
+#define DEFAULT_X_SPEED	30000
+#define DEFAULT_Y_SPEED	15000
+
+
+
+
+
+
 
 // Driver structure
 typedef struct {

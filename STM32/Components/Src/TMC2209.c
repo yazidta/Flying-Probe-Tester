@@ -779,12 +779,9 @@ uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDE
 
 }
 
-void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle)
-{
+void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
-    	HAL_Delay(2000);
     	configureGCONF(&motors[i]);
-    	HAL_Delay(1000);
     	uint16_t mstep = motors[i].driver.mstep;
     	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
 
@@ -792,11 +789,22 @@ void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enabl
         TMC2209_SetSpeed(&motors[1], 15000);
         TMC2209_SetSpeed(&motors[2], 5000);
         TMC2209_SetSpeed(&motors[3], 15000);
-       // HAL_Delay(1000);
-       // checkMicrosteppingResolution(&motors[i]);
-       // HAL_Delay(1000);
-       // TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
     }
+}
+
+void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default
+
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    	configureGCONF(&motors[i]);
+    	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
+        TMC2209_SetSpreadCycle(&motors[i], DEFAULT_CHOPPERMODE);
+
+        TMC2209_SetSpeed(&motors[0], DEFAULT_Y_SPEED);
+        TMC2209_SetSpeed(&motors[1], DEFAULT_Y_SPEED);
+        TMC2209_SetSpeed(&motors[2], DEFAULT_X_SPEED);
+        TMC2209_SetSpeed(&motors[3], DEFAULT_X_SPEED);
+    }
+
 }
 
 
