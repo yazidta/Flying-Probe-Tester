@@ -88,7 +88,9 @@ SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim9, TIM_CHANNEL_1
 Motor motors[MAX_MOTORS]; // Global motor array
 Axis axes[MAX_MOTORS_PER_AXIS]; // Global axes array
 
+
 volatile uint8_t flagUserBtn = 0;
+uint8_t stall = 0;
 
 // ENDTOP FLAGS:
 volatile uint8_t ES1 = 0;
@@ -201,22 +203,37 @@ int main(void)
 
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
-  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
+  //LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
   initializeMotors();
   initializeSystem();
-  ENC_Init(&henc1);
+ // ENC_Init(&henc1);
 
   TMC2209_setMotorsConfiguration(motors,8,1);
-  TMC2209_MoveTo(&axes[1],1,30);
+  TMC2209_EnableDriver(&motors[0], 1);
+  TMC2209_EnableDriver(&motors[2], 1);
+  TMC2209_EnableDriver(&motors[3], 1);
+  SERVO_WritePosition(&hservo1, 60);
+
+
+ // TMC2209_SetDirection(&motors[0], 1);
+ // TMC2209_SetSpeed(&motors[0], 8000);
+ // TMC2209_Start(&motors[0]);
+
+
+  //TMC2209_MoveTo(&axes[1],1,30);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
    while (1){
+
+
+	  // if (stall) TMC2209_Stop(&motors[1]);
+
 
 	   /// DEBUG ///
 	      ES1 =IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
@@ -1120,6 +1137,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : diag_Pin */
+  GPIO_InitStruct.Pin = diag_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(diag_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : BtnLeft_Pin */
   GPIO_InitStruct.Pin = BtnLeft_Pin;

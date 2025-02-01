@@ -61,7 +61,13 @@ void initializeMotors() {
         motors[i].driver.GCONF = 0;
         motors[i].driver.IFCNT = 0;
         motors[i].driver.chopperMode = 0;
+        motors[i].driver.SG_RESULT = 0;
+        motors[i].driver.checkStallFlag = 0;
+        motors[i].driver.STALL = 0;
+        motors[i].driver.TCoolThrs = 0;
+        motors[i].driver.stepFrequency = 0;
 
+        motors[i].fullSteps = 0;
         motors[i].stepsTaken = 0;
         motors[i].nextTotalSteps = 0;
         motors[i].currentPositionMM = 0;
@@ -80,7 +86,7 @@ void initializeMotors() {
         motors[i].driver.mstep = 16;
         motors[i].driver.IRUN = 16;
         motors[i].driver.IHOLD = 16;
-        motors[i].stepsPerRevolution = 400;
+        motors[i].stepsPerRevolution = 200;
         // GPIO PINS
         motors[i].driver.step_port = STEP1_GPIO_Port;
         motors[i].driver.step_pin = STEP1_Pin;
@@ -136,7 +142,7 @@ void initializeMotors() {
             motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
             motors[i].driver.mstep = 16;
             motors[i].driver.huart = &huart6;
-            motors[i].stepsPerRevolution = 200;
+            motors[i].stepsPerRevolution = 400;
             // GPIO PINS
             motors[i].driver.step_port = STEP4_GPIO_Port;
             motors[i].driver.step_pin = STEP4_Pin;
@@ -177,8 +183,8 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
 
 void initializeSystem(){
     // X-axis
-    initializeAxis(&axes[0], &motors[0],&motors[2], 40, "Y");
-    initializeAxis(&axes[1], &motors[1],&motors[3], 8, "X");
+    initializeAxis(&axes[0], &motors[0],&motors[1], 40, "Y");
+    initializeAxis(&axes[1], &motors[2],&motors[3], 8, "X");
 
     // Y-axis
    // initializeAxis(&axes[1], &motors[1], &motors[3], Y_AXIS_LENGTH, "Y");

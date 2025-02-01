@@ -77,6 +77,7 @@
 #define TMC_SET_MSTEP_ERROR				110
 #define TMC2209_IRUN_ERROR				120
 #define TMC2209_SENDELAY_ERROR			130
+#define TMC2209_TCOOLTHRS_ERROR			-10
 
 #define TMC_OK							0
 
@@ -137,7 +138,6 @@ void TMC2209_resetMotorsConfiguration(Motor *motors);
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
-void TMC2209_Start_C(Motor *motor);
 
 
 

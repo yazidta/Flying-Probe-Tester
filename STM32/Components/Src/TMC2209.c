@@ -46,6 +46,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
+          motors[i].driver.checkStallFlag = 1;
+
+          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0) {
+              motors[i].fullSteps++;
+
+          }
       }
 
     }
@@ -83,6 +89,7 @@ void TMC2209_SetSpeed(Motor *motor, uint32_t StepFrequency) {
 
     __HAL_TIM_SET_AUTORELOAD(motor->driver.htim, ARR); // Period
     __HAL_TIM_SET_COMPARE(motor->driver.htim, motor->driver.step_channel, ARR / 2); // Duty cycle
+    motor->driver.stepFrequency = StepFrequency;
 }
 
 
@@ -798,6 +805,7 @@ float TMC2209_readTemperature(Motor *tmc2209)
 
 uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs) {
 	int32_t IFCNT = tmc2209->driver.IFCNT;
+
     TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs);    // Set StallGuard threshold (SGTHRS)
 
     TMC2209_read_ifcnt(tmc2209);
@@ -806,37 +814,57 @@ uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs) {
     	return tmc2209->driver.stallEnabled = TMC_ENABLESTALL_ERROR;
     }
 
+
     return tmc2209->driver.stallEnabled = 1;
 
 }
 
+void TMC2209_SetTCoolThrs(Motor *tmc2209, uint32_t stepFrequency) {
+    const uint32_t fCLK = 12000000; // TMC2209 Internal clock frequency: 12 MHz
+    uint32_t tStep = fCLK / stepFrequency; // The internal clokc trims step frequency that's why we divied it.
 
-void TMC2209_checkStall(Motor *tmc2209) {
-    uint32_t drv_status = 0;
-
-    // Read the DRV_STATUS register (address 0x6F)
-    drv_status = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS);
-
-    if (drv_status == tmc2209->driver.STATUS) {
-        tmc2209->driver.STALL = TMC_STALL_ERROR;
+    // Ensure tStep doesn't exceed 20 bits (valid for TCOOLTHRS register)
+    if (tStep > 0xFFFFF) {
+        tStep = 0xFFFFF;
     }
 
-    // Extract StallGuard and Diagnostic flags from DRV_STATUS
-    uint8_t stall = (drv_status >> 17) & 0x01;
-    tmc2209->driver.STALL = stall; // Stall detected
+    int32_t IFCNT = tmc2209->driver.IFCNT;
+
+    if (tmc2209->driver.IFCNT <= IFCNT){
+    	if(ENABLE_DEBUG) debug_print("Failed to set Send Delay! \r\n");
+    	tmc2209->driver.TCoolThrs = TMC2209_TCOOLTHRS_ERROR;
+    }
+    TMC2209_writeInit(tmc2209, TMC2209_REG_TCOOLTHRS, tStep);
+    tmc2209->driver.TCoolThrs = tStep;
+}
+
+
+void TMC2209_checkStall(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes updated with each fullstep, independent of TCOOLTHRS and SGTHRS
+    uint32_t sg_result = 0;
+
+    // Read the SG_RESULT register
+    sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_SG_RESULT) & 0x3FF; // Mask 10 bits
+
+    if (sg_result == tmc2209->driver.STATUS) {
+        tmc2209->driver.SG_RESULT = TMC_STALL_ERROR;
+    }
+
+    tmc2209->driver.SG_RESULT = sg_result;
 }
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
     	uint16_t mstep = motors[i].driver.mstep;
     	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
-    	TMC2209_enableStallDetection(&motors[i], 10);
+    	TMC2209_enableStallDetection(&motors[i], 110);
+    	TMC2209_SetTCoolThrs(&motors[i], 8000);
 
-        TMC2209_SetSpeed(&motors[0], 5000);
-        TMC2209_SetSpeed(&motors[1], 15000);
-        TMC2209_SetSpeed(&motors[2], 5000);
-        TMC2209_SetSpeed(&motors[3], 15000);
+
     }
+    TMC2209_SetSpeed(&motors[0], 8500);
+    TMC2209_SetSpeed(&motors[1], 15000);
+    TMC2209_SetSpeed(&motors[2], 5000);
+    TMC2209_SetSpeed(&motors[3], 15000);
 }
 
 void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default

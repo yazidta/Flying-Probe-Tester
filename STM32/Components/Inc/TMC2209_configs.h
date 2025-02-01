@@ -91,7 +91,11 @@ typedef struct {
     uint16_t IHOLD;
     uint16_t IDELAY;
     uint8_t stallEnabled;
+    uint32_t SG_RESULT;
+    uint8_t checkStallFlag;
     uint8_t STALL;
+    uint32_t stepFrequency;
+    int32_t TCoolThrs;
 
 
     // GPIO PINS
@@ -118,6 +122,7 @@ typedef struct {
     uint32_t stepsPerRevolution;	// Steps per revolution of the motor
     uint32_t totalStepsPerRevolution; // we will calculate this later based on the mstep option the driver has
     int32_t stepsTaken;           // Count of steps taken
+    int32_t fullSteps;
     uint32_t nextTotalSteps;           // Total steps the motor should take
     uint32_t direction;				// Direction of the Motor
     float currentPositionMM; // Current position on the axis in millimeters
