@@ -105,7 +105,7 @@ volatile uint8_t Btn5 =0;
 // Homing Flags
 
 volatile uint8_t homingFlag = 0;
-
+volatile uint8_t calibrationFlag =0;
 
 
 /* USER CODE BEGIN PV */
@@ -202,17 +202,40 @@ int main(void)
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
   LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
-
+//
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
   initializeMotors();
   initializeSystem();
-  ENC_Init(&henc1);
+//  ENC_Init(&henc1);
 
-  TMC2209_setMotorsConfiguration(motors,8,1);
-  TMC2209_MoveTo(&axes[1],1,30);
+  TMC2209_setMotorsConfiguration(motors,16,1);
+ // TMC2209_MoveTo(&axes[0],0,30);
+  //TMC2209_MoveTo(&axes[0],0,-30);
+
+  //SERVO_WritePosition(&hservo1, 80);
+  //SERVO_WritePosition(&hservo2, 90);
+  TMC2209_EnableDriver(&motors[0], 1);
+  TMC2209_EnableDriver(&motors[1], 1);
+  TMC2209_EnableDriver(&motors[2], 1);
+  TMC2209_EnableDriver(&motors[3], 1);
+  //configureGCONF(&motors[2]);
+  //setMicrosteppingResolution(&motors[2], 16);
+//	TMC2209_Start(&motors[0]);
+//	TMC2209_Start(&motors[1]);
+	//TMC2209_Start(&motors[2]);
+//	TMC2209_Start(&motors[3]);
+  TMC2209_SetDirection(&motors[0],1);
+//
+//  TMC2209_Step(&motors[1],10000);
+//  TMC2209_Step(&motors[0],10000);
+//  TMC2209_Step(&motors[2],10000);
+//  TMC2209_Step(&motors[3],10000);
   /* USER CODE END 2 */
+  SERVO_WritePosition(&hservo1, 60);
+  //SERVO_WritePosition(&hservo1, 100);
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -233,20 +256,25 @@ int main(void)
 
       if (flagUserBtn)	{
     	homingFlag = MotorsHoming(&motors);
-
+    	calibrationFlag = calibrationState();
     	flagUserBtn = 0;
       }
-  	if (homingFlag){
-    	  MotorControl_ButtonHandler(&axes,&motors);
+  	if(!calibrationFlag && homingFlag){
+  		MotorControl_ButtonHandler(&axes,&motors);
       }
+      if(calibrationFlag == 1){
+          		  LCD_I2C_Clear(&hlcd3);
+                  LCD_I2C_SetCursor(&hlcd3,1,1);
+      	          LCD_I2C_printStr(&hlcd3,"Gay Nigga");
+          		  //homingFlag = 0;
+          	  }
 
 
-
-//	  uint32_t encode = ENC_GetCounter(&henc1);
+	  //uint32_t encode = ENC_GetCounter(&henc1);
 //		uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
-
-// 		Handle the selected option using the encapsulated function
-          //LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
+//
+//// 		Handle the selected option using the encapsulated function
+//          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
       }
 
     /* USER CODE END WHILE */
@@ -745,7 +773,6 @@ static void MX_TIM9_Init(void)
 
   /* USER CODE END TIM9_Init 0 */
 
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM9_Init 1 */
@@ -757,15 +784,6 @@ static void MX_TIM9_Init(void)
   htim9.Init.Period = 20000-1;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim9) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim9, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
   if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
   {
     Error_Handler();
