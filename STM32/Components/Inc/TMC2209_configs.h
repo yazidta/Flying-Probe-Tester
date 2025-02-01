@@ -53,6 +53,23 @@ extern TIM_HandleTypeDef htim5;
 #define Y_AXIS_LENGTH 	300
 
 
+// DEFAULT DRIVERS CONFIGURATIONS
+
+#define DEFAULT_MSTEP	16
+#define DEFAULT_CHOPPERMODE	0
+#define DEFAULT_SENDDELAY 16
+
+
+// DEFAULT MOTOR SPEED
+
+#define DEFAULT_X_SPEED	30000
+#define DEFAULT_Y_SPEED	15000
+
+
+
+
+
+
 
 // Driver structure
 typedef struct {
@@ -73,6 +90,13 @@ typedef struct {
     uint16_t IRUN;
     uint16_t IHOLD;
     uint16_t IDELAY;
+    uint8_t stallEnabled;
+    uint32_t SG_RESULT;
+    uint8_t checkStallFlag;
+    uint8_t STALL;
+    uint32_t stepFrequency;
+    int32_t TCoolThrs;
+
 
     // GPIO PINS
     GPIO_TypeDef *step_port;
@@ -98,7 +122,9 @@ typedef struct {
     uint32_t stepsPerRevolution;	// Steps per revolution of the motor
     uint32_t totalStepsPerRevolution; // we will calculate this later based on the mstep option the driver has
     int32_t stepsTaken;           // Count of steps taken
+    int32_t fullSteps;
     uint32_t nextTotalSteps;           // Total steps the motor should take
+    uint32_t direction;				// Direction of the Motor
     float currentPositionMM; // Current position on the axis in millimeters
     float nextPositionMM;
     bool isStepping;               // State to track if the motor is currently stepping
@@ -112,7 +138,7 @@ typedef struct {
     Motor *motors[MAX_MOTORS_PER_AXIS];           // Pointing to which motors controlling this axis
     float lengthMM;         // Total length of the axis in millimeters
     uint32_t totalSteps;    // Total steps the motor takes to cover the axis length -- You can get this value using limit switches
-    float stepPerUnit;      // How much one step would move on the axis -- Calculate this
+    float stepPerUnit;      // How much one step would move on the axis
     char id[MAX_MOTORS_PER_AXIS][10];          //  Axis name with Motor ID (e.g., "X1", Y1", "Z1") "1" stands for the motor ID which control the axis
 } Axis;
 

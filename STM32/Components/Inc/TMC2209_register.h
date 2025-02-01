@@ -70,6 +70,7 @@
 #define TMC2209_REG_PWM_SCALE    0x71
 #define TMC2209_REG_PWM_AUTO     0x72
 
+
 // GCONF register bit positions
 #define TMC2209_I_SCALE_ANALOG_POS   0
 #define TMC2209_INTERNAL_RSENSE_POS  1

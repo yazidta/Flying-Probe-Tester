@@ -56,12 +56,13 @@
 #define TMC_READ_REQUEST_DATAGRAM_SIZE  4
 
 // Macros & other
-#define ENABLE_DEBUG					1
-#define DISABLE_DEBUG					0
+#define ENABLE_DEBUG					0		// If this is set to 1 then UART debug will be enabled
 #define SYNC 							0x05     // Sync byte value for communication
 #define SENDDELAY_MULTIPLIER 			8 		// 8-bit times per SENDDELAY unit
 #define BAUD_RATE 						115200
 #define TMC_ERROR						-1
+#define TMC_ENABLESTALL_ERROR			10
+#define TMC_STALL_ERROR					15
 #define TMC_SEND_ERROR					20
 #define TMC_NOREPLY_ERROR				30
 #define TMC_SYNC_REPLY_ERROR			40
@@ -76,19 +77,18 @@
 #define TMC_SET_MSTEP_ERROR				110
 #define TMC2209_IRUN_ERROR				120
 #define TMC2209_SENDELAY_ERROR			130
-
+#define TMC2209_TCOOLTHRS_ERROR			-10
 
 #define TMC_OK							0
 
 
 
 
+
 // Variables
 
-extern TIM_HandleTypeDef htim3;
 extern uint32_t last_tmc_read_attempt_ms;
-extern int32_t stepsTaken[MAX_MOTORS];
-extern uint8_t Pressed;
+extern Axis axes[MAX_MOTORS_PER_AXIS];
 
 // Function prototypes
 
@@ -103,6 +103,7 @@ void TMC2209_Start(Motor *motor);
 void TMC2209_checkStatus(Motor *motor, bool *isStepping, uint32_t *nextTotalSteps);
 void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM);
 
+uint8_t getStepPerUnit(Motor *motor);
 
 //// UART TMC2209 ////
 uint8_t calculate_CRC(uint8_t *datagram, uint8_t length);
@@ -115,9 +116,13 @@ uint8_t TMC2209_waitForReply(uint32_t timeout);
 bool TMC2209_enable_PDNuart(Motor *tmc2209);
 bool configureGCONF(Motor *tmc2209);
 void TMC2209_read_ifcnt(Motor *tmc2209);
-uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
+float TMC2209_readTemperature(Motor *tmc2209);
+uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs);
+void TMC2209_checkStall(Motor *tmc2209);
+
+uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
 void checkMicrosteppingResolution(Motor *tmc2209);
-uint16_t TMC2209_SetSpreadCycle(Motor *motor, uint8_t enable);
+uint16_t TMC2209_setSpreadCycle(Motor *motor, uint8_t enable);
 void checkSpreadCycle(Motor *tmc2209);
 uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value);
 void TMC2209_readIRUN(Motor *tmc2209);
@@ -125,13 +130,14 @@ void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddel
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209);
 void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs);
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
+void TMC2209_resetMotorsConfiguration(Motor *motors);
+
+
 
 //// Debug ////
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
-void TMC2209_Start_C(Motor *motor);
-static void TMC2209_CountSteps_C(Motor *motor, uint32_t totalSteps);// Static for now unless we need to expose it later
 
 
 

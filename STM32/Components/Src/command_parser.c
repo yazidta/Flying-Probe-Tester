@@ -34,24 +34,36 @@ void parsePCB2GcodeCommand(char *command) {
 
         if (strcmp(param3, "CHOPPERMODE") == 0) {
             if (strcmp(param4, "StealthChop") == 0) {
-                TMC2209_setSpreadCycle(&motors[motorID], 0);
+            	TMC2209_setSpreadCycle(&motors[motorID], 0);
+            	if (motors[motorID].driver.chopperMode == 0) debug_print("CHOPPOER MODE: StealthChop.\r\n");
+            	else{
+            		debug_print("Failed to set Chopper mode! Check Driver Status.\r\n");
+            	}
             }
             else if (strcmp(param4, "SpreadCycle") == 0) {
-                TMC2209_setSpreadCycle(&motors[motorID], 1);
+            	TMC2209_setSpreadCycle(&motors[motorID], 1);
+            	if (motors[motorID].driver.chopperMode == 1) debug_print("CHOPPOER MODE: StealthChop.\r\n");
+            	else{
+            		debug_print("Failed to set Chopper mode! Check Driver Status.\r\n");
+            	}
             }
-            else {
-                debug_print("Unknown CHOPPERMODE option.\r\n");
+        else {
+             debug_print("Unknown CHOPPERMODE option.\r\n");
             }
         }
         else if (strcmp(param3, "SENDDELAY") == 0) {
             value = atoi(param4);
             TMC2209_setSendDelay(&motors[motorID], value);
-            debug_print("SENDDELAY set\r\n");
+            debug_print("SENDDELAY SET\r\n");
         }
         else if (strcmp(param3, "MICROSTEPPING") == 0) {
             value = atoi(param4);
             TMC2209_setMicrosteppingResolution(&motors[motorID], value);
-            debug_print("Microstepping set\r\n");
+            if(motors[motorID].driver.mstep == value) debug_print("Microstepping SET\r\n");
+            else{
+            	debug_print("Failed to set Microstepping! Check Driver Status.\r\n");
+            }
+
         }
         else {
             debug_print("Unknown parameter for DRIVER.\r\n");

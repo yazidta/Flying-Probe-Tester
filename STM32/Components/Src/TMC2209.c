@@ -36,13 +36,8 @@
 
 
 uint32_t last_tmc_read_attempt_ms = 0;
+uint8_t direction = 0;
 
-
-uint8_t Pressed = 0;
-volatile uint8_t direction = 0; // Flag to indicate data reception
-
-int32_t stepsTaken[MAX_MOTORS];
-uint32_t CurrentPosition;
 ////////// HAL FUNCTIONS //////////
 
 // PWM callback for step counting
@@ -51,14 +46,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-		  stepsTaken[i] = motors[i].stepsTaken;
-		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
-		  motors[i].StepsFront++;
-		  }
-		  else if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_RESET){
+          motors[i].driver.checkStallFlag = 1;
 
-			  		  motors[i].StepsBack++;
-		 }
+          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0) {
+              motors[i].fullSteps++;
+
+          }
       }
 
     }
@@ -68,7 +61,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 // Set the direction of the motor
 void TMC2209_SetDirection(Motor *motor, GPIO_PinState state) {
     HAL_GPIO_WritePin(motor->driver.dir_port, motor->driver.dir_pin, state);
-    direction = state;
+    motor->direction = state;
 }
 
 // Enable or disable the driver
@@ -96,6 +89,7 @@ void TMC2209_SetSpeed(Motor *motor, uint32_t StepFrequency) {
 
     __HAL_TIM_SET_AUTORELOAD(motor->driver.htim, ARR); // Period
     __HAL_TIM_SET_COMPARE(motor->driver.htim, motor->driver.step_channel, ARR / 2); // Duty cycle
+    motor->driver.stepFrequency = StepFrequency;
 }
 
 
@@ -120,10 +114,20 @@ void TMC2209_Start(Motor *motor) {
 static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
 	motor->nextTotalSteps = totalSteps;
 	motor->stepsTaken = 0;
-	while (motor->stepsTaken < motor->nextTotalSteps); // Wait until we reach required steps
+
+	while (motor->stepsTaken <= motor->nextTotalSteps) {// Wait until we reach required steps and increment position on every step
+		if(motor->direction != 0){
+			motor->currentPositionMM += getStepPerUnit(motor);
+		}
+		else {
+			motor->currentPositionMM -= getStepPerUnit(motor);
+		}
+	}
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
+
 	motor->nextTotalSteps = 0;
 }
+
 
 
 void TMC2209_Step(Motor *motor, uint32_t steps){ // This doesn't work anymore since we have MoveTo
@@ -145,7 +149,6 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     }
 
     // Select the motor from the axis
-    Motor *motor = axis->motors[motorIndex];
 //    if (!motor) {
 //        debug_print("Motor not assigned.\r\n");
 //        return;
@@ -231,6 +234,21 @@ void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArr
       //  HAL_Delay(10);
     }
 }
+
+
+uint8_t getStepPerUnit(Motor *motor){ // Gets the stepPerUnit of that motor based on the axis it's in
+	uint8_t motorID = motor->driver.id;
+	if(motorID == 0 || motorID == 2){
+		return axes[1].stepPerUnit;
+	}
+	return axes[2].stepPerUnit;
+}
+
+
+
+
+
+/// TMC2209 UART Function ///
 
 void clear_UART_buffers(UART_HandleTypeDef *huart) {
     debug_print("Clearing UART buffers...\r\n");
@@ -328,6 +346,7 @@ uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLe
      }
      return rxBuffer; // Success
      }
+     return NULL;
  }
 
 
@@ -430,19 +449,21 @@ bool configureGCONF(Motor *tmc2209) {
 }
 
 
-uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
+uint16_t TMC2209_setSpreadCycle(Motor *tmc2209, uint8_t enable) {
 	uint32_t gconf;
 	uint32_t check_gconf;
 	uint8_t driverID = tmc2209->driver.id;
 	int32_t IFCNT = tmc2209->driver.IFCNT;
+
 	if (ENABLE_DEBUG){
 	char debug_msg[150];
-	snprintf(debug_msg, sizeof(debug_msg), "----- Setting SpreadCycle Mode for Driver: %u -----\r\n", driverID);
+	snprintf(debug_msg, sizeof(debug_msg), "Setting SpreadCycle Mode for Driver: %u\r\n", driverID);
 	debug_print(debug_msg);
 	}
+
 	gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
 
-    if(gconf == TMC_SPREADCYCLE_ERROR1){
+    if(tmc2209->driver.STATUS != TMC_OK){
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(Invalid Reply 1)\r\n");
     	return gconf;
     }
@@ -460,9 +481,9 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
     }
 
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
-    TMC2209_read_IFCNT(tmc2209);
+    TMC2209_read_ifcnt(tmc2209);
     if(tmc2209->driver.IFCNT <= IFCNT){
-    	tmc2209->driver.chopperMode = 1;
+    	tmc2209->driver.chopperMode = 0;
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!\r\n");
     	return TMC_SET_SPREADCYCLE_ERROR;
     }
@@ -472,7 +493,7 @@ uint16_t TMC2209_SetSpreadCycle(Motor *tmc2209, uint8_t enable) {
     	if (ENABLE_DEBUG) debug_print("Failed to set SpreadCycle Mode!(invalid Reply 2)\r\n");
     }
 
-    tmc2209->driver.chopperMode = check_gconf;
+    tmc2209->driver.chopperMode = 1;
     return TMC_OK;
 }
 
@@ -495,13 +516,13 @@ void checkSpreadCycle(Motor *tmc2209) {
 
 
 // Function to set the microstepping resolution through UART
-uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
+uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     uint8_t driverID = tmc2209->driver.id;
     int32_t IFCNT = tmc2209->driver.IFCNT;
-    char debug_msg[150];
 
+    char debug_msg[150];
     if (ENABLE_DEBUG){
-    snprintf(debug_msg, sizeof(debug_msg), "----- Setting Microstepping For Driver ID: %u -----\r\n", driverID);
+    snprintf(debug_msg, sizeof(debug_msg), "Setting Microstepping For Driver ID: %u \r\n", driverID);
     debug_print(debug_msg);
     memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
     }
@@ -569,8 +590,11 @@ uint32_t setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution) {
     }
     // Debug
     tmc2209->driver.mstep = resolution;
-    sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
-    if (ENABLE_DEBUG) debug_print(debug_msg);
+
+    if (ENABLE_DEBUG) {
+    	sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
+    	debug_print(debug_msg);
+    }
     return TMC_OK;
 
 }
@@ -724,7 +748,7 @@ void TMC2209_readIRUN(Motor *tmc2209) {
 
 uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
 	HAL_Delay(1);
-    uint32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
+    int32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
     if(ENABLE_DEBUG){
     char debug_msg[100];
     sprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);
@@ -762,24 +786,100 @@ uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDE
 
 }
 
-void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle)
+float TMC2209_readTemperature(Motor *tmc2209)
 {
-    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
-    	HAL_Delay(2000);
-    	configureGCONF(&motors[i]);
-    	HAL_Delay(1000);
-    	uint16_t mstep = motors[i].driver.mstep;
-        setMicrosteppingResolution(&motors[i], mstep);
+    uint32_t drv_status = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS);
+    uint8_t t120 = (drv_status >> 10) & 0x01;
+    uint8_t t143 = (drv_status >> 9) & 0x01;
+    uint8_t t150 = (drv_status >> 8) & 0x01;
+    uint8_t t157 = (drv_status >> 7) & 0x01;
 
-        TMC2209_SetSpeed(&motors[0], 5000);
-        TMC2209_SetSpeed(&motors[1], 15000);
-        TMC2209_SetSpeed(&motors[2], 5000);
-        TMC2209_SetSpeed(&motors[3], 15000);
-       // HAL_Delay(1000);
-       // checkMicrosteppingResolution(&motors[i]);
-       // HAL_Delay(1000);
-       // TMC2209_SetSpreadCycle(&motors[i], enableSpreadCycle);
+    if(t157) return 157.0f;
+    if(t150) return 150.0f;
+    if(t143) return 143.0f;
+    if(t120) return 120.0f;
+
+    return 25.0f;
+}
+
+
+uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs) {
+	int32_t IFCNT = tmc2209->driver.IFCNT;
+
+    TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs);    // Set StallGuard threshold (SGTHRS)
+
+    TMC2209_read_ifcnt(tmc2209);
+    if (tmc2209->driver.IFCNT <= IFCNT){
+    	if(ENABLE_DEBUG) debug_print("Failed to set Send Delay! \r\n");
+    	return tmc2209->driver.stallEnabled = TMC_ENABLESTALL_ERROR;
     }
+
+
+    return tmc2209->driver.stallEnabled = 1;
+
+}
+
+void TMC2209_SetTCoolThrs(Motor *tmc2209, uint32_t stepFrequency) {
+    const uint32_t fCLK = 12000000; // TMC2209 Internal clock frequency: 12 MHz
+    uint32_t tStep = fCLK / stepFrequency; // The internal clokc trims step frequency that's why we divied it.
+
+    // Ensure tStep doesn't exceed 20 bits (valid for TCOOLTHRS register)
+    if (tStep > 0xFFFFF) {
+        tStep = 0xFFFFF;
+    }
+
+    int32_t IFCNT = tmc2209->driver.IFCNT;
+
+    if (tmc2209->driver.IFCNT <= IFCNT){
+    	if(ENABLE_DEBUG) debug_print("Failed to set Send Delay! \r\n");
+    	tmc2209->driver.TCoolThrs = TMC2209_TCOOLTHRS_ERROR;
+    }
+    TMC2209_writeInit(tmc2209, TMC2209_REG_TCOOLTHRS, tStep);
+    tmc2209->driver.TCoolThrs = tStep;
+}
+
+
+void TMC2209_checkStall(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes updated with each fullstep, independent of TCOOLTHRS and SGTHRS
+    uint32_t sg_result = 0;
+
+    // Read the SG_RESULT register
+    sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_SG_RESULT) & 0x3FF; // Mask 10 bits
+
+    if (sg_result == tmc2209->driver.STATUS) {
+        tmc2209->driver.SG_RESULT = TMC_STALL_ERROR;
+    }
+
+    tmc2209->driver.SG_RESULT = sg_result;
+}
+void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    	configureGCONF(&motors[i]);
+    	uint16_t mstep = motors[i].driver.mstep;
+    	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
+    	TMC2209_enableStallDetection(&motors[i], 110);
+    	TMC2209_SetTCoolThrs(&motors[i], 8000);
+
+
+    }
+    TMC2209_SetSpeed(&motors[0], 8500);
+    TMC2209_SetSpeed(&motors[1], 15000);
+    TMC2209_SetSpeed(&motors[2], 5000);
+    TMC2209_SetSpeed(&motors[3], 15000);
+}
+
+void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default
+
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    	configureGCONF(&motors[i]);
+    	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
+        TMC2209_setSpreadCycle(&motors[i], DEFAULT_CHOPPERMODE);
+
+        TMC2209_SetSpeed(&motors[0], DEFAULT_Y_SPEED);
+        TMC2209_SetSpeed(&motors[1], DEFAULT_Y_SPEED);
+        TMC2209_SetSpeed(&motors[2], DEFAULT_X_SPEED);
+        TMC2209_SetSpeed(&motors[3], DEFAULT_X_SPEED);
+    }
+
 }
 
 
