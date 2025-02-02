@@ -192,8 +192,8 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
 
 void initializeSystem(){
     // X-axis
-    initializeAxis(&axes[0], &motors[0],&motors[1], 40, "Y");
-    initializeAxis(&axes[1], &motors[2],&motors[3], 8, "X");
+    initializeAxis(&axes[0], &motors[0],&motors[1], 8, "Y");
+    initializeAxis(&axes[1], &motors[2],&motors[3], 40, "X");
 
     // Y-axis
    // initializeAxis(&axes[1], &motors[1], &motors[3], Y_AXIS_LENGTH, "Y");
