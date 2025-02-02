@@ -72,6 +72,8 @@ void Error_Handler(void);
 #define BtnDown_GPIO_Port GPIOF
 #define BtnUp_Pin GPIO_PIN_1
 #define BtnUp_GPIO_Port GPIOF
+#define DIAG4_Pin GPIO_PIN_4
+#define DIAG4_GPIO_Port GPIOF
 #define MCO_Pin GPIO_PIN_0
 #define MCO_GPIO_Port GPIOH
 #define STEP3_Pin GPIO_PIN_0
@@ -80,6 +82,8 @@ void Error_Handler(void);
 #define Servo1PWM_GPIO_Port GPIOA
 #define STEP4_Pin GPIO_PIN_0
 #define STEP4_GPIO_Port GPIOB
+#define DIAG2_Pin GPIO_PIN_2
+#define DIAG2_GPIO_Port GPIOB
 #define EndStop1_Pin GPIO_PIN_13
 #define EndStop1_GPIO_Port GPIOF
 #define EndStop4_Pin GPIO_PIN_14
@@ -144,6 +148,10 @@ void Error_Handler(void);
 #define BtnCtr_GPIO_Port GPIOD
 #define BtnRight_Pin GPIO_PIN_1
 #define BtnRight_GPIO_Port GPIOD
+#define DIAG1_Pin GPIO_PIN_9
+#define DIAG1_GPIO_Port GPIOG
+#define DIAG3_Pin GPIO_PIN_6
+#define DIAG3_GPIO_Port GPIOB
 #define LCD_SCL_Pin GPIO_PIN_8
 #define LCD_SCL_GPIO_Port GPIOB
 #define LCD_SDA_Pin GPIO_PIN_9

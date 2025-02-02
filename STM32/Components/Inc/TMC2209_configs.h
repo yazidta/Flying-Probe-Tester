@@ -121,6 +121,7 @@ typedef struct {
     TMC2209_Driver driver;         // Driver settings for the motor
     uint32_t stepsPerRevolution;	// Steps per revolution of the motor
     uint32_t totalStepsPerRevolution; // we will calculate this later based on the mstep option the driver has
+    uint8_t moveRequest; 		// Move request Flag -- USED FOR RTOS
     int32_t stepsTaken;           // Count of steps taken
     int32_t fullSteps;
     uint32_t nextTotalSteps;           // Total steps the motor should take

@@ -46,9 +46,10 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
+		  TMC2209_CountDistance(&motors[i]);
 
-          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0)
-              motors[i].driver.checkStallFlag = 1;{
+          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0){ // Count Full steps
+              motors[i].driver.checkStallFlag = 1;
               motors[i].fullSteps++;
           }
       }
@@ -115,18 +116,21 @@ static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for
 	motor->stepsTaken = 0;
 
 	while (motor->stepsTaken <= motor->nextTotalSteps) {// Wait until we reach required steps and increment position on every step
-		if(motor->direction != 0){
-			motor->currentPositionMM += getStepPerUnit(motor);
-		}
-		else {
-			motor->currentPositionMM -= getStepPerUnit(motor);
-		}
+
 	}
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
 
 	motor->nextTotalSteps = 0;
 }
 
+void TMC2209_CountDistance(Motor *motor){
+	if(motor->direction != 0){
+		motor->currentPositionMM += getStepPerUnit(motor);
+	}
+	else {
+		motor->currentPositionMM -= getStepPerUnit(motor);
+	}
+}
 
 
 void TMC2209_Step(Motor *motor, uint32_t steps){ // This doesn't work anymore since we have MoveTo
@@ -834,7 +838,6 @@ void TMC2209_checkStall(Motor *motors){
 		   TMC2209_readSGResult(&motors[0]);
 	   }
 	   motors->driver.STALL = IsSensorTriggered(motors->driver.diag_port, motors->driver.diag_pin);
-
 }
 
 
