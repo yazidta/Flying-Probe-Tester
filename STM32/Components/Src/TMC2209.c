@@ -46,11 +46,10 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-          motors[i].driver.checkStallFlag = 1;
 
-          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0) {
+          if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0)
+              motors[i].driver.checkStallFlag = 1;{
               motors[i].fullSteps++;
-
           }
       }
 
@@ -657,7 +656,7 @@ uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value) {
     tmc2209->driver.IRUN = irun_value;
     return TMC_OK;
 }
-
+//
 
 void TMC2209_readIRUN(Motor *tmc2209) {
 	HAL_Delay(1);
@@ -673,40 +672,6 @@ void TMC2209_readIRUN(Motor *tmc2209) {
 
     tmc2209->driver.IRUN = irunValue;
 }
-
-
-//void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay) {
-//	HAL_Delay(1);
-//    // Combine IHOLDDELAY, IRUN, and IHOLD into a single 32-bit value
-//    uint32_t testValue = ((iholddelay & 0x0F) << 16) | ((irun & 0x1F) << 8) | (ihold & 0x1F);
-//
-//    // Write to IHOLD_IRUN register
-//    TMC2209_writeInit(tmc2209, TMC2209_REG_IHOLD_IRUN, testValue);
-//    HAL_Delay(2); // Allow time for the write to complete
-//
-//    // Read back the IHOLD_IRUN register
-//    uint32_t regValue = TMC2209_readInit(tmc2209, TMC2209_REG_IHOLD_IRUN);
-//    HAL_Delay(2);
-//    // Debugging: Check if the write and read values match
-//    if (regValue == testValue) {
-//        debug_print("IHOLD_IRUN register set and read successfully.\r\n");
-//    } else {
-//        debug_print("IHOLD_IRUN register mismatch!\r\n");
-//
-//        // Debug the values
-//        debug_print("Expected value: ");
-//        debug_print_hex((uint8_t*)&testValue, sizeof(testValue));
-//
-//        debug_print("Read value: ");
-//        debug_print_hex((uint8_t*)&regValue, sizeof(regValue));
-//    }
-//
-//    // Debugging IFCNT to confirm communication success
-//    uint8_t ifcnt_value = TMC2209_read_ifcnt(tmc2209);
-//    char debug_msg[50];
-//    sprintf(debug_msg, "IFCNT Value: %d\r\n", ifcnt_value);
-//    debug_print(debug_msg);
-//}
 
 
 // Function to configure the SPREADCYCLE mode parameters in the CHOPCONF register
@@ -745,24 +710,6 @@ void TMC2209_readIRUN(Motor *tmc2209) {
 //    debug_print_hex((uint8_t *)&chopconf, 4);
 //    debug_print("\r\n");
 //}
-
-uint16_t TMC2209_readStallGuardResult(Motor *tmc2209) {
-	HAL_Delay(1);
-    int32_t sg_result = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS); // DRVSTATUS register
-    if(ENABLE_DEBUG){
-    char debug_msg[100];
-    sprintf(debug_msg, "SG_RESULT: %d\r\n", sg_result);
-    debug_print(debug_msg);
-    }
-
-    return sg_result; // SG_RESULT is bits 10–20
-}
-
-void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs) {
-	HAL_Delay(1);
-    TMC2209_writeInit(tmc2209, TMC2209_REG_SGTHRS, sgthrs); // SGTHRS register
-    debug_print("StallGuard threshold set successfully! \r\n");
-}
 
 
 uint16_t TMC2209_setSendDelay(Motor *tmc2209, uint8_t sendDelay) { // The SENDDELAY field uses 4 bits (bits 11..8).
@@ -838,8 +785,7 @@ void TMC2209_SetTCoolThrs(Motor *tmc2209, uint32_t stepFrequency) {
     tmc2209->driver.TCoolThrs = tStep;
 }
 
-
-void TMC2209_checkStall(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes updated with each fullstep, independent of TCOOLTHRS and SGTHRS
+void TMC2209_readSGResult(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes updated with each fullstep, independent of TCOOLTHRS and SGTHRS
     uint32_t sg_result = 0;
 
     // Read the SG_RESULT register
@@ -851,13 +797,14 @@ void TMC2209_checkStall(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes up
 
     tmc2209->driver.SG_RESULT = sg_result;
 }
+
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
     	uint16_t mstep = motors[i].driver.mstep;
     	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
-    	TMC2209_enableStallDetection(&motors[i], 110);
-    	TMC2209_SetTCoolThrs(&motors[i], 8000);
+    	TMC2209_enableStallDetection(&motors[i], 126);
+    	TMC2209_SetTCoolThrs(&motors[i], 5000);
 
 
     }
@@ -882,6 +829,13 @@ void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to De
 
 }
 
+void TMC2209_checkStall(Motor *motors){
+	   if(motors->driver.checkStallFlag){
+		   TMC2209_readSGResult(&motors[0]);
+	   }
+	   motors->driver.STALL = IsSensorTriggered(motors->driver.diag_port, motors->driver.diag_pin);
+
+}
 
 
 

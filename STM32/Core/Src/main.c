@@ -216,30 +216,30 @@ int main(void)
 
   //SERVO_WritePosition(&hservo1, 80);
   //SERVO_WritePosition(&hservo2, 90);
-  TMC2209_EnableDriver(&motors[0], 1);
+//  TMC2209_EnableDriver(&motors[0], 1);
   TMC2209_EnableDriver(&motors[1], 1);
   TMC2209_EnableDriver(&motors[2], 1);
   TMC2209_EnableDriver(&motors[3], 1);
+
   //configureGCONF(&motors[2]);
   //setMicrosteppingResolution(&motors[2], 16);
-//	TMC2209_Start(&motors[0]);
+  TMC2209_SetSpeed(&motors[0], 7000);
+	TMC2209_Start(&motors[0]);
 //	TMC2209_Start(&motors[1]);
 	//TMC2209_Start(&motors[2]);
 //	TMC2209_Start(&motors[3]);
-  TMC2209_SetDirection(&motors[0],1);
-//
+
 //  TMC2209_Step(&motors[1],10000);
 //  TMC2209_Step(&motors[0],10000);
 //  TMC2209_Step(&motors[2],10000);
 //  TMC2209_Step(&motors[3],10000);
   /* USER CODE END 2 */
-  SERVO_WritePosition(&hservo1, 60);
-  //SERVO_WritePosition(&hservo1, 100);
-
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
    while (1){
+
+
 
 	   /// DEBUG ///
 	      ES1 =IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
@@ -773,6 +773,7 @@ static void MX_TIM9_Init(void)
 
   /* USER CODE END TIM9_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
   /* USER CODE BEGIN TIM9_Init 1 */
@@ -784,6 +785,15 @@ static void MX_TIM9_Init(void)
   htim9.Init.Period = 20000-1;
   htim9.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim9.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim9) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim9, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim9) != HAL_OK)
   {
     Error_Handler();
@@ -1139,6 +1149,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOF, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : DIAG4_Pin */
+  GPIO_InitStruct.Pin = DIAG4_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(DIAG4_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : DIAG2_Pin DIAG3_Pin */
+  GPIO_InitStruct.Pin = DIAG2_Pin|DIAG3_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pin : BtnLeft_Pin */
   GPIO_InitStruct.Pin = BtnLeft_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -1177,11 +1199,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(USB_PowerSwitchOn_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : USB_OverCurrent_Pin */
-  GPIO_InitStruct.Pin = USB_OverCurrent_Pin;
+  /*Configure GPIO pins : USB_OverCurrent_Pin DIAG1_Pin */
+  GPIO_InitStruct.Pin = USB_OverCurrent_Pin|DIAG1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(USB_OverCurrent_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pins : BtnCtr_Pin BtnRight_Pin */
   GPIO_InitStruct.Pin = BtnCtr_Pin|BtnRight_Pin;
