@@ -7,10 +7,13 @@ uint32_t StepsFront[4]={0,0,0,0};
 int32_t StepsBack[4]={0,0};
 uint32_t LastSteps[3] = {0,0,0,0};
 uint8_t x = 0;
+bool testing = 0;
+
 bool MotorsHoming(Motor *motor) {
     // These flags indicate whether each motor has finished homing.
     bool homed[4] = { false, false, false, false };
-
+    SERVO_WritePosition(&hservo1, 105);
+    SERVO_WritePosition(&hservo2, 95);
     // Start Motor 0 (using EndStop2, direction = 1, home = 0)
     if (IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin) == 0) {
         TMC2209_SetDirection(&motor[0], 1);
@@ -107,7 +110,36 @@ bool MotorsHoming(Motor *motor) {
 
     return true;
 }
+void AutoCalibration(Axis *axes ,Motor *motors){
+	bool MotorsHoming(motors);
+//	 SERVO_WritePosition(&hservo1,90);
+//	 SERVO_WritePosition(&hservo2,70);
 
+	TMC2209_MoveTo(&axes[0],0,79);
+	TMC2209_MoveTo(&axes[1],0,-(47.6));
+	motors[0].currentPositionMM = 0;
+	motors[2].currentPositionMM = 0;
+//
+//	TMC2209_MoveTo(&axes[0],0,64.5959);
+//	TMC2209_MoveTo(&axes[1],0,-14.512);
+//	CheckConnection(&hservo2,&hservo1);
+	TMC2209_MoveTo(&axes[0],1,-102.4);
+
+    TMC2209_MoveTo(&axes[1],1,46.8);
+
+
+    motors[1].currentPositionMM = 100;
+    motors[3].currentPositionMM = 0;
+	//CheckConnection(&hservo2,&hservo1);
+    HAL_Delay(600);
+    TMC2209_MoveTo(&axes[0],0,20.5995);
+    TMC2209_MoveTo(&axes[1],0,-37.5995);
+    TMC2209_MoveTo(&axes[0],1,44.5995);
+    TMC2209_MoveTo(&axes[1],1,20.5995);
+	testing = CheckConnection(&hservo2,&hservo1);
+
+
+}
 
 void MotorControl_ButtonHandler(Axis *axes,Motor *motors) {
 	if (calibrationState()) {

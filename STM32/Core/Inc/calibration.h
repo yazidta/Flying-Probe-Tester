@@ -15,3 +15,5 @@ bool MotorsHoming(Motor *motor);
 void MotorControl_ButtonHandler(Axis *axes, Motor *motors);
 void motorHoming(Motor *motor, GPIO_TypeDef *GPIO_Port, uint16_t GPIO_Pin, int direction, int speed, int homePositionMM);
 bool calibrationState();
+void AutoCalibration(Axis *axes ,Motor *motors);
+
