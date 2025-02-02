@@ -7,10 +7,9 @@
 
 #ifndef INC_APP_TASKS_H_
 #define INC_APP_TASKS_H_
-
 #include "FreeRTOS.h"
 #include "task.h"
-
+#include "queue.h"
 // COMMANDS
 
 typedef enum {

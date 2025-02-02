@@ -8,6 +8,9 @@
 #include "app_tasks.h"
 #include "tmc2209.h"
 
+
+QueueHandle_t motorCommandQueue;
+
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
 	motorCommandQueue = xQueueCreate(10, sizeof(MotorCommand));
@@ -29,7 +32,7 @@ void motorControlTask(void *argument) {
     				break;
 
     		case	MOTOR_CMD_STOP:	// Stop the motor
-    				TMC2209_STOP(&motors[cmd.motorIndex]);
+    				TMC2209_Stop(&motors[cmd.motorIndex]);
     				break;
 
     		case 	MOTOR_CMD_DIRECTION:
@@ -39,6 +42,9 @@ void motorControlTask(void *argument) {
     				break;
     		}
     	}
+
+    	taskYIELD();
+    }
 }
 
 

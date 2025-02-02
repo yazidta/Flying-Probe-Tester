@@ -33,6 +33,7 @@
 #include "servo.h"
 #include "fatfs.h"
 #include "calibration.h"
+#include "app_tasks.h"
 
 /* USER CODE END Includes */
 
@@ -212,37 +213,24 @@ int main(void)
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
   LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
-//
+
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
   initializeMotors();
   initializeSystem();
-//  ENC_Init(&henc1);
 
   TMC2209_setMotorsConfiguration(motors,16,1);
- // TMC2209_MoveTo(&axes[0],0,30);
-  //TMC2209_MoveTo(&axes[0],0,-30);
 
-  //SERVO_WritePosition(&hservo1, 80);
-  //SERVO_WritePosition(&hservo2, 90);
-//  TMC2209_EnableDriver(&motors[0], 1);
+  TMC2209_EnableDriver(&motors[0], 1);
   TMC2209_EnableDriver(&motors[1], 1);
   TMC2209_EnableDriver(&motors[2], 1);
   TMC2209_EnableDriver(&motors[3], 1);
 
-  //configureGCONF(&motors[2]);
-  //setMicrosteppingResolution(&motors[2], 16);
-  TMC2209_SetSpeed(&motors[0], 7000);
-	TMC2209_Start(&motors[0]);
-//	TMC2209_Start(&motors[1]);
-	//TMC2209_Start(&motors[2]);
-//	TMC2209_Start(&motors[3]);
 
-//  TMC2209_Step(&motors[1],10000);
-//  TMC2209_Step(&motors[0],10000);
-//  TMC2209_Step(&motors[2],10000);
-//  TMC2209_Step(&motors[3],10000);
+  TMC2209_SetSpeed(&motors[0], 7000);
+  TMC2209_Start(&motors[0]);
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -270,6 +258,14 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
+
+  const osThreadAttr_t motorTask_attributes = {
+		  .name = "motorControlTask",
+		  .priority = (osPriority_t) osPriorityNormal,
+		  .stack_size = 1024  // TODO: Adjust the stack size?
+  };
+  osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
+
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
