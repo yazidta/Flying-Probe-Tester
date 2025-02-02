@@ -141,7 +141,7 @@ void AutoCalibration(Axis *axes ,Motor *motors){
 
 }
 
-void MotorControl_ButtonHandler(Axis *axes,Motor *motors) {
+void ManualCalibration(Axis *axes,Motor *motors) {
 	if (calibrationState()) {
 	        return;
 	    }
@@ -319,6 +319,170 @@ bool calibrationState(){
 		     else{
 		    	 return 0;
 		     }
+}
+/**
+ * @brief  Moves a motor at the given speed and direction until a stall is detected.
+ *         After the stall, it calculates the current position (in mm) based on the difference
+ *         between StepsFront and StepsBack divided by the provided scale factor.
+ * @param  motor: pointer to the Motor structure.
+ * @param  speed: speed setting for the motor.
+ * @param  direction: desired direction (e.g., GPIO_PIN_SET or GPIO_PIN_RESET).
+ * @param  scaleFactor: value used to convert steps difference to millimeters.
+ */
+void moveMotorUntilStallAndCalibrate(Motor *motor, uint8_t motorIndex, uint32_t speed,GPIO_PinState direction, uint8_t calibrationIndex) {
+    // Set speed and direction, then start the motor.
+    TMC2209_SetSpeed(&motor[motorIndex], speed);
+    TMC2209_SetDirection(&motor[motorIndex], direction);
+    TMC2209_Start(&motor[motorIndex]);
+
+    // Loop until a stall is detected.
+    while (1) {
+        TMC2209_checkStall(&motor[motorIndex]);
+        if (motor->driver.STALL) {
+            TMC2209_Stop(&motor[motorIndex]);
+            break;
+        }
+        HAL_Delay(1);  // Small delay to prevent a tight busy loop.
+    }
+
+    // Calculate the calibrated position (in mm) based on the difference between the front and back steps.
+    // The fabs() function ensures we get a positive value.
+
+    if(motorIndex < 1){
+        motor[motorIndex].currentPositionMM = fabs((float)motor[motorIndex].StepsFront - (float)motor[motorIndex].StepsBack) / axes[0].stepPerUnit;
+
+        // Save the calibration position.
+        motor[motorIndex].calib[calibrationIndex] = motor[motorIndex].currentPositionMM;
+        motor[motorIndex+2].currentPositionMM = fabs((float)motor[motorIndex+2].StepsFront - (float)motor[motorIndex+2].StepsBack) / axes[1].stepPerUnit;
+
+       // Save the calibration position.
+       motor[motorIndex+2].calib[calibrationIndex] = motor[motorIndex+2].currentPositionMM;
+    if(motorIndex > 1){
+        motor[motorIndex].currentPositionMM = fabs((float)motor[motorIndex].StepsFront - (float)motor[motorIndex].StepsBack) / axes[1].stepPerUnit;
+
+        // Save the calibration position.
+        motor[motorIndex].calib[calibrationIndex] = motor[motorIndex].currentPositionMM;
+    	motor[motorIndex-2].currentPositionMM = fabs((float)motor[motorIndex-2].StepsFront - (float)motor[motorIndex-2].StepsBack) / axes[0].stepPerUnit;
+
+    	    // Save the calibration position.
+    	motor[motorIndex-2].calib[calibrationIndex] = motor[motorIndex-2].currentPositionMM;
+
+    }
+  }
+}
+/**
+ * @brief  Runs the semi‑auto calibration sequence.
+ *         On each valid press of the Ctr button, a specific motor is moved until a stall is detected.
+ *         The user should first move the probes to a position facing the PCB to capture points using buttons.
+ *         The calibration sequence moves the motors in the following order:
+ *            Case 1: Motor 1 (index 0) with scale factor 400.
+ *            Case 2: Motor 3 (index 2) with scale factor 160.
+ *            Case 3: Motor 2 (index 1) with scale factor 400.
+ *            Case 4: Motor 4 (index 3) with scale factor 160.
+ * @param  motors: An array of Motor structures.
+ */
+void semiAutoCalibration(Axis *axes, Motor *motors) {
+    if (calibrationState()) {
+        return;
+    }
+    // Debounce and press-detection variables.
+    static uint8_t ctrPressedFlag = 0;
+    static uint32_t pressStartTime = 0;
+    // calibrationStep counts from 0 upward. We use 1-4 to select the motor, then reset.
+    static uint8_t calibrationStep = 0;
+    const uint32_t debounceTime = 50; // in milliseconds
+    uint32_t currentTime = HAL_GetTick();
+
+    // Check the Ctr button (assumed defined as BtnCtr_GPIO_Port/BtnCtr_Pin)
+    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_SET) {
+        if (ctrPressedFlag == 0) {  // First edge detected.
+            pressStartTime = currentTime;
+            ctrPressedFlag = 1;
+        }
+    } else {
+        // When the button is released, check if the debounce time has passed.
+        if (ctrPressedFlag == 1 && (currentTime - pressStartTime) >= debounceTime) {
+            calibrationStep++;  // Advance to the next calibration step.
+        }
+        ctrPressedFlag = 0;
+    }
+
+    // Execute the appropriate calibration step based on calibrationStep.
+    switch (calibrationStep) {
+        case 1:
+            // Case 1: Move Motor 1 (index 0) in reverse direction until stall.
+            // Using a scale factor of 400.
+
+            moveMotorUntilStallAndCalibrate(&motors,0, 7000, GPIO_PIN_RESET,0);
+            break;
+
+        case 2:
+            // Case 2: Move Motor 3 (index 2) in reverse direction until stall.
+            // Using a scale factor of 160.
+            moveMotorUntilStallAndCalibrate(&motors,2, 7000, GPIO_PIN_SET,1);
+            motorGroup += 1;
+            if (motorGroup >= 2) {
+             motorGroup = 0;  // Reset or handle as per your system's requirement
+            }
+            break;
+
+        case 3:
+            // Case 3: Move Motor 2 (index 1) in reverse direction until stall.
+            // Using a scale factor of 400.
+            moveMotorUntilStallAndCalibrate(&motors,1, 7000, GPIO_PIN_SET,0);
+            break;
+
+        case 4:
+            // Case 4: Move Motor 4 (index 3) in reverse direction until stall.
+            // Using a scale factor of 160.
+            moveMotorUntilStallAndCalibrate(&motors,3, 7000, GPIO_PIN_RESET,1);
+            // After completing the fourth step, reset the calibration sequence.
+            motorGroup += 1;
+            if (motorGroup >= 2) {
+             motorGroup = 0;  // Reset or handle as per your system's requirement
+            }
+            calibrationStep = 0;
+            break;
+
+        default:
+            break;
+    }
+    // --- Manual control remains unchanged ---
+    if(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET) {
+        TMC2209_SetDirection(&motors[motorGroup], GPIO_PIN_SET);
+        TMC2209_Start(&motors[motorGroup]);
+        while(HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET) { }
+    }
+    if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_SET) {
+        TMC2209_Stop(&motors[motorGroup]);
+    }
+
+    if(HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) {
+        TMC2209_SetDirection(&motors[motorGroup], GPIO_PIN_RESET);
+        TMC2209_Start(&motors[motorGroup]);
+        while(HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) { }
+    }
+    if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_SET || StepsBack[0] > 28000) {
+        TMC2209_Stop(&motors[motorGroup]);
+    }
+
+    if(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
+        TMC2209_SetDirection(&motors[motorGroup + 2], GPIO_PIN_SET);
+        TMC2209_Start(&motors[motorGroup + 2]);
+        while(HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) { }
+    }
+    if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_SET) {
+        TMC2209_Stop(&motors[motorGroup + 2]);
+    }
+
+    if(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) {
+        TMC2209_SetDirection(&motors[motorGroup + 2], GPIO_PIN_RESET);
+        TMC2209_Start(&motors[motorGroup + 2]);
+        while(HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) { }
+    }
+    if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_SET) {
+        TMC2209_Stop(&motors[motorGroup + 2]);
+    }
 }
 
 
