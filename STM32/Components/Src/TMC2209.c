@@ -47,7 +47,12 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
 		  TMC2209_CountDistance(&motors[i]);
-
+		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
+		  		  motors[i].StepsFront++;
+		  }
+		  else if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_RESET){
+			  	  motors[i].StepsBack++;
+		  }
           if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0){ // Count Full steps
               motors[i].driver.checkStallFlag = 1;
               motors[i].fullSteps++;
