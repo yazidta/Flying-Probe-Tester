@@ -94,6 +94,9 @@ void initializeMotors() {
         motors[i].driver.dir_pin = DIR1_Pin;
         motors[i].driver.enn_port = ENN1_GPIO_Port;
         motors[i].driver.enn_pin = ENN1_Pin;
+        motors[i].driver.diag_port = DIAG1_GPIO_Port;
+        motors[i].driver.diag_pin = DIAG1_Pin;
+
 
         }
 
@@ -113,6 +116,8 @@ void initializeMotors() {
             motors[i].driver.dir_pin = DIR2_Pin;
             motors[i].driver.enn_port = ENN2_GPIO_Port;
             motors[i].driver.enn_pin = ENN2_Pin;
+            motors[i].driver.diag_port = DIAG2_GPIO_Port;
+            motors[i].driver.diag_pin = DIAG2_Pin;
 
 
         }
@@ -131,6 +136,8 @@ void initializeMotors() {
             motors[i].driver.dir_pin = DIR3_Pin;
             motors[i].driver.enn_port = ENN3_GPIO_Port;
             motors[i].driver.enn_pin = ENN3_Pin;
+            motors[i].driver.diag_port = DIAG3_GPIO_Port;
+            motors[i].driver.diag_pin = DIAG3_Pin;
 
 
         }
@@ -150,6 +157,8 @@ void initializeMotors() {
             motors[i].driver.dir_pin = DIR4_Pin;
             motors[i].driver.enn_port = ENN4_GPIO_Port;
             motors[i].driver.enn_pin = ENN4_Pin;
+            motors[i].driver.diag_port = DIAG4_GPIO_Port;
+            motors[i].driver.diag_pin = DIAG4_Pin;
         }
 
 
