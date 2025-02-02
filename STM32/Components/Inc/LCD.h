@@ -28,7 +28,7 @@
 #include "stm32f7xx_hal_conf.h"
 #include <stdarg.h>
 #include "sd_card_reader.h"
-#include "calibration.h"
+//#include "calibration.h"
 /* Typedef -------------------------------------------------------------------*/
 #define LCD_TimerType TIM_HandleTypeDef*
 

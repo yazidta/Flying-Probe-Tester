@@ -9,6 +9,7 @@
 #include "main.h"
 #include "stdbool.h"
 #include "extras.h"
+#include "app_tasks.h"
 extern SERVO_Handle_TypeDef hservo1;
 extern SERVO_Handle_TypeDef hservo2;
 bool MotorsHoming(Motor *motor);
@@ -17,7 +18,8 @@ void motorHoming(Motor *motor, GPIO_TypeDef *GPIO_Port, uint16_t GPIO_Pin, int d
 bool calibrationState();
 void AutoCalibration(Axis *axes ,Motor *motors);
 void semiAutoCalibration(Axis *axes, Motor *motors);
-void moveMotorUntilStallAndCalibrate(Motor *motor, uint8_t motorIndex, uint32_t speed,GPIO_PinState direction, uint8_t calibrationIndex);
-
+void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
+                                     uint8_t motorIndex, uint32_t speed,
+                                     GPIO_PinState direction, uint8_t calibrationIndex);
 
 

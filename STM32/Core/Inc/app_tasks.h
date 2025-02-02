@@ -12,6 +12,7 @@
 #include "queue.h"
 #include "encoder.h"
 #include "LCD.h"
+#include "lcd_config.h"
 // COMMANDS
 
 typedef enum {
