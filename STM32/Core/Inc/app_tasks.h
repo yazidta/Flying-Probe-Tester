@@ -10,6 +10,8 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "encoder.h"
+#include "LCD.h"
 // COMMANDS
 
 typedef enum {
@@ -26,6 +28,17 @@ typedef struct {
 	float 	targetPositionMM;	// Target position in mm
 	uint8_t direction; 			// Motor direction
 } MotorCommand;
+
+/* Define a structure to hold pointers to our LCD and encoder handles */
+typedef struct {
+    LCD_I2C_HandleTypeDef* hlcd;
+    ENC_Handle_TypeDef* henc;
+} MenuTaskParams_t;
+
+/* Forward declaration of the external function to read button states */
+extern bool read_buttons(void);
+void vMainMenuTask(void *pvParameters);
+
 
 
 

@@ -217,6 +217,9 @@ int main(void)
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
+  ENC_Init(&henc1);
+
+
   initializeMotors();
   initializeSystem();
 
@@ -266,6 +269,23 @@ int main(void)
   };
   osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
 
+  static MenuTaskParams_t menuTaskParams = {
+      .hlcd = &hlcd3,
+      .henc = &henc1
+  };
+
+  /* Create the main menu task */
+  xTaskCreate(
+      vMainMenuTask,           /* Task function */
+      "MainMenuTask",          /* Task name (for debugging) */
+      512,                     /* Stack size in words (adjust as needed) */
+      &menuTaskParams,         /* Task parameters */
+      tskIDLE_PRIORITY + 1,    /* Task priority */
+      NULL                     /* Task handle (optional) */
+  );
+
+  /* Start the FreeRTOS scheduler */
+  vTaskStartScheduler();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -303,7 +323,7 @@ int main(void)
     	flagUserBtn = 0;
       }
   	if(!calibrationFlag && homingFlag){
-  		MotorControl_ButtonHandler(&axes,&motors);
+  		//MotorControl_ButtonHandler(&axes,&motors);
       }
       if(calibrationFlag == 1){
           		  LCD_I2C_Clear(&hlcd3);
