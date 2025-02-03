@@ -10,10 +10,43 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "queue.h"
+#include "semphr.h"
 #include "encoder.h"
 #include "LCD.h"
 #include "lcd_config.h"
 // COMMANDS
+
+
+typedef enum {
+    MACHINE_STATE_AUTOCALIB,
+    MACHINE_STATE_SEMIAUTO,
+    MACHINE_STATE_MANUAL,
+	MACHINE_STATE_TESTING
+
+} MachineState;
+
+typedef enum {
+    CALIB_STATE_INIT = 0,
+    CALIB_STATE_INSTRUCT_PROBE1,
+    CALIB_STATE_WAIT_PROBE1_DONE,
+    CALIB_STATE_INSTRUCT_PROBE2,
+    CALIB_STATE_WAIT_PROBE2_DONE,
+    CALIB_STATE_INSTRUCT_PROBE1_Y,
+    CALIB_STATE_WAIT_PROBE1_Y_DONE,
+    CALIB_STATE_INSTRUCT_PROBE2_X,
+    CALIB_STATE_WAIT_PROBE2_X_DONE,
+    CALIB_STATE_COMPLETE
+} CalibrationSubState;
+
+typedef enum {
+    MENU_STATE_MAIN,
+    MENU_STATE_SD_TEST,
+    MENU_STATE_CALIBRATION,
+	MENU_STATE_CALIBRATION2,
+	MENU_STATE_CALIBRATION3,
+    MENU_STATE_PREPARE_MACHINE,
+    MENU_STATE_EXIT
+} MenuState;
 
 typedef enum {
 	MOTOR_CMD_MOVETO,

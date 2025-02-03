@@ -9,7 +9,216 @@
 #include "tmc2209.h"
 
 
+
 QueueHandle_t motorCommandQueue;
+MenuState currentState = MENU_STATE_MAIN;
+
+
+
+/*-------------------------------------------------------------------
+  Global or static variables for the calibration state machine
+-------------------------------------------------------------------*/
+static CalibrationSubState calibSubState = CALIB_STATE_INIT;
+static TickType_t delayStartTime = 0; // For nonblocking delay
+
+/*-------------------------------------------------------------------
+  RunCalibrationStateMachine(): Encapsulates the calibration logic.
+  Parameters can include pointers to LCD, motors, and any other state
+  needed to update the calibration instructions.
+-------------------------------------------------------------------*/
+void RunCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
+    switch (calibSubState)
+    {
+        case CALIB_STATE_INIT:
+            LCD_I2C_Clear(hlcd);
+            LCD_I2C_SetCursor(hlcd, 0, 0);
+            LCD_I2C_printStr(hlcd, "Use buttons to move");
+            LCD_I2C_SetCursor(hlcd, 1, 0);
+            LCD_I2C_printStr(hlcd, "probe 1");
+            delayStartTime = xTaskGetTickCount();
+            calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
+            break;
+
+        case CALIB_STATE_INSTRUCT_PROBE1:
+            // Wait 2000ms nonblocking
+            if ((xTaskGetTickCount() - delayStartTime) >= pdMS_TO_TICKS(2000))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 1 facing");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "X-axis edge 1");
+                calibSubState = CALIB_STATE_WAIT_PROBE1_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE1_DONE:
+            if (Iscalib1Done(&motors[0], &motors[2]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 2 facing");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "Y-axis edge 1");
+                calibSubState = CALIB_STATE_INSTRUCT_PROBE2;
+            }
+            break;
+
+        case CALIB_STATE_INSTRUCT_PROBE2:
+            if (Iscalib1Done(&motors[1], &motors[3]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 1 facing");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "Y-axis edge 1");
+                calibSubState = CALIB_STATE_WAIT_PROBE1_Y_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE1_Y_DONE:
+            if (Iscalib2Done(&motors[0], &motors[2]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 2 facing");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "X-axis edge 2");
+                calibSubState = CALIB_STATE_WAIT_PROBE2_X_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE2_X_DONE:
+            if (Iscalib2Done(&motors[1], &motors[3]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Points saved");
+                calibSubState = CALIB_STATE_COMPLETE;
+            }
+            break;
+
+        case CALIB_STATE_COMPLETE:
+            // You may change to the next overall state here.
+            // For example: currentState = MENU_STATE_CALIBRATION3;
+            // Reset the substate for future calibration sessions.
+            calibSubState = CALIB_STATE_INIT;
+            break;
+
+        default:
+            break;
+    }
+}
+
+
+void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
+    switch (calibSubState)
+    {
+        case CALIB_STATE_INIT:
+            LCD_I2C_Clear(hlcd);
+            LCD_I2C_SetCursor(hlcd, 0, 0);
+            LCD_I2C_printStr(hlcd, "Use buttons to move");
+            LCD_I2C_SetCursor(hlcd, 1, 0);
+            LCD_I2C_printStr(hlcd, "probe 1");
+            delayStartTime = xTaskGetTickCount();
+            calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
+            break;
+
+        case CALIB_STATE_INSTRUCT_PROBE1:
+            // Wait 2000ms nonblocking
+            if ((xTaskGetTickCount() - delayStartTime) >= pdMS_TO_TICKS(2000))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 1 on");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "X-axis edge 1");
+                calibSubState = CALIB_STATE_WAIT_PROBE1_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE1_DONE:
+            if (Iscalib1Done(&motors[0], &motors[2]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 2 on");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "Y-axis edge 1");
+                calibSubState = CALIB_STATE_INSTRUCT_PROBE2;
+            }
+            break;
+
+        case CALIB_STATE_INSTRUCT_PROBE2:
+            if (Iscalib1Done(&motors[1], &motors[3]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 1 on");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "Y-axis edge 1");
+                calibSubState = CALIB_STATE_WAIT_PROBE1_Y_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE1_Y_DONE:
+            if (Iscalib2Done(&motors[0], &motors[2]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Place probe 2 on");
+                LCD_I2C_SetCursor(hlcd, 1, 0);
+                LCD_I2C_printStr(hlcd, "X-axis edge 2");
+                calibSubState = CALIB_STATE_WAIT_PROBE2_X_DONE;
+            }
+            break;
+
+        case CALIB_STATE_WAIT_PROBE2_X_DONE:
+            if (Iscalib2Done(&motors[1], &motors[3]))
+            {
+                LCD_I2C_Clear(hlcd);
+                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_printStr(hlcd, "Points saved");
+                calibSubState = CALIB_STATE_COMPLETE;
+            }
+            break;
+
+        case CALIB_STATE_COMPLETE:
+            // You may change to the next overall state here.
+            // For example: currentState = MENU_STATE_CALIBRATION3;
+            // Reset the substate for future calibration sessions.
+            calibSubState = CALIB_STATE_INIT;
+            break;
+
+        default:
+            break;
+    }
+    /* Yield for a short time so other tasks can run */
+    vTaskDelay(pdMS_TO_TICKS(10));
+}
+void calibProcess(uint8_t calibSelection){
+     switch(calibSelection){
+        
+        case 1: // AUTO
+        AutoCalibration(&axes,&motors); 
+        //currentState = MENU_STATE_TestProcess; // TODO: Add Test Process
+        break;
+
+        case 2: // SEMI ATUO
+        semiAutoCalibration(&axes,&motors);
+        currentState = MENU_STATE_CALIBRATION2;
+        break;
+
+        case 3: // MANUAL
+        ManualCalibration(&axes,&motors);
+        currentState = MENU_STATE_CALIBRATION3;
+        break;
+        default:
+        break;
+     }
+    
+}
+
 
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
@@ -33,6 +242,7 @@ void motorControlTask(void *argument) {
 
     		case	MOTOR_CMD_STOP:	// Stop the motor
     				TMC2209_Stop(&motors[cmd.motorIndex]);
+
     				break;
 
     		case 	MOTOR_CMD_DIRECTION:
@@ -47,6 +257,8 @@ void motorControlTask(void *argument) {
     }
 }
 
+
+
 /*
  * FreeRTOS task to handle the main menu.
  * This task will display the menu, wait for a selection,
@@ -54,37 +266,77 @@ void motorControlTask(void *argument) {
  */
 void vMainMenuTask(void *pvParameters)
 {
-    /* Retrieve the task parameters which include the LCD and Encoder handles */
+    currentState = MENU_STATE_MAIN;
     MenuTaskParams_t *menuParams = (MenuTaskParams_t *)pvParameters;
 
-    if(menuParams == NULL)
-    {
-        /* If parameters are not provided, delete the task to avoid undefined behavior */
-        vTaskDelete(NULL);
-    }
+    for (;;) {
 
-    /* Main loop: repeatedly display menu and process the selection */
-    for (;;)
-    {
-        /*
-         * The LCD_I2C_MainMenu function is assumed to:
-         *   - Clear the screen,
-         *   - Display the menu items,
-         *   - And block until the user selects an option (using the read_buttons()).
-         * It returns a 1-based menu option.
-         */
-        uint8_t selectedOption = LCD_I2C_MainMenu(menuParams->hlcd, read_buttons);
+        switch (currentState) {
 
-        /*
-         * Handle the selected menu option. This function may include its own delays
-         * and even loops (for example, if it is handling a sub-menu for file selection).
-         */
-        LCD_I2C_HandleMenuSelection(selectedOption, menuParams->hlcd, menuParams->henc);
+            case MENU_STATE_MAIN:
+                {
+                    // Display main menu and get selection.
+                    uint8_t mainSelection = LCD_I2C_MainMenu(menuParams->hlcd, menuParams->henc);
+                    if (mainSelection == 1) {
+                        currentState = MENU_STATE_SD_TEST;
+                    } else if (mainSelection == 2) {
+                        currentState = MENU_STATE_PREPARE_MACHINE;
+                    } 
+                }
+                break;
 
-        /* Optionally, add a short delay before re-displaying the menu */
-        //vTaskDelay(pdMS_TO_TICKS(100));
+            case MENU_STATE_SD_TEST:
+                {
+                    // Display SD card test menu or process SD card files.
+
+                    	LCD_I2C_DisplaySDMenu(menuParams->hlcd, menuParams->henc);
+                        currentState = MENU_STATE_CALIBRATION;
+
+
+                        //currentState = MENU_STATE_MAIN;
+                }
+                break;
+
+            case MENU_STATE_CALIBRATION:
+                {
+                    const char* calibMenuItems[] = {"Auto Calibartion", "Semi-Auto Calibration", "Manual Calibration" };
+                    uint8_t calibSelection = LCD_I2C_menuTemplate(menuParams->hlcd, menuParams->henc,calibMenuItems, 1);
+                    if (calibSelection == 0) {  // "Back"
+                        currentState = MENU_STATE_MAIN;
+                    } else {
+                        calibProcess(calibSelection); // Will choose the next state..
+                    }
+                }
+                break;
+            case MENU_STATE_CALIBRATION2:
+            {       // Semi Auto Calibration
+                RunCalibrationStateMachine(&hlcd3, &motors);
+                currentState = MENU_STATE_CALIBRATION;     // TO CHANGE
+            }
+
+                    
+                break;
+            case MENU_STATE_CALIBRATION3:
+            {
+                RunManualCalibrationStateMachine(&hlcd3,&motors);
+                currentState = MENU_STATE_CALIBRATION;       //TO CHANGE
+
+            }
+                break;
+
+            case MENU_STATE_PREPARE_MACHINE:
+                {
+                    LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
+                    LCD_I2C_printStr(menuParams->hlcd, "Preparing...");
+                    HAL_Delay(2000);
+                    currentState = MENU_STATE_MAIN;
+                }
+                break;
+            default:
+                currentState = MENU_STATE_MAIN;
+                break;
+        }
+
+        osDelay(1);  // Allow other tasks to run
     }
 }
-
-
-

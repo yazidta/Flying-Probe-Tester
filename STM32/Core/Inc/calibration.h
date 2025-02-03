@@ -21,5 +21,7 @@ void semiAutoCalibration(Axis *axes, Motor *motors);
 void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
                                      uint8_t motorIndex, uint32_t speed,
                                      GPIO_PinState direction, uint8_t calibrationIndex);
+bool Iscalib1Done(Motor *motor1,Motor *motor2);
+bool Iscalib2Done(Motor *motor1,Motor *motor2);
 
 
