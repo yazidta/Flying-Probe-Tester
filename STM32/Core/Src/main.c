@@ -234,6 +234,11 @@ int main(void)
   TMC2209_SetSpeed(&motors[0], 7000);
   TMC2209_Start(&motors[0]);
 
+  calibEventGroup = xEventGroupCreate();
+  configASSERT(calibEventGroup != NULL);
+
+  lcdMutex = xSemaphoreCreateMutex();
+  configASSERT(lcdMutex != NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */

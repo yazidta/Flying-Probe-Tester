@@ -14,6 +14,16 @@
 #include "encoder.h"
 #include "LCD.h"
 #include "lcd_config.h"
+#include "FreeRTOS.h"
+#include "event_groups.h"
+#define CALIB_START_BIT    (1 << 0)
+#define CALIB_COMPLETE_BIT (1 << 1)
+
+extern EventGroupHandle_t calibEventGroup;
+extern SemaphoreHandle_t lcdMutex;      // Protects LCD access
+
+// Global calibration selection (set by UI when calibration is picked)
+extern volatile uint8_t g_calibSelection;
 // COMMANDS
 
 
@@ -72,6 +82,7 @@ typedef struct {
 /* Forward declaration of the external function to read button states */
 extern bool read_buttons(void);
 void vMainMenuTask(void *pvParameters);
+void calibProcessTask(void *pvParameters);
 
 
 

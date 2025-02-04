@@ -21,13 +21,20 @@ MenuState currentState = MENU_STATE_MAIN;
 static CalibrationSubState calibSubState = CALIB_STATE_INIT;
 static TickType_t delayStartTime = 0; // For nonblocking delay
 
+EventGroupHandle_t calibEventGroup;
+SemaphoreHandle_t lcdMutex;      // Protects LCD access
+
+// Global calibration selection (set by UI when calibration is picked)
+volatile uint8_t g_calibSelection = 0;
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
   Parameters can include pointers to LCD, motors, and any other state
   needed to update the calibration instructions.
 -------------------------------------------------------------------*/
-void RunCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
-    switch (calibSubState)
+void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
+    semiAutoCalibration(&axes,&motors);
+
+	switch (calibSubState)
     {
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
@@ -114,6 +121,8 @@ void RunCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
 void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
     switch (calibSubState)
     {
+        ManualCalibration(&axes,&motors);
+
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
             LCD_I2C_SetCursor(hlcd, 0, 0);
@@ -156,7 +165,7 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
                 LCD_I2C_SetCursor(hlcd, 0, 0);
                 LCD_I2C_printStr(hlcd, "Place probe 1 on");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
-                LCD_I2C_printStr(hlcd, "Y-axis edge 1");
+                LCD_I2C_printStr(hlcd, "x-axis edge 2");
                 calibSubState = CALIB_STATE_WAIT_PROBE1_Y_DONE;
             }
             break;
@@ -168,7 +177,7 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
                 LCD_I2C_SetCursor(hlcd, 0, 0);
                 LCD_I2C_printStr(hlcd, "Place probe 2 on");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
-                LCD_I2C_printStr(hlcd, "X-axis edge 2");
+                LCD_I2C_printStr(hlcd, "y-axis edge 2");
                 calibSubState = CALIB_STATE_WAIT_PROBE2_X_DONE;
             }
             break;
@@ -196,8 +205,22 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
     /* Yield for a short time so other tasks can run */
     vTaskDelay(pdMS_TO_TICKS(10));
 }
-void calibProcess(uint8_t calibSelection){
-     switch(calibSelection){
+void calibProcessTask(void *pvParameters){
+
+
+    MenuTaskParams_t *menuParams = (MenuTaskParams_t *)pvParameters;
+	for(;;){
+		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT,
+		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
+		if (uxBits & CALIB_START_BIT) {
+		            // Optionally update the LCD: "Calibration starting..."
+		if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+		    LCD_I2C_Clear(menuParams->hlcd);
+		    LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
+		    LCD_I2C_printStr(menuParams->hlcd, "Calibration Start");
+		    xSemaphoreGive(lcdMutex);
+		  }
+     switch(g_calibSelection){
         
         case 1: // AUTO
         AutoCalibration(&axes,&motors); 
@@ -205,19 +228,35 @@ void calibProcess(uint8_t calibSelection){
         break;
 
         case 2: // SEMI ATUO
-        semiAutoCalibration(&axes,&motors);
+        RunSemiAutoCalibrationStateMachine(&hlcd3,&motors);
         currentState = MENU_STATE_CALIBRATION2;
         break;
 
         case 3: // MANUAL
-        ManualCalibration(&axes,&motors);
+        RunManualCalibrationStateMachine(&hlcd3, &motors);
         currentState = MENU_STATE_CALIBRATION3;
         break;
         default:
         break;
-     }
-    
+
+        //  update the LCD: "Calibration complete"
+        if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+            LCD_I2C_Clear(menuParams->hlcd);
+            LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
+            LCD_I2C_printStr(menuParams->hlcd, "Calibration Done");
+            xSemaphoreGive(lcdMutex);
+        }
+
+        // Signal that calibration is complete.
+        xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+    }
+        // Short delay to let other tasks run.
+
+       }
+		vTaskDelay(pdMS_TO_TICKS(10));
+   }
 }
+
 
 
 void motorControlTask(void *argument) {
@@ -304,25 +343,34 @@ void vMainMenuTask(void *pvParameters)
                     if (calibSelection == 0) {  // "Back"
                         currentState = MENU_STATE_MAIN;
                     } else {
-                        calibProcess(calibSelection); // Will choose the next state..
+                    	g_calibSelection = calibSelection;
+                        // Signal the calibration task to start.
+                    	xEventGroupSetBits(calibEventGroup, CALIB_START_BIT);
+                    	// Wait for calibration to complete.
+                    	// (You might use a timeout here if desired.)
+                    	xEventGroupWaitBits(calibEventGroup, CALIB_COMPLETE_BIT,
+                    	                    pdTRUE, pdFALSE, portMAX_DELAY);
+
+                        // Calibration is complete. Return to the main menu or update as needed.
+                    	currentState = MENU_STATE_MAIN;
                     }
                 }
                 break;
-            case MENU_STATE_CALIBRATION2:
-            {       // Semi Auto Calibration
-                RunCalibrationStateMachine(&hlcd3, &motors);
-                currentState = MENU_STATE_CALIBRATION;     // TO CHANGE
-            }
+//            case MENU_STATE_CALIBRATION2:
+//            {       // Semi Auto Calibration
+//                RunCalibrationStateMachine(menuParams->hlcd, &motors);
+//                currentState = MENU_STATE_CALIBRATION;     // TO CHANGE
+//            }
+//
+//
+//                break;
+//            case MENU_STATE_CALIBRATION3:
+//            {
+//                RunManualCalibrationStateMachine(menuParams->hlcd,&motors);
+//                currentState = MENU_STATE_CALIBRATION;       //TO CHANGE
+//                break;
+//            }
 
-                    
-                break;
-            case MENU_STATE_CALIBRATION3:
-            {
-                RunManualCalibrationStateMachine(&hlcd3,&motors);
-                currentState = MENU_STATE_CALIBRATION;       //TO CHANGE
-
-            }
-                break;
 
             case MENU_STATE_PREPARE_MACHINE:
                 {
