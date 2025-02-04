@@ -26,6 +26,7 @@ SemaphoreHandle_t lcdMutex;      // Protects LCD access
 
 // Global calibration selection (set by UI when calibration is picked)
 volatile uint8_t g_calibSelection = 0;
+volatile uint8_t encButton = 0;
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
   Parameters can include pointers to LCD, motors, and any other state
@@ -36,11 +37,12 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
 
 	switch (calibSubState)
     {
+
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
-            LCD_I2C_SetCursor(hlcd, 0, 0);
-            LCD_I2C_printStr(hlcd, "Use buttons to move");
-            LCD_I2C_SetCursor(hlcd, 1, 0);
+            LCD_I2C_SetCursor(hlcd, 0, 1);
+            LCD_I2C_printStr(hlcd, "cheetosckjrcjo to move");
+            LCD_I2C_SetCursor(hlcd, 1, 1);
             LCD_I2C_printStr(hlcd, "probe 1");
             delayStartTime = xTaskGetTickCount();
             calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
@@ -125,9 +127,9 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
 
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
-            LCD_I2C_SetCursor(hlcd, 0, 0);
+            LCD_I2C_SetCursor(hlcd, 0, 1);
             LCD_I2C_printStr(hlcd, "Use buttons to move");
-            LCD_I2C_SetCursor(hlcd, 1, 0);
+            LCD_I2C_SetCursor(hlcd, 1, 1);
             LCD_I2C_printStr(hlcd, "probe 1");
             delayStartTime = xTaskGetTickCount();
             calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
@@ -214,12 +216,12 @@ void calibProcessTask(void *pvParameters){
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
 		if (uxBits & CALIB_START_BIT) {
 		            // Optionally update the LCD: "Calibration starting..."
-		if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-		    LCD_I2C_Clear(menuParams->hlcd);
-		    LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
-		    LCD_I2C_printStr(menuParams->hlcd, "Calibration Start");
-		    xSemaphoreGive(lcdMutex);
-		  }
+//		if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+//		    LCD_I2C_Clear(&hlcd3);
+//		    LCD_I2C_SetCursor(&hlcd3, 0, 0);
+//		    LCD_I2C_printStr(&hlcd3, "Calibration Start");
+//		    xSemaphoreGive(lcdMutex);
+//		  }
      switch(g_calibSelection){
         
         case 1: // AUTO
@@ -241,9 +243,9 @@ void calibProcessTask(void *pvParameters){
 
         //  update the LCD: "Calibration complete"
         if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-            LCD_I2C_Clear(menuParams->hlcd);
-            LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
-            LCD_I2C_printStr(menuParams->hlcd, "Calibration Done");
+            LCD_I2C_Clear(&hlcd3);
+            LCD_I2C_SetCursor(&hlcd3, 0, 0);
+            LCD_I2C_printStr(&hlcd3, "Calibration Done");
             xSemaphoreGive(lcdMutex);
         }
 
@@ -305,7 +307,7 @@ void motorControlTask(void *argument) {
  */
 void vMainMenuTask(void *pvParameters)
 {
-    currentState = MENU_STATE_MAIN;
+    currentState = MENU_STATE_CALIBRATION;
     MenuTaskParams_t *menuParams = (MenuTaskParams_t *)pvParameters;
 
     for (;;) {
@@ -315,10 +317,11 @@ void vMainMenuTask(void *pvParameters)
             case MENU_STATE_MAIN:
                 {
                     // Display main menu and get selection.
-                    uint8_t mainSelection = LCD_I2C_MainMenu(menuParams->hlcd, menuParams->henc);
-                    if (mainSelection == 1) {
+                	const char* menuItems[] = {"Test from SD", "Prepare Machine"};
+                    uint8_t mainSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1, menuItems,2, 0);
+                    if (mainSelection == 0) {
                         currentState = MENU_STATE_SD_TEST;
-                    } else if (mainSelection == 2) {
+                    } else if (mainSelection == 1) {
                         currentState = MENU_STATE_PREPARE_MACHINE;
                     } 
                 }
@@ -328,8 +331,8 @@ void vMainMenuTask(void *pvParameters)
                 {
                     // Display SD card test menu or process SD card files.
 
-                    	LCD_I2C_DisplaySDMenu(menuParams->hlcd, menuParams->henc);
-                        currentState = MENU_STATE_CALIBRATION;
+                       LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
+                       currentState = MENU_STATE_CALIBRATION;
 
 
                         //currentState = MENU_STATE_MAIN;
@@ -338,21 +341,26 @@ void vMainMenuTask(void *pvParameters)
 
             case MENU_STATE_CALIBRATION:
                 {
+                	//encButton = IsSensorTriggered(EncoderBtn_GPIO_Port,EncoderBtn_Pin);
+                	//while(!encButton);
+                	//LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
+                	//osDelay(4);
                     const char* calibMenuItems[] = {"Auto Calibartion", "Semi-Auto Calibration", "Manual Calibration" };
-                    uint8_t calibSelection = LCD_I2C_menuTemplate(menuParams->hlcd, menuParams->henc,calibMenuItems, 1);
+                    uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,3, 1);
+
                     if (calibSelection == 0) {  // "Back"
                         currentState = MENU_STATE_MAIN;
                     } else {
                     	g_calibSelection = calibSelection;
-                        // Signal the calibration task to start.
+                         //Signal the calibration task to start.
                     	xEventGroupSetBits(calibEventGroup, CALIB_START_BIT);
-                    	// Wait for calibration to complete.
-                    	// (You might use a timeout here if desired.)
+                    	 //Wait for calibration to complete.
+                    	 //(You might use a timeout here if desired.)
                     	xEventGroupWaitBits(calibEventGroup, CALIB_COMPLETE_BIT,
                     	                    pdTRUE, pdFALSE, portMAX_DELAY);
 
-                        // Calibration is complete. Return to the main menu or update as needed.
-                    	currentState = MENU_STATE_MAIN;
+                         //Calibration is complete. Return to the main menu or update as needed.
+                        currentState = MENU_STATE_MAIN;
                     }
                 }
                 break;

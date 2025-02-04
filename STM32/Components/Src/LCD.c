@@ -332,7 +332,7 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
             while (1) {
                 LCD_I2C_DisplaySDMenu(hlcd, henc); // Load Files and Display them...
                 // Files is selected so we move with calibration
-                LCD_I2C_menuTemplate(hlcd, henc, calibMenuItems, 1); // Load Calibration Menu
+                LCD_I2C_menuTemplate(hlcd, henc, calibMenuItems,3, 1); // Load Calibration Menu
             }
 
                 HAL_Delay(100);
@@ -360,93 +360,107 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
 
 
 
-uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc, const char* displayItems[], bool backOption){
+// Updated function signature that takes the number of items
+uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
+                             ENC_Handle_TypeDef* henc,
+                             const char* displayItems[],
+                             uint8_t numItems,
+                             bool backOption)
+{
     LCD_I2C_Clear(hlcd);
-    uint8_t totalOptions = sizeof(displayItems) / sizeof(displayItems[0]);
-    totalOptions = backOption ? totalOptions + 1 : totalOptions;
+
+    // Determine total options based on whether a back option is added
+    uint8_t totalOptions = backOption ? numItems + 1 : numItems;
+
+    // Create a local array to hold the menu items
     const char* menuItems[totalOptions];
-    if (backOption){
+
+    // Populate the menu items array, inserting "Back" at index 0 if needed.
+    if (backOption) {
         menuItems[0] = "Back";
-        for (uint8_t i = 0; i < totalOptions; i++){
+        for (uint8_t i = 0; i < totalOptions; i++) {
             menuItems[i+1] = displayItems[i];
         }
-    }
-    else{
-        for (uint8_t i = 0; i< totalOptions; i++){
+    } else {
+        for (uint8_t i = 0; i < totalOptions; i++) {
             menuItems[i] = displayItems[i];
         }
     }
-    uint8_t selectedOption = 0; // Current selected menu item
-    uint8_t previousOption = 255; // Invalid to ensure the first update
-    AddBackOption(menuItems, totalOptions);
     
+    uint8_t selectedOption = 0;       // Current selected menu item
+    uint8_t previousOption = 255;     // Set to an invalid option to force the first update
+
+    // If AddBackOption is supposed to modify the menu items, call it appropriately.
+    // (Make sure that this function is intended to be used even when backOption is false.)
+//    if(backOption == 1){
+//        AddBackOption(menuItems, totalOptions);
+//    }
+
     while (1) {
-        // Get the current encoder step count using your ENC_GetCounter function
+        // Get the current encoder step count (assuming ENC_GetCounter returns a signed value if needed)
         uint32_t encoderStep = ENC_GetCounter(henc);
 
-        // Normalize encoder steps to menu options
+        // Normalize encoder steps to the range of [0, totalOptions-1]
         selectedOption = encoderStep % totalOptions;
 
-        // Handle wrap-around (if encoderStep can be negative)
-        if (selectedOption < 0) {
-            selectedOption += totalOptions;
-        }
+        // (Since selectedOption is unsigned, the check for negative values is unnecessary.)
 
-        // Update the menu display only if the selection has changed
+        // Update the display only if the selection has changed
         if (selectedOption != previousOption) {
             previousOption = selectedOption;
 
-            for(int i =0 ; i <4 ; i++){
+            // Clear the display lines
+            for (int i = 0; i < 4; i++) {
                 LCD_I2C_SetCursor(hlcd, i, 0);
-                LCD_I2C_printStr(hlcd, "                    "); // Clear line (20 spaces)
+                LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
+                osDelay(1);
             }
-            // Update menu display
+
+            // Update menu display with the current menu items
             for (uint8_t i = 0; i < totalOptions; i++) {
-                // Clear the line and set cursor position
-
                 LCD_I2C_SetCursor(hlcd, i, 0);
 
-                // Highlight the selected item
+                char formattedLine[21];
                 if (i == selectedOption) {
-                    char formattedLine[21];
-                    snprintf(formattedLine, 21, ">%-19s", menuItems[i]);
-                    LCD_I2C_printStr(hlcd, formattedLine);
+                    // Highlight the selected item
+                    snprintf(formattedLine, sizeof(formattedLine), ">%-19s", menuItems[i]);
                 } else {
-                    char formattedLine[21];
-                    snprintf(formattedLine, 21, " %-19s", menuItems[i]);
-                    LCD_I2C_printStr(hlcd, formattedLine);
+                    snprintf(formattedLine, sizeof(formattedLine), " %-19s", menuItems[i]);
                 }
+                LCD_I2C_printStr(hlcd, formattedLine);
+                osDelay(1);
             }
         }
 
-        // Check for selection button
+        // Check for the selection button press
         bool buttonInput = read_buttons();
-        if(buttonInput==0) { 
-            osDelay(200);
-            if(selectedOption == 0 && backOption == 1){
-                return;
-            }
-            else{
-                return selectedOption + 1;
+        if (buttonInput == 0) {
+            osDelay(200); // Debounce delay
+            if (selectedOption == 0 && backOption) {
+                return 0;
+            } else {
+                // Return selectedOption + 1 to account for "Back" at index 0 when applicable
+                return selectedOption;
             }
         }
 
-        // Add a delay for smoother updates
+        // Delay for smoother updates
         osDelay(100);
     }
 }
 
 
-uint8_t LCD_I2C_MainMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc) {
-    const char* menuItems[] = {"Test from SD", "Prepare Machine"}; // Menu options
-     return LCD_I2C_menuTemplate(hlcd, henc, menuItems, 0);
-}
+
+//uint8_t LCD_I2C_MainMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc) {
+//     // Menu options
+//     return LCD_I2C_menuTemplate(hlcd, henc, menuItems, 0);
+//}
 
 
 
 bool read_buttons(void)
 {
-    if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return 1; // Down
+    if (HAL_GPIO_ReadPin(EncoderBtn_GPIO_Port, EncoderBtn_Pin) == GPIO_PIN_SET) return 1; // Down
     else return 0;
 
 }

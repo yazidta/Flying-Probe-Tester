@@ -16,6 +16,7 @@
 #include "lcd_config.h"
 #include "FreeRTOS.h"
 #include "event_groups.h"
+#include "encoder_config.h"
 #define CALIB_START_BIT    (1 << 0)
 #define CALIB_COMPLETE_BIT (1 << 1)
 

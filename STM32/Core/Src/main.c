@@ -81,13 +81,7 @@ DMA_HandleTypeDef hdma_usart6_rx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
-  .stack_size = 512 * 4,
-  .priority = (osPriority_t) osPriorityNormal3,
-};
+osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
 
@@ -110,7 +104,7 @@ volatile uint8_t Btn2 = 0;
 volatile uint8_t Btn3 = 0;
 volatile uint8_t Btn4 =0;
 volatile uint8_t Btn5 =0;
-
+extern uint8_t encButton;
 // Homing Flags
 
 volatile uint8_t homingFlag = 0;
@@ -141,7 +135,7 @@ static void MX_USART6_UART_Init(void);
 static void MX_UART4_Init(void);
 static void MX_UART5_Init(void);
 static void MX_TIM1_Init(void);
-void StartDefaultTask(void *argument);
+void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -212,7 +206,6 @@ int main(void)
 
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
-  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -236,9 +229,6 @@ int main(void)
 
 
   /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -264,18 +254,19 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
- // defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* definition and creation of defaultTask */
+ // osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+ // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-
-  const osThreadAttr_t motorTask_attributes = {
-		  .name = "motorControlTask",
-		  .priority = (osPriority_t) osPriorityNormal,
-		  .stack_size = 512  // TODO: Adjust the stack size?
-  };
-  osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
+//
+//  const osThreadAttr motorTask_attributes = {
+//		  .name = "motorControlTask",
+//		  .priority = (osPriority) osPriorityNormal,
+//		  .stack_size = 512  // TODO: Adjust the stack size?
+//  };
+//  osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
 
   static MenuTaskParams_t menuTaskParams = {
       .hlcd = &hlcd3,
@@ -285,11 +276,20 @@ int main(void)
 
   /* Create the main menu task */
   xTaskCreate(
+	  motorControlTask,           /* Task function */
+      "motorControlTask",          /* Task name (for debugging) */
+      1024,                     /* Stack size in words */
+      NULL,         /* Task parameters */
+	  osPriorityHigh,    /* Task priority */
+      NULL                     /* Task handle (optional) */
+  );
+
+  xTaskCreate(
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */
       &menuTaskParams,         /* Task parameters */
-	  osPriorityHigh,    /* Task priority */
+	  osPriorityBelowNormal,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -299,7 +299,7 @@ int main(void)
       "CalibProcessTask",      /* Task name */
       1024,                     /* Stack size in words */
       NULL,                    /* Task parameters */
-	  osPriorityBelowNormal,    /* Task priority */
+	  osPriorityNormal,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -309,26 +309,22 @@ int main(void)
   vTaskStartScheduler();
   /* USER CODE END RTOS_THREADS */
 
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
-
   /* Start scheduler */
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
+  /* USER CODE BEGIN WHiLE */
    while (1){
 
 
 
 
 	   /// DEBUG ///
-	      ES1 =IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin);
-	      ES2 =IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
-	      ES3= IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
+	      ES1 = IsSensorTriggered(EncoderBtn_GPIO_Port, EncoderBtn_Pin);
+	      ES2 = IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
+	      ES3 = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
 	      ES4 = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
 
 	      Btn1 = IsSensorTriggered(BtnLeft_GPIO_Port, BtnLeft_Pin);
@@ -390,7 +386,7 @@ void SystemClock_Config(void)
   * in the RCC_OscInitTypeDef structure.
   */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
   RCC_OscInitStruct.PLL.PLLM = 4;
@@ -1314,12 +1310,16 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-//void StartDefaultTask(void *argument)
+//void StartDefaultTask(void const * argument)
 //{
 //  /* USER CODE BEGIN 5 */
-//  /* Infinite loop */
+////  /* Infinite loop */
 //  for(;;)
 //  {
+//	 encButton = IsSensorTriggered(EncoderBtn_GPIO_Port,EncoderBtn_Pin);
+//	//while(!encButton);
+//  	//encButton = IsSensorTriggered(BtnUp_GPIO_Port,BtnUp_Pin);
+//
 //    osDelay(1);
 //  }
 //  /* USER CODE END 5 */
