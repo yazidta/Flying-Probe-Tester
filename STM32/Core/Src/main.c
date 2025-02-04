@@ -231,14 +231,10 @@ int main(void)
   TMC2209_EnableDriver(&motors[3], 1);
 
 
-  TMC2209_SetSpeed(&motors[0], 7000);
-  TMC2209_Start(&motors[0]);
+ // TMC2209_SetSpeed(&motors[0], 7000);
+ // TMC2209_Start(&motors[0]);
 
-  calibEventGroup = xEventGroupCreate();
-  configASSERT(calibEventGroup != NULL);
 
-  lcdMutex = xSemaphoreCreateMutex();
-  configASSERT(lcdMutex != NULL);
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -246,10 +242,17 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
+
+  calibEventGroup = xEventGroupCreate();
+  configASSERT(calibEventGroup != NULL);
+
+  lcdMutex = xSemaphoreCreateMutex();
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
+
+
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
@@ -262,7 +265,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+ // defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -270,7 +273,7 @@ int main(void)
   const osThreadAttr_t motorTask_attributes = {
 		  .name = "motorControlTask",
 		  .priority = (osPriority_t) osPriorityNormal,
-		  .stack_size = 1024  // TODO: Adjust the stack size?
+		  .stack_size = 512  // TODO: Adjust the stack size?
   };
   osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
 
@@ -279,15 +282,28 @@ int main(void)
       .henc = &henc1
   };
 
+
   /* Create the main menu task */
   xTaskCreate(
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
-      512,                     /* Stack size in words (adjust as needed) */
+      1024,                     /* Stack size in words */
       &menuTaskParams,         /* Task parameters */
-      tskIDLE_PRIORITY + 1,    /* Task priority */
+	  osPriorityHigh,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
+
+
+  xTaskCreate(
+      calibProcessTask,        /* Task function */
+      "CalibProcessTask",      /* Task name */
+      1024,                     /* Stack size in words */
+      NULL,                    /* Task parameters */
+	  osPriorityBelowNormal,    /* Task priority */
+      NULL                     /* Task handle (optional) */
+  );
+
+
 
   /* Start the FreeRTOS scheduler */
   vTaskStartScheduler();
@@ -1298,16 +1314,16 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
-{
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
+//void StartDefaultTask(void *argument)
+//{
+//  /* USER CODE BEGIN 5 */
+//  /* Infinite loop */
+//  for(;;)
+//  {
+//    osDelay(1);
+//  }
+//  /* USER CODE END 5 */
+//}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

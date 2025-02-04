@@ -163,7 +163,7 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
 void LCD_I2C_Cursor(LCD_I2C_HandleTypeDef* hlcd, uint8_t row, uint8_t col);
 void DisplayMenu(LCD_I2C_HandleTypeDef* hlcd, char fileList[][20 + 1], uint8_t fileCount, uint8_t selectedIndex);
 void AddBackOption(char fileList[][20 + 1], uint8_t index);
-uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc, const char* displayItems[][21], bool backOption);
+uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc, const char* displayItems[], bool backOption);
 uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles);
 FRESULT OpenRootDir(DIR* dir);
 FRESULT MountSDCard(FATFS* FatFs);

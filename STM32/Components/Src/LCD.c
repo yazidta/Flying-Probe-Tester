@@ -360,20 +360,20 @@ void LCD_I2C_HandleMenuSelection(uint8_t selectedOption, LCD_I2C_HandleTypeDef* 
 
 
 
-uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc, const char* displayItems[][21], bool backOption){
+uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc, const char* displayItems[], bool backOption){
     LCD_I2C_Clear(hlcd);
     uint8_t totalOptions = sizeof(displayItems) / sizeof(displayItems[0]);
     totalOptions = backOption ? totalOptions + 1 : totalOptions;
-    const char* menuItems[totalOptions][21];
+    const char* menuItems[totalOptions];
     if (backOption){
-        menuItems[0][1] = "Back";
+        menuItems[0] = "Back";
         for (uint8_t i = 0; i < totalOptions; i++){
-            menuItems[i+1][21] = displayItems[i];
+            menuItems[i+1] = displayItems[i];
         }
     }
     else{
         for (uint8_t i = 0; i< totalOptions; i++){
-            menuItems[i][21] = displayItems[i];
+            menuItems[i] = displayItems[i];
         }
     }
     uint8_t selectedOption = 0; // Current selected menu item
