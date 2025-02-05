@@ -212,7 +212,6 @@ int main(void)
 
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
-  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -262,8 +261,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -291,14 +290,14 @@ int main(void)
       NULL                     /* Task handle (optional) */
   );
 
-  xTaskCreate(
-	  stallMonitorTask,          /* Task function */
-      "StallMonitorTask",       /* Task name (for debugging) */
-      256,        				/* Stack size in words */
-      NULL,                     /* Task parameters */
-      osPriorityNormal,     /* Task priority */
-      NULL                       /* Task handle (optional) */
-  );
+//  xTaskCreate(
+//	  stallMonitorTask,          /* Task function */
+//      "StallMonitorTask",       /* Task name (for debugging) */
+//      256,        				/* Stack size in words */
+//      NULL,                     /* Task parameters */
+//      osPriorityNormal,     /* Task priority */
+//      NULL                       /* Task handle (optional) */
+//  );
 
   xTaskCreate(
       vMainMenuTask,           /* Task function */
@@ -315,7 +314,7 @@ int main(void)
       "CalibProcessTask",      /* Task name */
       1024,                     /* Stack size in words */
       NULL,                    /* Task parameters */
-	  osPriorityNormal,    /* Task priority */
+	  osPriorityAboveNormal,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -1307,16 +1306,16 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-////  /* Infinite loop */
-////  for(;;)
-////  {
-////    osDelay(1);
-////  }
-  /* USER CODE END 5 */
-}
+//void StartDefaultTask(void const * argument)
+//{
+//  /* USER CODE BEGIN 5 */
+//////  /* Infinite loop */
+//////  for(;;)
+//////  {
+//////    osDelay(1);
+//////  }
+//  /* USER CODE END 5 */
+//}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

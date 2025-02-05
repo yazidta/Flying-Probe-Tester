@@ -13,7 +13,8 @@
 
 QueueHandle_t motorCommandQueue;
 MenuState currentState = MENU_STATE_MAIN;
-
+extern SERVO_Handle_TypeDef hservo1;
+extern SERVO_Handle_TypeDef hservo2;
 
 
 /*-------------------------------------------------------------------
@@ -34,17 +35,16 @@ volatile uint8_t encButton = 0;
   needed to update the calibration instructions.
 -------------------------------------------------------------------*/
 void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
-    semiAutoCalibration(&axes,&motors);
 
 	switch (calibSubState)
     {
 
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
-            LCD_I2C_SetCursor(hlcd, 0, 1);
-            LCD_I2C_printStr(hlcd, "cheetosckjrcjo to move");
+            LCD_I2C_SetCursor(hlcd, 0, 2);
+            LCD_I2C_printStr(hlcd, "Use Buttons to Move");
             LCD_I2C_SetCursor(hlcd, 1, 1);
-            LCD_I2C_printStr(hlcd, "probe 1");
+            LCD_I2C_printStr(hlcd, "Probe 1");
             delayStartTime = xTaskGetTickCount();
             calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
             break;
@@ -54,7 +54,7 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if ((xTaskGetTickCount() - delayStartTime) >= pdMS_TO_TICKS(2000))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 2);
                 LCD_I2C_printStr(hlcd, "Place probe 1 facing");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "X-axis edge 1");
@@ -66,8 +66,8 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib1Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
-                LCD_I2C_printStr(hlcd, "Place probe 2 facing");
+                LCD_I2C_SetCursor(hlcd, 0, 2);
+                LCD_I2C_printStr(hlcd, "Place probe 1 facing");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "Y-axis edge 1");
                 calibSubState = CALIB_STATE_INSTRUCT_PROBE2;
@@ -78,7 +78,7 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib1Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 2);
                 LCD_I2C_printStr(hlcd, "Place probe 1 facing");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "Y-axis edge 1");
@@ -90,7 +90,7 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib2Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 2);
                 LCD_I2C_printStr(hlcd, "Place probe 2 facing");
                 LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "X-axis edge 2");
@@ -102,7 +102,7 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib2Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 2);
                 LCD_I2C_printStr(hlcd, "Points saved");
                 calibSubState = CALIB_STATE_COMPLETE;
             }
@@ -124,7 +124,6 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
 void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
     switch (calibSubState)
     {
-        ManualCalibration(&axes,&motors);
 
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
@@ -227,25 +226,31 @@ void calibProcessTask(void *pvParameters){
         
         case 1: // AUTO
         AutoCalibration(&axes,&motors); 
-        //currentState = MENU_STATE_TestProcess; // TODO: Add Test Process
+
+        currentState = MENU_STATE_MAIN; // TODO: Add Test Process
         break;
 
-        case 2: // SEMI ATUO
-        RunSemiAutoCalibrationStateMachine(&hlcd3,&motors);
-        currentState = MENU_STATE_CALIBRATION2;
+        case 2:
+        	// SEMI ATUO
+        //semiAutoCalibration(&axes,&motors);
+        semiAutoCalibration(&axes,&motors);
+
+       // RunSemiAutoCalibrationStateMachine(&hlcd3,&motors);
+        currentState = MENU_STATE_MAIN;
         break;
 
         case 3: // MANUAL
-        RunManualCalibrationStateMachine(&hlcd3, &motors);
-        currentState = MENU_STATE_CALIBRATION3;
+        ManualCalibration(&axes,&motors);
+        //RunManualCalibrationStateMachine(&hlcd3, &motors);
+        currentState = MENU_STATE_MAIN;
         break;
         default:
         break;
 
         //  update the LCD: "Calibration complete"
-        if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+        if(xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
             LCD_I2C_Clear(&hlcd3);
-            LCD_I2C_SetCursor(&hlcd3, 0, 0);
+            LCD_I2C_SetCursor(&hlcd3, 0, 1);
             LCD_I2C_printStr(&hlcd3, "Calibration Done");
             xSemaphoreGive(lcdMutex);
         }
@@ -264,7 +269,7 @@ void calibProcessTask(void *pvParameters){
 
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
-	motorCommandQueue = xQueueCreate(10, sizeof(MotorCommand));
+	motorCommandQueue = xQueueCreate(20, sizeof(MotorCommand));
 	configASSERT(motorCommandQueue != NULL);
 
 	MotorCommand cmd;
@@ -335,6 +340,7 @@ void vMainMenuTask(void *pvParameters)
 {
     currentState = MENU_STATE_CALIBRATION;
     MenuTaskParams_t *menuParams = (MenuTaskParams_t *)pvParameters;
+    //LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
     for (;;) {
 

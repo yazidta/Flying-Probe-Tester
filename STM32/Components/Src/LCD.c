@@ -237,12 +237,11 @@ void LCD_I2C_Clear(LCD_I2C_HandleTypeDef * hlcd)
 {
   __lcd_i2c_write_command(hlcd, LCD_CLEAR_DISPLAY);
 }
-LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd){
+void LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd){
     for (int i = 0; i < 4; i++) {
         LCD_I2C_SetCursor(hlcd, i, 0);
         LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
-        osDelay(1);
-    }
+   }
 }
 /**
  * @brief Write new character to display memory.
@@ -373,7 +372,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
                              uint8_t numItems,
                              bool backOption)
 {
-    LCD_I2C_Clear(hlcd);
+    LCD_I2C_ClearAllLines(hlcd);
 
     // Determine total options based on whether a back option is added
     uint8_t totalOptions = backOption ? numItems + 1 : numItems;
@@ -392,7 +391,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             menuItems[i] = displayItems[i];
         }
     }
-    
+
     uint8_t selectedOption = 0;       // Current selected menu item
     uint8_t previousOption = 255;     // Set to an invalid option to force the first update
 
@@ -416,11 +415,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             previousOption = selectedOption;
 
             // Clear the display lines
-            for (int i = 0; i < 4; i++) {
-                LCD_I2C_SetCursor(hlcd, i, 0);
-                LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
-                osDelay(1);
-            }
+            LCD_I2C_ClearAllLines(hlcd);
 
             // Update menu display with the current menu items
             for (uint8_t i = 0; i < totalOptions; i++) {
@@ -445,7 +440,6 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             if (selectedOption == 0 && backOption) {
                 return 0;
             } else {
-                // Return selectedOption + 1 to account for "Back" at index 0 when applicable
                 return selectedOption;
             }
         }
