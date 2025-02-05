@@ -130,8 +130,8 @@ void checkSpreadCycle(Motor *tmc2209);
 uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value);
 void TMC2209_readIRUN(Motor *tmc2209);
 void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay);
-uint16_t TMC2209_readStallGuardResult(Motor *tmc2209);
-void TMC2209_setStallGuardThreshold(Motor *tmc2209, uint8_t sgthrs);
+void TMC2209_SetTCoolThrs(Motor *tmc2209, uint32_t stepFrequency);
+
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
 void TMC2209_resetMotorsConfiguration(Motor *motors);
 

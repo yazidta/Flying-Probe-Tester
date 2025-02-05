@@ -285,7 +285,7 @@ int main(void)
   xTaskCreate(
 	  motorControlTask,           /* Task function */
       "motorControlTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+      512,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  osPriorityHigh,    /* Task priority */
       NULL                     /* Task handle (optional) */

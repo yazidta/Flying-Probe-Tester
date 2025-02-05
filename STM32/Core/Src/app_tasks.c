@@ -261,7 +261,6 @@ void calibProcessTask(void *pvParameters){
 }
 
 
-
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
 	motorCommandQueue = xQueueCreate(10, sizeof(MotorCommand));
@@ -290,6 +289,34 @@ void motorControlTask(void *argument) {
     		case 	MOTOR_CMD_DIRECTION:
     				TMC2209_SetDirection(&motors[cmd.motorIndex], cmd.direction);
     				break;
+
+    		case 	MOTOR_CMD_SETSPEED:
+    				TMC2209_SetSpeed(&motors[cmd.motorIndex], cmd.speed);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_MSTEP:
+    				TMC2209_setMicrosteppingResolution(&motors[cmd.motorIndex], cmd.mstep);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_CHOPPER:
+    			    TMC2209_setSpreadCycle(&motors[cmd.motorIndex], cmd.chopper);
+    			    break;
+
+    		case	MOTOR_CMD_CONFIG_SGTHRS:
+    				TMC2209_enableStallDetection(&motors[cmd.motorIndex], cmd.sgthrs);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_COOLTHRS:
+    				TMC2209_SetTCoolThrs(&motors[cmd.motorIndex], cmd.coolThrs);
+    				break;
+
+//    		case 	MOTOR_CMD_CHECK_SPEED:
+//
+//    		case	MOTOR_CMD_CHECK_MSTEP:
+//    		case 	MOTOR_CMD_CHECK_CHOPPER:
+//    		case	MOTOR_CMD_CHECK_SGTHRS:
+//    		case 	MOTOR_CMD_CHECK_COOLTHRS:
+//    				break;
     		default: // unkown command
     				break;
     		}
