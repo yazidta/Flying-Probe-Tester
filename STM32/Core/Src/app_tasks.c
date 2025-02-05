@@ -25,6 +25,8 @@ static TickType_t delayStartTime = 0; // For nonblocking delay
 
 EventGroupHandle_t calibEventGroup;
 SemaphoreHandle_t lcdMutex;      // Protects LCD access
+SemaphoreHandle_t xInitSemaphore;
+
 
 // Global calibration selection (set by UI when calibration is picked)
 volatile uint8_t g_calibSelection = 0;
@@ -214,14 +216,8 @@ void calibProcessTask(void *pvParameters){
 	for(;;){
 		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT,
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
-		if (uxBits & CALIB_START_BIT) {
-		            // Optionally update the LCD: "Calibration starting..."
-//		if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-//		    LCD_I2C_Clear(&hlcd3);
-//		    LCD_I2C_SetCursor(&hlcd3, 0, 0);
-//		    LCD_I2C_printStr(&hlcd3, "Calibration Start");
-//		    xSemaphoreGive(lcdMutex);
-//		  }
+	if (uxBits & CALIB_START_BIT) {
+
      switch(g_calibSelection){
         
         case 1: // AUTO
@@ -266,7 +262,6 @@ void calibProcessTask(void *pvParameters){
 }
 
 
-
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
 	motorCommandQueue = xQueueCreate(20, sizeof(MotorCommand));
@@ -295,6 +290,34 @@ void motorControlTask(void *argument) {
     		case 	MOTOR_CMD_DIRECTION:
     				TMC2209_SetDirection(&motors[cmd.motorIndex], cmd.direction);
     				break;
+
+    		case 	MOTOR_CMD_SETSPEED:
+    				TMC2209_SetSpeed(&motors[cmd.motorIndex], cmd.speed);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_MSTEP:
+    				TMC2209_setMicrosteppingResolution(&motors[cmd.motorIndex], cmd.mstep);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_CHOPPER:
+    			    TMC2209_setSpreadCycle(&motors[cmd.motorIndex], cmd.chopper);
+    			    break;
+
+    		case	MOTOR_CMD_CONFIG_SGTHRS:
+    				TMC2209_enableStallDetection(&motors[cmd.motorIndex], cmd.sgthrs);
+    				break;
+
+    		case 	MOTOR_CMD_CONFIG_COOLTHRS:
+    				TMC2209_SetTCoolThrs(&motors[cmd.motorIndex], cmd.coolThrs);
+    				break;
+
+//    		case 	MOTOR_CMD_CHECK_SPEED:
+//
+//    		case	MOTOR_CMD_CHECK_MSTEP:
+//    		case 	MOTOR_CMD_CHECK_CHOPPER:
+//    		case	MOTOR_CMD_CHECK_SGTHRS:
+//    		case 	MOTOR_CMD_CHECK_COOLTHRS:
+//    				break;
     		default: // unkown command
     				break;
     		}
@@ -321,7 +344,6 @@ void stallMonitorTask(void *argument) {
 
             if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detected
                 stallCmd.motorIndex = i;
-                 1;
             xQueueSend(motorCommandQueue, &stallCmd, pdMS_TO_TICKS(10));
 
             }
@@ -338,13 +360,27 @@ void stallMonitorTask(void *argument) {
  */
 void vMainMenuTask(void *pvParameters)
 {
-    currentState = MENU_STATE_CALIBRATION;
+    currentState = MENU_STATE_WELCOME;
     MenuTaskParams_t *menuParams = (MenuTaskParams_t *)pvParameters;
     //LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
     for (;;) {
 
         switch (currentState) {
+        	case MENU_STATE_WELCOME:
+        	{
+        		LCD_I2C_DisplaySequentialGlossyText(&hlcd3, 2);
+        		osDelay(500);
+        		LCD_I2C_ClearAllLines(&hlcd3);
+        		LCD_I2C_SetCursor(&hlcd3, 0, 1);
+        		LCD_I2C_printStr(&hlcd3, "Setting up machine, please wait...");
+        		initializeSystem();
+                // Wait here until the initialization semaphore is given.
+                if (xSemaphoreTake(xInitSemaphore, portMAX_DELAY) == pdTRUE) {
+                    currentState = MENU_STATE_MAIN;
+                }
+        }
+        	break;
 
             case MENU_STATE_MAIN:
                 {
@@ -373,10 +409,6 @@ void vMainMenuTask(void *pvParameters)
 
             case MENU_STATE_CALIBRATION:
                 {
-                	//encButton = IsSensorTriggered(EncoderBtn_GPIO_Port,EncoderBtn_Pin);
-                	//while(!encButton);
-                	//LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
-                	//osDelay(4);
                     const char* calibMenuItems[] = {"Auto Calibartion", "Semi-Auto Calibration", "Manual Calibration" };
                     uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,3, 1);
 

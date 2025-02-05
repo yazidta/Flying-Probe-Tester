@@ -22,6 +22,8 @@
 
 extern EventGroupHandle_t calibEventGroup;
 extern SemaphoreHandle_t lcdMutex;      // Protects LCD access
+extern SemaphoreHandle_t xInitSemaphore;
+
 
 // Global calibration selection (set by UI when calibration is picked)
 extern volatile uint8_t g_calibSelection;
@@ -50,6 +52,7 @@ typedef enum {
 } CalibrationSubState;
 
 typedef enum {
+	MENU_STATE_WELCOME,
     MENU_STATE_MAIN,
     MENU_STATE_SD_TEST,
     MENU_STATE_CALIBRATION,
@@ -64,6 +67,12 @@ typedef enum {
 	MOTOR_CMD_STOP,
 	MOTOR_CMD_START,
 	MOTOR_CMD_DIRECTION,
+	MOTOR_CMD_SETSPEED,
+	MOTOR_CMD_CONFIG_MSTEP,
+	MOTOR_CMD_CONFIG_SGTHRS,
+	MOTOR_CMD_CONFIG_COOLTHRS,
+	MOTOR_CMD_CONFIG_CHOPPER
+
 } MotorCommandType;
 
 typedef struct {
@@ -72,6 +81,12 @@ typedef struct {
 	uint8_t motorIndex;		// Index of the motor
 	float 	targetPositionMM;	// Target position in mm
 	uint8_t direction; 			// Motor direction
+	uint16_t speed;				// Motor speed
+	uint16_t mstep;				// Motor MSTEP
+	uint8_t  sgthrs;			// SGTHRS
+	uint16_t coolThrs;			// coolTHRS
+	uint8_t  chopper;			// chopper mode (1 = SpreadCycle, 0 = StealthChop)
+
 } MotorCommand;
 
 /* Define a structure to hold pointers to our LCD and encoder handles */
