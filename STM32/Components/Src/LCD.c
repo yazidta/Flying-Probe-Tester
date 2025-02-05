@@ -237,7 +237,13 @@ void LCD_I2C_Clear(LCD_I2C_HandleTypeDef * hlcd)
 {
   __lcd_i2c_write_command(hlcd, LCD_CLEAR_DISPLAY);
 }
-
+LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd){
+    for (int i = 0; i < 4; i++) {
+        LCD_I2C_SetCursor(hlcd, i, 0);
+        LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
+        osDelay(1);
+    }
+}
 /**
  * @brief Write new character to display memory.
  * @param[in] hlcd   : LCD handler with I2C interface

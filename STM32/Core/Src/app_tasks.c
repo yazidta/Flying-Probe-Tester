@@ -390,29 +390,22 @@ void vMainMenuTask(void *pvParameters)
                     }
                 }
                 break;
-//            case MENU_STATE_CALIBRATION2:
-//            {       // Semi Auto Calibration
-//                RunCalibrationStateMachine(menuParams->hlcd, &motors);
-//                currentState = MENU_STATE_CALIBRATION;     // TO CHANGE
-//            }
-//
-//
-//                break;
-//            case MENU_STATE_CALIBRATION3:
-//            {
-//                RunManualCalibrationStateMachine(menuParams->hlcd,&motors);
-//                currentState = MENU_STATE_CALIBRATION;       //TO CHANGE
-//                break;
-//            }
 
 
             case MENU_STATE_PREPARE_MACHINE:
                 {
-                    LCD_I2C_SetCursor(menuParams->hlcd, 0, 0);
-                    LCD_I2C_printStr(menuParams->hlcd, "Preparing...");
-                    HAL_Delay(2000);
-                    currentState = MENU_STATE_MAIN;
-                }
+                	LCD_I2C_ClearAllLines(&hlcd3);
+                	LCD_I2C_SetCursor(&hlcd3, 0, 1);
+                    LCD_I2C_printStr(&hlcd3, "Preparing...");
+                    if(MotorsHoming(&motors) == 1){
+                       if(calibrationState()){
+                           currentState =MENU_STATE_CALIBRATION;
+                        }
+                       currentState = MENU_STATE_MAIN;
+   	                 }
+
+                 }
+
                 break;
             default:
                 currentState = MENU_STATE_MAIN;

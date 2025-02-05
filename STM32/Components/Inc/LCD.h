@@ -171,6 +171,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
 uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles);
 FRESULT OpenRootDir(DIR* dir);
 FRESULT MountSDCard(FATFS* FatFs);
+LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd);
 
 
 

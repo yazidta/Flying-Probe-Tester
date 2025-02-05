@@ -34,6 +34,23 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h \
  C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
+ ../Core/Inc/FreeRTOSConfig.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/list.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/task.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
  ../FATFS/App/fatfs.h ../Middlewares/Third_Party/FatFs/src/ff.h \
  ../Middlewares/Third_Party/FatFs/src/integer.h ../FATFS/Target/ffconf.h \
  ../Middlewares/Third_Party/FatFs/src/ff_gen_drv.h \
@@ -43,7 +60,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h \
- ../Core/Inc/calibration.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h \
@@ -51,10 +69,12 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h \
- ../Core/Inc/main.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h \
- D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h \
+ ../Core/Inc/calibration.h ../Core/Inc/main.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h \
+ ../Core/Inc/app_tasks.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
+ ../Core/Inc/app_tasks.h
 ../Core/Inc/main.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
 ../Core/Inc/stm32f7xx_hal_conf.h:
@@ -91,6 +111,23 @@ C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HA
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_ll_usb.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal_pcd_ex.h:
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
+../Core/Inc/FreeRTOSConfig.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/portable.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/deprecated_definitions.h:
+../Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM7/r0p1/portmacro.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/mpu_wrappers.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/list.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/task.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h:
+../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
 ../FATFS/App/fatfs.h:
 ../Middlewares/Third_Party/FatFs/src/ff.h:
 ../Middlewares/Third_Party/FatFs/src/integer.h:
@@ -103,7 +140,8 @@ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/lcd_config.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/sd_card_reader.h:
-../Core/Inc/calibration.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_register.h:
@@ -111,7 +149,10 @@ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/uart_handler.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/TMC2209_configs.h:
-../Core/Inc/main.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder.h:
-D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/encoder_config.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
+../Core/Inc/calibration.h:
+../Core/Inc/main.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
+../Core/Inc/app_tasks.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
+../Core/Inc/app_tasks.h:
