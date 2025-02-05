@@ -90,6 +90,7 @@ void calibProcessTask(void *pvParameters);
 
 // Function prototypes
 void motorControlTask(void *arugment);
+void stallMonitorTask(void *arugment);
 
 // MISC
 

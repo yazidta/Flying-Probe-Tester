@@ -506,7 +506,7 @@ void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
     // Loop until a stall is detected.
     for (;;) {
         TMC2209_checkStall(&motors[motorIndex]);
-        if (motors[motorIndex].driver.STALL) {
+        if (motors[motorIndex].STALL) {
             // When a stall is detected, stop the motor via the queue.
             cmd.command = MOTOR_CMD_STOP;
             xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);

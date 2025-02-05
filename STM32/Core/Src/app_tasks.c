@@ -9,6 +9,7 @@
 #include "tmc2209.h"
 
 
+#define STALL_CHECK_INTERVAL_MS 50
 
 QueueHandle_t motorCommandQueue;
 MenuState currentState = MENU_STATE_MAIN;
@@ -294,10 +295,35 @@ void motorControlTask(void *argument) {
     		}
     	}
 
+
+
     	taskYIELD();
     }
 }
 
+
+/*
+ * Stall Monitor Task
+ * This task will check the diag pin of each motor and send a stop command for the motor that stalled.
+ */
+void stallMonitorTask(void *argument) {
+	MotorCommand stallCmd;
+	stallCmd.command = MOTOR_CMD_STOP;
+
+    for(;;) {
+        for(int i = 0; i < MAX_MOTORS; i++) {
+        	motors[i].STALL = HAL_GPIO_ReadPin(motors[i].driver.diag_port, motors[i].driver.diag_pin);
+
+            if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detected
+                stallCmd.motorIndex = i;
+                 1;
+            xQueueSend(motorCommandQueue, &stallCmd, pdMS_TO_TICKS(10));
+
+            }
+        }
+        vTaskDelay(pdMS_TO_TICKS(STALL_CHECK_INTERVAL_MS));
+    }
+}
 
 
 /*

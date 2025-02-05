@@ -54,7 +54,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 			  	  motors[i].StepsBack++;
 		  }
           if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0){ // Count Full steps
-              motors[i].driver.checkStallFlag = 1;
+              motors[i].driver.checkSG_RESULT = 1;
               motors[i].fullSteps++;
           }
       }
@@ -838,11 +838,10 @@ void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to De
 
 }
 
-void TMC2209_checkStall(Motor *motors){
-	   if(motors->driver.checkStallFlag){
-		   TMC2209_readSGResult(&motors[0]);
+void TMC2209_checkStall(Motor *motor){
+	   if(motor->driver.checkSG_RESULT){ // One full step is done so we read sg_Result
+		   TMC2209_readSGResult(motor);
 	   }
-	   motors->driver.STALL = IsSensorTriggered(motors->driver.diag_port, motors->driver.diag_pin);
 }
 
 

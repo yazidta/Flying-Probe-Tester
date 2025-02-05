@@ -62,8 +62,7 @@ void initializeMotors() {
         motors[i].driver.IFCNT = 0;
         motors[i].driver.chopperMode = 0;
         motors[i].driver.SG_RESULT = 0;
-        motors[i].driver.checkStallFlag = 0;
-        motors[i].driver.STALL = 0;
+        motors[i].driver.checkSG_RESULT = 0;
         motors[i].driver.TCoolThrs = 0;
         motors[i].driver.stepFrequency = 0;
 
@@ -73,7 +72,7 @@ void initializeMotors() {
         motors[i].currentPositionMM = 0;
         motors[i].nextPositionMM = 0;
         motors[i].isStepping = false;
-
+        motors[i].STALL = 0;
 
 
         if(i == 0){

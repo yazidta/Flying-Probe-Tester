@@ -285,6 +285,15 @@ int main(void)
   );
 
   xTaskCreate(
+	stallMonitorTask,          /* Task function */
+      "stallMonitorTask",       /* Task name (for debugging) */
+      256,        				/* Stack size in words */
+      NULL,                     /* Task parameters */
+      osPriorityAboveNormal,     /* Task priority */
+      NULL                       /* Task handle (optional) */
+  );
+
+  xTaskCreate(
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */

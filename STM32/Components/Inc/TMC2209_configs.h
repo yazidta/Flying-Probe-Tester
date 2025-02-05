@@ -92,8 +92,7 @@ typedef struct {
     uint16_t IDELAY;
     uint8_t stallEnabled;
     uint32_t SG_RESULT;
-    uint8_t checkStallFlag;
-    uint8_t STALL;
+    uint8_t checkSG_RESULT;
     uint32_t stepFrequency;
     int32_t TCoolThrs;
 
@@ -132,6 +131,7 @@ typedef struct {
     uint32_t StepsFront;           // Tracking Steps Based on direction
     int32_t StepsBack;
     float calib[2];
+    uint8_t STALL;
 } Motor;
 
 // Axis structure
