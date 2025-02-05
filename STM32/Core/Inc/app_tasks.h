@@ -22,6 +22,8 @@
 
 extern EventGroupHandle_t calibEventGroup;
 extern SemaphoreHandle_t lcdMutex;      // Protects LCD access
+extern SemaphoreHandle_t xInitSemaphore;
+
 
 // Global calibration selection (set by UI when calibration is picked)
 extern volatile uint8_t g_calibSelection;
@@ -50,6 +52,7 @@ typedef enum {
 } CalibrationSubState;
 
 typedef enum {
+	MENU_STATE_WELCOME,
     MENU_STATE_MAIN,
     MENU_STATE_SD_TEST,
     MENU_STATE_CALIBRATION,

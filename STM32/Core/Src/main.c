@@ -75,15 +75,11 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_uart4_rx;
-DMA_HandleTypeDef hdma_uart4_tx;
 DMA_HandleTypeDef hdma_uart5_rx;
-DMA_HandleTypeDef hdma_uart5_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
-DMA_HandleTypeDef hdma_usart6_tx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -211,24 +207,13 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   LCD_I2C_Init(&hlcd3);
-  LCD_I2C_Clear(&hlcd3);
-  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
-
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
 
   ENC_Init(&henc1);
 
 
-  initializeMotors();
-  initializeSystem();
 
-  TMC2209_setMotorsConfiguration(motors,16,1);
-
-  TMC2209_EnableDriver(&motors[0], 1);
-  TMC2209_EnableDriver(&motors[1], 1);
-  TMC2209_EnableDriver(&motors[2], 1);
-  TMC2209_EnableDriver(&motors[3], 1);
 
 
  // TMC2209_SetSpeed(&motors[0], 7000);
@@ -249,6 +234,9 @@ int main(void)
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
 
+  xInitSemaphore = xSemaphoreCreateBinary();
+  configASSERT(xInitSemaphore != NULL);
+
 
   /* USER CODE END RTOS_SEMAPHORES */
 
@@ -262,8 +250,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -291,14 +279,14 @@ int main(void)
       NULL                     /* Task handle (optional) */
   );
 
-  xTaskCreate(
-	  stallMonitorTask,          /* Task function */
-      "StallMonitorTask",       /* Task name (for debugging) */
-      256,        				/* Stack size in words */
-      NULL,                     /* Task parameters */
-      osPriorityNormal,     /* Task priority */
-      NULL                       /* Task handle (optional) */
-  );
+//  xTaskCreate(
+//	  stallMonitorTask,          /* Task function */
+//      "StallMonitorTask",       /* Task name (for debugging) */
+//      256,        				/* Stack size in words */
+//      NULL,                     /* Task parameters */
+//      osPriorityNormal,     /* Task priority */
+//      NULL                       /* Task handle (optional) */
+//  );
 
   xTaskCreate(
       vMainMenuTask,           /* Task function */
@@ -1151,24 +1139,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
-  /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-  /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-  /* DMA1_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
   /* DMA2_Stream1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
-  /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 
@@ -1307,16 +1283,16 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
-{
-  /* USER CODE BEGIN 5 */
-////  /* Infinite loop */
-////  for(;;)
-////  {
-////    osDelay(1);
-////  }
-  /* USER CODE END 5 */
-}
+//void StartDefaultTask(void const * argument)
+//{
+//  /* USER CODE BEGIN 5 */
+////////  /* Infinite loop */
+////////  for(;;)
+////////  {
+////////    osDelay(1);
+////////  }
+//  /* USER CODE END 5 */
+//}
 
 /**
   * @brief  Period elapsed callback in non blocking mode

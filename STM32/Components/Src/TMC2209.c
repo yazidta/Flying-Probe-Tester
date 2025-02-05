@@ -328,7 +328,7 @@ uint8_t TMC2209_WaitForReply(uint32_t timeout) {
 uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength, Motor *tmc2209) {
 	//clear_UART_buffers(&huart2);
      // Send the command
-     if (HAL_UART_Transmit_DMA(tmc2209->driver.huart, command, writeLength) != HAL_OK) {
+     if (HAL_UART_Transmit(tmc2209->driver.huart, command, writeLength, HAL_MAX_DELAY) != HAL_OK) {
          if(ENABLE_DEBUG) debug_print("Failed to send command to driver.\r\n");
          tmc2209->driver.STATUS = TMC_SEND_ERROR;
          return	NULL;
@@ -808,19 +808,18 @@ void TMC2209_readSGResult(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes 
 }
 
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
-    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    for (uint8_t i = 0; i < 2; i++) {
     	configureGCONF(&motors[i]);
-    	uint16_t mstep = motors[i].driver.mstep;
-    	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
+    	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
     	TMC2209_enableStallDetection(&motors[i], 126);
     	TMC2209_SetTCoolThrs(&motors[i], 5000);
 
 
     }
-    TMC2209_SetSpeed(&motors[0], 8500);
-    TMC2209_SetSpeed(&motors[1], 15000);
-    TMC2209_SetSpeed(&motors[2], 5000);
-    TMC2209_SetSpeed(&motors[3], 15000);
+//    TMC2209_SetSpeed(&motors[0], 8500);
+//    TMC2209_SetSpeed(&motors[1], 8500);
+//    TMC2209_SetSpeed(&motors[2], 15000);
+//    TMC2209_SetSpeed(&motors[3], 15000);
 }
 
 void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default

@@ -63,7 +63,7 @@ bool MotorsHoming(Motor *motor) {
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     } else {
         homed[1] = true;
-        ResetMotorState(&motor[1], 450);
+        ResetMotorState(&motor[1], 0);
     }
 
     /* Motor 2: Uses EndStop1, home position = 0, direction = 0 */
@@ -107,7 +107,7 @@ bool MotorsHoming(Motor *motor) {
             cmd.motorIndex = 1;
             cmd.command = MOTOR_CMD_STOP;
             xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-            ResetMotorState(&motor[1], 450);
+            ResetMotorState(&motor[1], 0);
             homed[1] = true;
         }
         if (!homed[2] && (IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin) == 1)) {

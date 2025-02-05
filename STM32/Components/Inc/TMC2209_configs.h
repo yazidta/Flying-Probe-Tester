@@ -62,8 +62,8 @@ extern TIM_HandleTypeDef htim5;
 
 // DEFAULT MOTOR SPEED
 
-#define DEFAULT_X_SPEED	30000
-#define DEFAULT_Y_SPEED	15000
+#define DEFAULT_X_SPEED	8000
+#define DEFAULT_Y_SPEED	8000
 
 
 
