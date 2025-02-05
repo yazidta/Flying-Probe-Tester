@@ -277,7 +277,7 @@ void clear_UART_buffers(UART_HandleTypeDef *huart) {
 
 
 void debug_print(const char* msg) {
-    HAL_UART_Transmit(&huart3, (uint8_t*)msg, strlen(msg), HAL_MAX_DELAY);
+    HAL_UART_Transmit_DMA(&huart3, (uint8_t*)msg, strlen(msg));
 }
 
  void debug_print_hex(uint8_t* data, uint8_t length) {
@@ -328,7 +328,7 @@ uint8_t TMC2209_WaitForReply(uint32_t timeout) {
 uint8_t *TMC2209_sendCommand(uint8_t *command, size_t writeLength, size_t readLength, Motor *tmc2209) {
 	//clear_UART_buffers(&huart2);
      // Send the command
-     if (HAL_UART_Transmit(tmc2209->driver.huart, command, writeLength, HAL_MAX_DELAY) != HAL_OK) {
+     if (HAL_UART_Transmit_DMA(tmc2209->driver.huart, command, writeLength) != HAL_OK) {
          if(ENABLE_DEBUG) debug_print("Failed to send command to driver.\r\n");
          tmc2209->driver.STATUS = TMC_SEND_ERROR;
          return	NULL;
