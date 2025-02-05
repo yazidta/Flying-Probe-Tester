@@ -104,7 +104,7 @@ volatile uint8_t Btn2 = 0;
 volatile uint8_t Btn3 = 0;
 volatile uint8_t Btn4 =0;
 volatile uint8_t Btn5 =0;
-extern uint8_t encButton;
+
 // Homing Flags
 
 volatile uint8_t homingFlag = 0;
@@ -206,6 +206,7 @@ int main(void)
 
   LCD_I2C_Init(&hlcd3);
   LCD_I2C_Clear(&hlcd3);
+  LCD_I2C_DisplaySequentialGlossyText(&hlcd3,2);
 
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -255,15 +256,15 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
- // osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
- // defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-//
-//  const osThreadAttr motorTask_attributes = {
+
+//  const osThreadAttr_t motorTask_attributes = {
 //		  .name = "motorControlTask",
-//		  .priority = (osPriority) osPriorityNormal,
+//		  .priority = (osPriority_t) osPriorityNormal,
 //		  .stack_size = 512  // TODO: Adjust the stack size?
 //  };
 //  osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
@@ -285,11 +286,11 @@ int main(void)
   );
 
   xTaskCreate(
-	stallMonitorTask,          /* Task function */
-      "stallMonitorTask",       /* Task name (for debugging) */
+	  stallMonitorTask,          /* Task function */
+      "StallMonitorTask",       /* Task name (for debugging) */
       256,        				/* Stack size in words */
       NULL,                     /* Task parameters */
-      osPriorityAboveNormal,     /* Task priority */
+      osPriorityNormal,     /* Task priority */
       NULL                       /* Task handle (optional) */
   );
 
@@ -324,46 +325,9 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
 
   /* Infinite loop */
-  /* USER CODE BEGIN WHiLE */
+  /* USER CODE BEGIN WHILE */
    while (1){
 
-
-
-
-	   /// DEBUG ///
-	      ES1 = IsSensorTriggered(EncoderBtn_GPIO_Port, EncoderBtn_Pin);
-	      ES2 = IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin);
-	      ES3 = IsSensorTriggered(EndStop3_GPIO_Port,EndStop3_Pin);
-	      ES4 = IsSensorTriggered(EndStop4_GPIO_Port,EndStop4_Pin);
-
-	      Btn1 = IsSensorTriggered(BtnLeft_GPIO_Port, BtnLeft_Pin);
-	      Btn2 = IsSensorTriggered(BtnRight_GPIO_Port, BtnRight_Pin);
-	      Btn3 = IsSensorTriggered(BtnDown_GPIO_Port, BtnDown_Pin);
-	      Btn4 = IsSensorTriggered(BtnUp_GPIO_Port, BtnUp_Pin);
-	      Btn5 = IsSensorTriggered(BtnCtr_GPIO_Port, BtnCtr_Pin);
-	   /// DEBUG ///
-
-      if (flagUserBtn)	{
-    	homingFlag = MotorsHoming(&motors);
-    	calibrationFlag = calibrationState();
-    	flagUserBtn = 0;
-      }
-  	if(!calibrationFlag && homingFlag){
-  		//MotorControl_ButtonHandler(&axes,&motors);
-      }
-      if(calibrationFlag == 1){
-          		  LCD_I2C_Clear(&hlcd3);
-                  LCD_I2C_SetCursor(&hlcd3,1,1);
-
-          		  //homingFlag = 0;
-          	  }
-
-
-	  //uint32_t encode = ENC_GetCounter(&henc1);
-//		uint8_t choice = LCD_I2C_MainMenu_Encoder(&hlcd3, &henc1);
-//
-//// 		Handle the selected option using the encapsulated function
-//          LCD_I2C_HandleMenuSelection(choice, &hlcd3,&henc1);
       }
 
     /* USER CODE END WHILE */
@@ -1319,20 +1283,16 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-//void StartDefaultTask(void const * argument)
-//{
-//  /* USER CODE BEGIN 5 */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
 ////  /* Infinite loop */
-//  for(;;)
-//  {
-//	 encButton = IsSensorTriggered(EncoderBtn_GPIO_Port,EncoderBtn_Pin);
-//	//while(!encButton);
-//  	//encButton = IsSensorTriggered(BtnUp_GPIO_Port,BtnUp_Pin);
-//
-//    osDelay(1);
-//  }
-//  /* USER CODE END 5 */
-//}
+////  for(;;)
+////  {
+////    osDelay(1);
+////  }
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
