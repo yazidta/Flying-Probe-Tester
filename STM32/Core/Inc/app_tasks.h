@@ -17,13 +17,16 @@
 #include "FreeRTOS.h"
 #include "event_groups.h"
 #include "encoder_config.h"
+#include "servo.h"
+#include "tmc2209.h"
 #define CALIB_START_BIT    (1 << 0)
 #define CALIB_COMPLETE_BIT (1 << 1)
 
 extern EventGroupHandle_t calibEventGroup;
 extern SemaphoreHandle_t lcdMutex;      // Protects LCD access
 extern SemaphoreHandle_t xInitSemaphore;
-
+extern SERVO_Handle_TypeDef hservo1;
+extern SERVO_Handle_TypeDef hservo2;
 
 // Global calibration selection (set by UI when calibration is picked)
 extern volatile uint8_t g_calibSelection;
@@ -89,24 +92,18 @@ typedef struct {
 
 } MotorCommand;
 
-/* Define a structure to hold pointers to our LCD and encoder handles */
-typedef struct {
-    LCD_I2C_HandleTypeDef* hlcd;
-    ENC_Handle_TypeDef* henc;
-} MenuTaskParams_t;
+/* RTOS TASKS */
 
 /* Forward declaration of the external function to read button states */
 extern bool read_buttons(void);
 void vMainMenuTask(void *pvParameters);
 void calibProcessTask(void *pvParameters);
 
-
-
-
-// Function prototypes
 void motorControlTask(void *arugment);
 void stallMonitorTask(void *arugment);
 
+// Function prototypes
+void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[], size_t gcodeCount);
 // MISC
 
 extern QueueHandle_t motorCommandQueue;

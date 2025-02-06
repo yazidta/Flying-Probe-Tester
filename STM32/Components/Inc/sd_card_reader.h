@@ -24,12 +24,11 @@
 extern float coordinates_x[MAX_COORD_COUNT];
 extern float coordinates_y[MAX_COORD_COUNT];
 extern float coordinates_z[MAX_COORD_COUNT];
-
 // Function prototypes
-void parse_gcode(const char *char_array);
 void process_raw_gcode(FIL *fil);
 void sd_card_read_gcode();
 void uart_transmit_string(const char *str);
+
 //void sd_card_display_files(LCD_I2C_HandleTypeDef* hlcd);
 
 #endif /* INC_SD_CARD_READER_H_ */

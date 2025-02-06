@@ -197,51 +197,7 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
 }
 
 
-void ProcessGcode(Axis *axisGroup[], size_t axisGroupCount, const char *gcodeArray[], size_t gcodeCount) {
-    for (size_t i = 0; i < gcodeCount; i++) {
-        const char *gcodeLine = gcodeArray[i];
-        float xTarget = -1, yTarget = -1, zTarget = -1; // no movement
-        char axis;
-        float value;
-        const char *ptr = gcodeLine;
 
-        // loop around the line for X, Y, Z values
-        while (*ptr) {
-            if (*ptr == 'X' || *ptr == 'Y' || *ptr == 'Z') {
-                axis = *ptr;
-                value = atof(++ptr); // Convert the next part to a float
-                switch (axis) {
-                    case 'X':
-                        xTarget = value;
-                        break;
-                    case 'Y':
-                        yTarget = value;
-                        break;
-                    case 'Z':
-                        zTarget = value;
-                        break;
-                }
-            }
-            ptr++;
-        }
-
-        // Move the corresponding axes
-        if (xTarget >= 0 && axisGroupCount > 0) {
-            TMC2209_MoveTo(axisGroup[0], 0, xTarget); // Move motor 0 of X-axis
-        }
-
-        if (yTarget >= 0 && axisGroupCount > 1) {
-            TMC2209_MoveTo(axisGroup[1], 0, yTarget); // Move motor 0 of Y-axis
-        }
-
-        if (zTarget >= 0 && axisGroupCount > 2) {
-            TMC2209_MoveTo(axisGroup[2], 0, zTarget); // Move motor 0 of Z-axis
-        }
-
-        // TODO: check if we need a delay? so motor settle in between each line
-      //  HAL_Delay(10);
-    }
-}
 
 
 uint8_t getStepPerUnit(Motor *motor){ // Gets the stepPerUnit of that motor based on the axis it's in
@@ -251,8 +207,6 @@ uint8_t getStepPerUnit(Motor *motor){ // Gets the stepPerUnit of that motor base
 	}
 	return axes[2].stepPerUnit;
 }
-
-
 
 
 

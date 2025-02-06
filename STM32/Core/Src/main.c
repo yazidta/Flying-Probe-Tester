@@ -263,10 +263,6 @@ int main(void)
 //  };
 //  osThreadId_t motorTaskHandle = osThreadNew(motorControlTask, NULL, &motorTask_attributes);
 
-  static MenuTaskParams_t menuTaskParams = {
-      .hlcd = &hlcd3,
-      .henc = &henc1
-  };
 
 
   /* Create the main menu task */
@@ -292,7 +288,7 @@ int main(void)
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */
-      &menuTaskParams,         /* Task parameters */
+      NULL,         /* Task parameters */
 	  osPriorityBelowNormal,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
