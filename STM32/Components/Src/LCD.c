@@ -32,6 +32,7 @@
 #define LCD_NUMBER_BUF_SIZE 2
 #define LCD_PRINTF_BUF_SIZE 64
 #define MAX_MESSAGE_LENGTH 4
+extern char lines[LINE_BUFFER_SIZE][MAX_LINE_LENGTH];
 
 /* Macro ---------------------------------------------------------------------*/
 #ifdef LCD_USE_TIMER
@@ -237,12 +238,11 @@ void LCD_I2C_Clear(LCD_I2C_HandleTypeDef * hlcd)
 {
   __lcd_i2c_write_command(hlcd, LCD_CLEAR_DISPLAY);
 }
-LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd){
+void LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd){
     for (int i = 0; i < 4; i++) {
         LCD_I2C_SetCursor(hlcd, i, 0);
         LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
-        osDelay(1);
-    }
+   }
 }
 /**
  * @brief Write new character to display memory.
@@ -373,7 +373,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
                              uint8_t numItems,
                              bool backOption)
 {
-    LCD_I2C_Clear(hlcd);
+    LCD_I2C_ClearAllLines(hlcd);
 
     // Determine total options based on whether a back option is added
     uint8_t totalOptions = backOption ? numItems + 1 : numItems;
@@ -392,7 +392,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             menuItems[i] = displayItems[i];
         }
     }
-    
+
     uint8_t selectedOption = 0;       // Current selected menu item
     uint8_t previousOption = 255;     // Set to an invalid option to force the first update
 
@@ -416,11 +416,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             previousOption = selectedOption;
 
             // Clear the display lines
-            for (int i = 0; i < 4; i++) {
-                LCD_I2C_SetCursor(hlcd, i, 0);
-                LCD_I2C_printStr(hlcd, "                    "); // 20 spaces
-                osDelay(1);
-            }
+            LCD_I2C_ClearAllLines(hlcd);
 
             // Update menu display with the current menu items
             for (uint8_t i = 0; i < totalOptions; i++) {
@@ -445,7 +441,6 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
             if (selectedOption == 0 && backOption) {
                 return 0;
             } else {
-                // Return selectedOption + 1 to account for "Back" at index 0 when applicable
                 return selectedOption;
             }
         }
@@ -604,8 +599,8 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
                 // "Loading..." selected
                 LCD_I2C_SetCursor(hlcd, 0, 0);
                 LCD_I2C_printStr(hlcd, "Loading...");
-                HAL_Delay(2000);
-                // process_file(fileList[selectedIndex]);
+                process_file(fileList[selectedIndex]);
+
                 // Add your file processing logic here
                 return;
             }
@@ -614,7 +609,49 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
         HAL_Delay(100);
     }
 }
+void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
+    FATFS FatFs;
+    FIL file;
+    FRESULT fres;
+    uint8_t numLines = 0;
 
+    // Mount the SD card
+    fres = f_mount(&FatFs, "", 1);
+    if (fres != FR_OK) {
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "SD mount failed");
+        HAL_Delay(2000);
+        return;
+    }
+
+    // Open the file for reading
+    fres = f_open(&file, filename, FA_READ);
+    if (fres != FR_OK) {
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "Open file failed");
+        f_mount(NULL, "", 1);
+        HAL_Delay(2000);
+        return;
+    }
+
+    // Read the file line by line and store in the array
+    while ((numLines < MAX_LINES) && (f_gets(lines[numLines], MAX_LINE_LENGTH, &file) != NULL)) {
+        // Remove trailing newline characters (both '\n' and '\r' if present)
+        size_t len = strlen(lines[numLines]);
+        if (len > 0 && lines[numLines][len - 1] == '\n') {
+            lines[numLines][len - 1] = '\0';
+            len--;
+        }
+        if (len > 0 && lines[numLines][len - 1] == '\r') {
+            lines[numLines][len - 1] = '\0';
+        }
+        numLines++;
+    }
+
+    // Close the file and unmount the SD card
+    f_close(&file);
+    f_mount(NULL, "", 1);
+}
 
 
 #endif

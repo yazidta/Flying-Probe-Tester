@@ -4,6 +4,8 @@
 /* Config --------------------------------------------------------------------*/
 #define LCD_PRINTF_ENABLE
 #define LCD_USE_TIMER
+#define MAX_LINES       256    // Maximum number of lines to process
+#define MAX_LINE_LENGTH 64     // Maximum characters per line
 
 //#define LCD20xN    // For 20xN LCDs
 #define LCD16xN     // For 16xN LCDs
@@ -171,7 +173,7 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
 uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles);
 FRESULT OpenRootDir(DIR* dir);
 FRESULT MountSDCard(FATFS* FatFs);
-LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd);
+void LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd);
 
 
 

@@ -34,8 +34,8 @@ bool MotorsHoming(Motor *motor) {
     MotorCommand cmd;  // Temporary command structure for queue commands
 
     /* Set servo positions for homing (adjust positions as needed) */
-    SERVO_WritePosition(&hservo1, 105);
-    SERVO_WritePosition(&hservo2, 95);
+    //SERVO_WritePosition(&hservo1, 115);
+    //SERVO_WritePosition(&hservo2, 115);
 
     /* --- Start each motor if not already at its home sensor --- */
     /* Motor 0: Uses EndStop2, home position = 0, direction = 1 */
@@ -146,21 +146,24 @@ void AutoCalibration(Axis *axes, Motor *motors) {
 
     /* First, perform homing */
     MotorsHoming(motors);
-
+    while(!calibrationState()){
     /* Send a series of move commands via the queue */
 
     /* Move motor 0 on axis 0 to 79 mm */
+
     cmd.axisIndex = 0;
     cmd.motorIndex = 0;
     cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 79.0f;
+    cmd.targetPositionMM = 77.9f;
     xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
     /* Move motor 0 on axis 1 to -47.6 mm */
+
+
     cmd.axisIndex = 1;
     cmd.motorIndex = 0;
     cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = -47.6f;
+    cmd.targetPositionMM = -47.9f;
     xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
     /* Update current positions if needed */
@@ -171,54 +174,63 @@ void AutoCalibration(Axis *axes, Motor *motors) {
     cmd.axisIndex = 0;
     cmd.motorIndex = 1;
     cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = -102.4f;
+    cmd.targetPositionMM = -100.8f;
     xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
     /* Move motor 1 on axis 1 to 46.8 mm */
     cmd.axisIndex = 1;
     cmd.motorIndex = 1;
     cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 46.8f;
+    cmd.targetPositionMM = 50.2f;
     xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
     /* Update additional motor positions */
     motors[1].currentPositionMM = 100;
     motors[3].currentPositionMM = 0;
 
-    /* Wait 600 ms before issuing the next set of moves */
-    vTaskDelay(pdMS_TO_TICKS(600));
+    LCD_I2C_Clear(&hlcd3);
+    LCD_I2C_SetCursor(&hlcd3, 0, 2);
+    LCD_I2C_printStr(&hlcd3, "Calibration done!");
 
+    /* Wait 600 ms before issuing the next set of moves */
+    //vTaskDelay(pdMS_TO_TICKS(600));
+   // osDelay(200);
     /* Issue second set of moves: */
     /* Move motor 0 on axis 0 to 20.5995 mm */
-    cmd.axisIndex = 0;
-    cmd.motorIndex = 0;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 20.5995f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//    cmd.axisIndex = 0;
+//    cmd.motorIndex = 0;
+//    cmd.command = MOTOR_CMD_MOVETO;
+//    cmd.targetPositionMM = 20.5995f;
+//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//    /* Move motor 0 on axis 1 to -37.5995 mm */
+//    cmd.axisIndex = 1;
+//    cmd.motorIndex = 0;
+//    cmd.command = MOTOR_CMD_MOVETO;
+//    cmd.targetPositionMM = -37.5995f;
+//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//    /* Move motor 1 on axis 0 to 44.5995 mm */
+//    cmd.axisIndex = 0;
+//    cmd.motorIndex = 1;
+//    cmd.command = MOTOR_CMD_MOVETO;
+//    cmd.targetPositionMM = -44.5995f;
+//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//    /* Move motor 1 on axis 1 to 20.5995 mm */
+//    cmd.axisIndex = 1;
+//    cmd.motorIndex = 1;
+//    cmd.command = MOTOR_CMD_MOVETO;
+//    cmd.targetPositionMM = 20.5995f;
+//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
-    /* Move motor 0 on axis 1 to -37.5995 mm */
-    cmd.axisIndex = 1;
-    cmd.motorIndex = 0;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = -37.5995f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-    /* Move motor 1 on axis 0 to 44.5995 mm */
-    cmd.axisIndex = 0;
-    cmd.motorIndex = 1;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 44.5995f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-    /* Move motor 1 on axis 1 to 20.5995 mm */
-    cmd.axisIndex = 1;
-    cmd.motorIndex = 1;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 20.5995f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-    //Finally, check connections between the testpoints 
+    //Finally, check connections between the testpoints
     testing = CheckConnection(&hservo2, &hservo1);
+    motors[0].calib[1] = 77.9f;
+    motors[1].calib[1] = -47.9f;
+    motors[2].calib[1] = -100.8f;
+    motors[3].calib[1] = 50.2f;
+    }
 }
 
 bool calibrationState(void) {
@@ -229,76 +241,76 @@ bool calibrationState(void) {
         motors[1].calib[1] != 0)
     {
         /* Perform homing first (this call is kept synchronous) */
-        MotorsHoming(motors);
+        //MotorsHoming(motors);
 
         /* Set servo positions */
-        SERVO_WritePosition(&hservo1, 80);
-        SERVO_WritePosition(&hservo2, 80);
-
-        MotorCommand cmd;
-
-        /* Post move commands to position each motor at its calibration value.
-           Adjust the axisIndex and motorIndex as needed. */
-
-        // Example: Move motor 0 on axis 0 to its calibration value plus an offset 
-        cmd.axisIndex      = 0;
-        cmd.motorIndex     = 0;
-        cmd.command        = MOTOR_CMD_MOVETO;
-        cmd.targetPositionMM = motors[0].calib[0] + 0.33f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        /* Example: Move motor 0 (or its pair) on axis 1 to a negative offset */
-        cmd.axisIndex      = 1;
-        cmd.motorIndex     = 0;
-        cmd.targetPositionMM = -(motors[2].calib[1] + 0.5f);
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        /* Example: Move motor 1 on axis 0 */
-        cmd.axisIndex      = 0;
-        cmd.motorIndex     = 1;
-        cmd.targetPositionMM = -(motors[1].calib[0] + 0.33f);
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        /* Example: Move motor 1 on axis 1 */
-        cmd.axisIndex      = 1;
-        cmd.motorIndex     = 1;
-        cmd.targetPositionMM = motors[3].calib[1] + 0.5f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        /* Update current positions */
-        motors[0].currentPositionMM = 0;
-        motors[1].currentPositionMM = 100;
-        motors[2].currentPositionMM = 0;
-        motors[3].currentPositionMM = 0;
-
-        /* Delay before doing the next move */
-        vTaskDelay(pdMS_TO_TICKS(10));
-
-        /* Issue a second set of move commands */
-        cmd.axisIndex      = 0;
-        cmd.motorIndex     = 0;
-        cmd.targetPositionMM = 20.5995f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        cmd.axisIndex      = 1;
-        cmd.motorIndex     = 0;
-        cmd.targetPositionMM = -37.5995f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        cmd.axisIndex      = 0;
-        cmd.motorIndex     = 1;
-        cmd.targetPositionMM = 44.5995f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        cmd.axisIndex      = 1;
-        cmd.motorIndex     = 1;
-        cmd.targetPositionMM = 20.5995f;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-        /* Check servo connection and update flag if needed */
-        if (CheckConnection(&hservo2, &hservo1)) {
-            x = 1;
-        }
+//        SERVO_WritePosition(&hservo1, 115);
+//        SERVO_WritePosition(&hservo2, 115);
+//
+//        MotorCommand cmd;
+//
+//        /* Post move commands to position each motor at its calibration value.
+//           Adjust the axisIndex and motorIndex as needed. */
+//
+//        // Example: Move motor 0 on axis 0 to its calibration value plus an offset
+//        cmd.axisIndex      = 0;
+//        cmd.motorIndex     = 0;
+//        cmd.command        = MOTOR_CMD_MOVETO;
+//        cmd.targetPositionMM = motors[0].calib[0] + 0.33f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        /* Example: Move motor 0 (or its pair) on axis 1 to a negative offset */
+//        cmd.axisIndex      = 1;
+//        cmd.motorIndex     = 0;
+//        cmd.targetPositionMM = -(motors[2].calib[1] + 0.5f);
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        /* Example: Move motor 1 on axis 0 */
+//        cmd.axisIndex      = 0;
+//        cmd.motorIndex     = 1;
+//        cmd.targetPositionMM = -(motors[1].calib[0] + 0.33f);
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        /* Example: Move motor 1 on axis 1 */
+//        cmd.axisIndex      = 1;
+//        cmd.motorIndex     = 1;
+//        cmd.targetPositionMM = motors[3].calib[1] + 0.5f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        /* Update current positions */
+//        motors[0].currentPositionMM = 0;
+//        motors[1].currentPositionMM = 100;
+//        motors[2].currentPositionMM = 0;
+//        motors[3].currentPositionMM = 0;
+//
+//        /* Delay before doing the next move */
+//        vTaskDelay(pdMS_TO_TICKS(10));
+//
+//        /* Issue a second set of move commands */
+//        cmd.axisIndex      = 0;
+//        cmd.motorIndex     = 0;
+//        cmd.targetPositionMM = 20.5995f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        cmd.axisIndex      = 1;
+//        cmd.motorIndex     = 0;
+//        cmd.targetPositionMM = -37.5995f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        cmd.axisIndex      = 0;
+//        cmd.motorIndex     = 1;
+//        cmd.targetPositionMM = 44.5995f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        cmd.axisIndex      = 1;
+//        cmd.motorIndex     = 1;
+//        cmd.targetPositionMM = 20.5995f;
+//        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//
+//        /* Check servo connection and update flag if needed */
+//        if (CheckConnection(&hservo2, &hservo1)) {
+//            x = 1;
+//        }
         return true;
     }
     else {
@@ -309,8 +321,9 @@ bool calibrationState(void) {
 
 void ManualCalibration(Axis *axes, Motor *motors) {
     /* If calibration is complete, exit immediately */
-    if (calibrationState())
-        return;
+    while(!calibrationState()){
+    RunManualCalibrationStateMachine(&hlcd3, &motors);
+
 
     /* Static variables to detect a button press edge */
     static uint8_t CtrPressedFlag = 0;
@@ -319,13 +332,13 @@ void ManualCalibration(Axis *axes, Motor *motors) {
     uint32_t currentTime = xTaskGetTickCount();
 
     /* Set servo positions (this call remains direct) */
-    SERVO_WritePosition(&hservo1, 60);
-    SERVO_WritePosition(&hservo2, 60);
+    SERVO_WritePosition(&hservo1, 115);
+    SERVO_WritePosition(&hservo2, 115);
 
     static uint32_t lastPressTime = 0;  // Last valid press timestamp
 
     /* Process the calibration button (BtnCtr) */
-    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_SET) {
+    if (HAL_GPIO_ReadPin(EncoderBtn_GPIO_Port, EncoderBtn_Pin) == GPIO_PIN_SET) {
         if (CtrPressedFlag == 0) {  // First rising edge detected
             pressStartTime = currentTime;
             CtrPressedFlag = 1;
@@ -394,11 +407,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
-    else if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup;
-        cmd.command    = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    }
+
 
     /* Example: BtnDown pressed -> move motor (motorGroup) in the reverse direction */
     if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) {
@@ -417,11 +426,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
-    else if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_SET || StepsBack[0] > 28000) {
-        cmd.motorIndex = motorGroup;
-        cmd.command    = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    }
+
 
     /* Example: BtnRight pressed -> move paired motor (motorGroup+2) forward */
     if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
@@ -440,11 +445,8 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
-    else if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup + 2;
-        cmd.command    = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    }
+
+
 
     /* Example: BtnLeft pressed -> move paired motor (motorGroup+2) in reverse */
     if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) {
@@ -456,17 +458,15 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command = MOTOR_CMD_START;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
-        while (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) {
-            vTaskDelay(pdMS_TO_TICKS(10));
+
+
+    while (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
+                vTaskDelay(pdMS_TO_TICKS(10));
+            }
+            cmd.motorIndex = motorGroup + 2;
+            cmd.command    = MOTOR_CMD_STOP;
+            xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
         }
-        cmd.motorIndex = motorGroup + 2;
-        cmd.command    = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    }
-    else if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup + 2;
-        cmd.command    = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
 }
 /**
@@ -488,6 +488,7 @@ void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
                                      GPIO_PinState direction, uint8_t calibrationIndex)
 {
     MotorCommand cmd;
+
 
     // Set the motor speed directly.
     // (If you want to queue speed commands, you could extend the command structure.)
@@ -554,20 +555,27 @@ void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
 void semiAutoCalibration(Axis *axes, Motor *motors)
 {
     // If a calibration is already in progress, exit.
-    if (calibrationState()) {
-        return;
-    }
+    while(!calibrationState()) {
+
 
     // Static variables for button debounce and calibration step tracking.
     static uint8_t ctrPressedFlag = 0;
     static TickType_t pressStartTime = 0;
     static uint8_t calibrationStep = 0;
     const TickType_t debounceTime = pdMS_TO_TICKS(50);
+//    LCD_I2C_Clear(&hlcd3);
+//    LCD_I2C_SetCursor(&hlcd3, 0, 1);
+//    LCD_I2C_printStr(&hlcd3, "Use Buttons to Move");
+//    LCD_I2C_SetCursor(hlcd, 1, 1);
+//    LCD_I2C_printStr(hlcd, "Probe 1");
+//    osDelay(300);
+    //delayStartTime = xTaskGetTickCount();
+    //calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
 
     TickType_t currentTime = xTaskGetTickCount();
 
     // Check the calibration (Ctr) button.
-    if (HAL_GPIO_ReadPin(BtnCtr_GPIO_Port, BtnCtr_Pin) == GPIO_PIN_SET) {
+    if (HAL_GPIO_ReadPin(EncoderBtn_GPIO_Port, EncoderBtn_Pin) == GPIO_PIN_SET) {
         if (ctrPressedFlag == 0) {  // First edge detected.
             pressStartTime = currentTime;
             ctrPressedFlag = 1;
@@ -579,29 +587,57 @@ void semiAutoCalibration(Axis *axes, Motor *motors)
         }
         ctrPressedFlag = 0;
     }
-
+//    LCD_I2C_Clear(hlcd);
+//    LCD_I2C_SetCursor(hlcd, 0, 0);
+//    LCD_I2C_printStr(hlcd, "Place probe 1 facing");
+//    LCD_I2C_SetCursor(hlcd, 1, 0);
+//    LCD_I2C_printStr(hlcd, "X-axis edge 1");
+    //calibSubState = CALIB_STATE_WAIT_PROBE1_DONE;
     // Execute the calibration step.
+    RunSemiAutoCalibrationStateMachine(&hlcd3,&motors);
     switch (calibrationStep) {
         case 1:
             // Case 1: Move Motor 1 (index 0) in reverse until stall.
             moveMotorUntilStallAndCalibrate(axes, motors, 0, 7000, GPIO_PIN_RESET, 0);
+//            LCD_I2C_Clear(hlcd);
+//            LCD_I2C_SetCursor(hlcd, 0, 0);
+//            LCD_I2C_printStr(hlcd, "Place probe 1 facing");
+//            LCD_I2C_SetCursor(hlcd, 1, 0);
+//            LCD_I2C_printStr(hlcd, "Y-axis edge 1");
             break;
 
         case 2:
             // Case 2: Move Motor 3 (index 2) in reverse until stall.
             moveMotorUntilStallAndCalibrate(axes, motors, 2, 7000, GPIO_PIN_SET, 1);
+//            LCD_I2C_Clear(hlcd);
+//            LCD_I2C_SetCursor(hlcd, 0, 0);
+//            LCD_I2C_printStr(hlcd, "Place probe 1 facing");
+//            LCD_I2C_SetCursor(hlcd, 1, 0);
+//            LCD_I2C_printStr(hlcd, "Y-axis edge 1");
             motorGroup++;
             if (motorGroup >= 2) {
                 motorGroup = 0;  // Reset as needed.
             }
+
             break;
 
         case 3:
             // Case 3: Move Motor 2 (index 1) in reverse until stall.
             moveMotorUntilStallAndCalibrate(axes, motors, 1, 7000, GPIO_PIN_SET, 0);
+//            LCD_I2C_Clear(hlcd);
+//            LCD_I2C_SetCursor(hlcd, 0, 0);
+//            LCD_I2C_printStr(hlcd, "Place probe 2 facing");
+//            LCD_I2C_SetCursor(hlcd, 1, 0);
+//            LCD_I2C_printStr(hlcd, "X-axis edge 2");
             break;
 
         case 4:
+//            LCD_I2C_Clear(hlcd);
+//            LCD_I2C_SetCursor(hlcd, 0, 0);
+//            LCD_I2C_printStr(hlcd, "Place probe 2 facing");
+//            LCD_I2C_SetCursor(hlcd, 1, 0);
+//            LCD_I2C_printStr(hlcd, "X-axis edge 2");
+
             // Case 4: Move Motor 4 (index 3) in reverse until stall.
             moveMotorUntilStallAndCalibrate(axes, motors, 3, 7000, GPIO_PIN_RESET, 1);
             motorGroup++;
@@ -635,10 +671,6 @@ void semiAutoCalibration(Axis *axes, Motor *motors)
         }
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    } else if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup;
-        cmd.command = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
 
     // Example for the "Down" button:
@@ -654,10 +686,6 @@ void semiAutoCalibration(Axis *axes, Motor *motors)
         while (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) {
             vTaskDelay(pdMS_TO_TICKS(10));
         }
-        cmd.motorIndex = motorGroup;
-        cmd.command = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    } else if (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_SET || StepsBack[0] > 28000) {
         cmd.motorIndex = motorGroup;
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
@@ -680,10 +708,6 @@ void semiAutoCalibration(Axis *axes, Motor *motors)
         cmd.motorIndex = motorGroup + 2;
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    } else if (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup + 2;
-        cmd.command = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
 
     // Example for the "Left" button:
@@ -703,11 +727,8 @@ void semiAutoCalibration(Axis *axes, Motor *motors)
         cmd.motorIndex = motorGroup + 2;
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-    } else if (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_SET) {
-        cmd.motorIndex = motorGroup + 2;
-        cmd.command = MOTOR_CMD_STOP;
-        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
     }
+  }
 }
 bool Iscalib1Done(Motor *motor1,Motor *motor2){
     if(motor1->calib[0] != 0 && motor2->calib[0] != 0){

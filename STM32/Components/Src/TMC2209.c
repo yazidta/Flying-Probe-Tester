@@ -121,7 +121,7 @@ static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for
 	motor->stepsTaken = 0;
 
 	while (motor->stepsTaken <= motor->nextTotalSteps) {// Wait until we reach required steps and increment position on every step
-
+    // vTaskDelay(10);
 	}
 	//HAL_Delay(1); // To not fad the cpu --NOTE: CHECK IF THERE SHOULD BE A DELAY
 
@@ -151,6 +151,7 @@ void TMC2209_checkStatus(Motor *motor, bool *isStepping, uint32_t *nextTotalStep
 }
 void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     // Validate the motor index
+
     if (motorIndex >= MAX_MOTORS_PER_AXIS) {
         debug_print("Invalid motor index.\r\n");
         return;
@@ -182,6 +183,7 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     }
 
     // Start the motor
+
     TMC2209_Start(axis->motors[motorIndex]);
 
     // Set the total steps to move
@@ -762,18 +764,19 @@ void TMC2209_readSGResult(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes 
 }
 
 void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
-    for (uint8_t i = 0; i < 2; i++) {
-    	configureGCONF(&motors[i]);
-    	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
-    	TMC2209_enableStallDetection(&motors[i], 126);
-    	TMC2209_SetTCoolThrs(&motors[i], 5000);
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    //	configureGCONF(&motors[i]);
+    //	uint16_t mstep = motors[i].driver.mstep;
+    //	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
+    //	TMC2209_enableStallDetection(&motors[i], 126);
+    //	TMC2209_SetTCoolThrs(&motors[i], 5000);
 
 
     }
-//    TMC2209_SetSpeed(&motors[0], 8500);
-//    TMC2209_SetSpeed(&motors[1], 8500);
-//    TMC2209_SetSpeed(&motors[2], 15000);
-//    TMC2209_SetSpeed(&motors[3], 15000);
+    TMC2209_SetSpeed(&motors[0], 8000);
+    TMC2209_SetSpeed(&motors[1], 8000);
+    TMC2209_SetSpeed(&motors[2], 8000);
+    TMC2209_SetSpeed(&motors[3], 8000);
 }
 
 void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default
