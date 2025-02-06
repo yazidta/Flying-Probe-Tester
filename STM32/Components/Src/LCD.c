@@ -32,7 +32,7 @@
 #define LCD_NUMBER_BUF_SIZE 2
 #define LCD_PRINTF_BUF_SIZE 64
 #define MAX_MESSAGE_LENGTH 4
-extern char lines[LINE_BUFFER_SIZE][MAX_LINE_LENGTH];
+
 
 /* Macro ---------------------------------------------------------------------*/
 #ifdef LCD_USE_TIMER
@@ -50,6 +50,7 @@ uint8_t __lcd_i2c_buffer[6] = { 0x00, };
 uint8_t fileCount = 0;
 char fileList[10][21] = {0}; // Buffer for up to 10 files (20 chars max + null terminator)
 
+char lines[MAX_LINES][MAX_LINE_LENGTH];;
 /* Public variables ----------------------------------------------------------*/
 
 /* Private function ----------------------------------------------------------*/
@@ -537,6 +538,7 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
     FRESULT fres;
     DIR dir;
     char fileList[MAX_FILES + 1][20 + 1]; // +1 for "Back"
+    char fileListBackoption[MAX_FILES + 1][20 + 1]; // +1 for "Back"
     uint8_t fileCount = 0;
 
     fres = MountSDCard(&FatFs);
@@ -561,8 +563,14 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
     f_mount(NULL, "", 0);
 
     // Add "Back" option
-    AddBackOption(fileList, fileCount);
+
+    strncpy(fileListBackoption[0], "Back", 20);
+    for (uint8_t i = 0; i < fileCount; i++) {
+    	strncpy(fileListBackoption[i + 1], fileList[i], 20);
+    	fileListBackoption[i + 1][20] = '\0'; // Explicitly null-terminate
+        }
     fileCount++;
+   // AddBackOption(fileList, 0);
 
     if (fileCount == 1) { // Only "Back" is available
         LCD_I2C_SetCursor(hlcd, 0, 0);
@@ -580,7 +588,7 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
 
         if (selectedIndex != previousIndex) {
             previousIndex = selectedIndex;
-            DisplayMenu(hlcd, fileList, fileCount, selectedIndex);
+            DisplayMenu(hlcd, fileListBackoption, fileCount, selectedIndex);
         }
 
         // Handle button press for selection
@@ -592,14 +600,29 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
                 LCD_I2C_printStr(hlcd, "                    "); // Clear line
             }
 
-            if (selectedIndex == fileCount - 1) {
+            if (selectedIndex == 0 ) {
                 // "Back" selected
                 return; // Exit the menu to go back to the previous menu
             } else {
                 // "Loading..." selected
                 LCD_I2C_SetCursor(hlcd, 0, 0);
                 LCD_I2C_printStr(hlcd, "Loading...");
-                process_file(fileList[selectedIndex]);
+                char* start = fileListBackoption[selectedIndex];
+                while (*start == ' ' || *start == '\t' || *start == '\n' || *start == '\r') {
+                    start++; // Skip leading spaces/tabs/newlines
+                }
+
+                char* end = start + strlen(start) - 1;
+                while (end >= start && (*end == ' ' || *end == '\t' || *end == '\n' || *end == '\r')) {
+                    *end = '\0'; // Remove trailing spaces/tabs/newlines
+                    end--;
+                }
+
+                // Move the trimmed string into the original buffer
+                if (start != fileListBackoption[selectedIndex]) {
+                    memmove(fileListBackoption[selectedIndex], start, strlen(start) + 1);
+                }
+                process_file(hlcd, fileListBackoption[selectedIndex]);
 
                 // Add your file processing logic here
                 return;
@@ -620,7 +643,7 @@ void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
     if (fres != FR_OK) {
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "SD mount failed");
-        HAL_Delay(2000);
+       // HAL_Delay(2000);
         return;
     }
 
@@ -630,7 +653,7 @@ void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Open file failed");
         f_mount(NULL, "", 1);
-        HAL_Delay(2000);
+       // HAL_Delay(2000);
         return;
     }
 
@@ -643,12 +666,10 @@ void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
             len--;
         }
         if (len > 0 && lines[numLines][len - 1] == '\r') {
-            lines[numLines][len - 1] = '\0';
+            lines[numLines][len - 1]= '\0';
         }
         numLines++;
     }
-
-    // Close the file and unmount the SD card
     f_close(&file);
     f_mount(NULL, "", 1);
 }

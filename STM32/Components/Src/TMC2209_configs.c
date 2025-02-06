@@ -82,7 +82,7 @@ void initializeMotors() {
         motors[i].driver.huart = &huart2;
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
-        motors[i].driver.mstep = 0;
+        motors[i].driver.mstep = 16;
         motors[i].driver.IRUN = 16;
         motors[i].driver.IHOLD = 16;
         motors[i].stepsPerRevolution = 200;
@@ -105,7 +105,7 @@ void initializeMotors() {
             // TIMER configurations
             motors[i].driver.htim = &htim1;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_4; // PWM channel for motor 1
-            motors[i].driver.mstep = 0;
+            motors[i].driver.mstep = 16;
             motors[i].driver.huart = &huart4;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
@@ -125,7 +125,7 @@ void initializeMotors() {
         	            // TIMER configurations
             motors[i].driver.htim = &htim5;				 // TIMER HANDLER
         	motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
-            motors[i].driver.mstep = 0;
+            motors[i].driver.mstep = 16;
             motors[i].driver.huart = &huart5;
         	motors[i].stepsPerRevolution = 400;
         	            // GPIO PINS
@@ -146,7 +146,7 @@ void initializeMotors() {
             // TIMER configurations
             motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
-            motors[i].driver.mstep = 0;
+            motors[i].driver.mstep = 16;
             motors[i].driver.huart = &huart6;
             motors[i].stepsPerRevolution = 400;
             // GPIO PINS

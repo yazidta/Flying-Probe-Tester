@@ -17,8 +17,7 @@
 
 // Maximum G-code line length
 #define BUFFER_SIZE 128        // Buffer size for reading file chunks
-#define LINE_BUFFER_SIZE 256
-#define MAX_LINE_LENGTH 256
+
 #define MAX_COORD_COUNT 500
 
 extern float coordinates_x[MAX_COORD_COUNT];

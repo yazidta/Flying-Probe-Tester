@@ -14,7 +14,6 @@ int coordinate_index = 0;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern UART_HandleTypeDef huart3; // UART handler for sending debug/output
-char lines[LINE_BUFFER_SIZE][MAX_LINE_LENGTH];
 
 //// Transmit a string via UART
 //void uart_transmit_string(const char *str) {

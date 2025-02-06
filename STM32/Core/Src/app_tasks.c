@@ -12,9 +12,10 @@
 #define STALL_CHECK_INTERVAL_MS 50
 
 QueueHandle_t motorCommandQueue;
-MenuState currentState = MENU_STATE_MAIN;
+MenuState currentState = MENU_STATE_WELCOME;
 
-
+extern SERVO_Handle_TypeDef hservo1;
+extern SERVO_Handle_TypeDef hservo2;
 
 /*-------------------------------------------------------------------
   Global or static variables for the calibration state machine
@@ -23,6 +24,7 @@ static CalibrationSubState calibSubState = CALIB_STATE_INIT;
 static TickType_t delayStartTime = 0; // For nonblocking delay
 
 EventGroupHandle_t calibEventGroup;
+EventGroupHandle_t testingEvent;
 SemaphoreHandle_t lcdMutex;      // Protects LCD access
 SemaphoreHandle_t xInitSemaphore;
 
@@ -41,13 +43,15 @@ void calibProcessTask(void *pvParameters){
 	for(;;){
 		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT,
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
-	if (uxBits & CALIB_START_BIT) {
+	if (uxBits) {
 
      switch(g_calibSelection){
         
         case 1: // AUTO
         AutoCalibration(&axes,&motors); 
-        //currentState = MENU_STATE_TestProcess; // TODO: Add Test Process
+        xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+
+        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
         case 2: // SEMI ATUO
@@ -62,18 +66,17 @@ void calibProcessTask(void *pvParameters){
         default:
         break;
 
-        //  update the LCD: "Calibration complete"
-        if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
-            LCD_I2C_Clear(&hlcd3);
-            LCD_I2C_SetCursor(&hlcd3, 0, 0);
-            LCD_I2C_printStr(&hlcd3, "Calibration Done");
-            xSemaphoreGive(lcdMutex);
-        }
+//        //  update the LCD: "Calibration complete"
+//        if (xSemaphoreTake(lcdMutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+//            LCD_I2C_Clear(&hlcd3);
+//            LCD_I2C_SetCursor(&hlcd3, 0, 0);
+//            LCD_I2C_printStr(&hlcd3, "Calibration Done");
+//            xSemaphoreGive(lcdMutex);
+//        }
 
-        // Signal that calibration is complete.
-        xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
     }
         // Short delay to let other tasks run.
+     xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 
        }
 		vTaskDelay(pdMS_TO_TICKS(10));
@@ -241,7 +244,7 @@ void vMainMenuTask(void *pvParameters)
                     	                    pdTRUE, pdFALSE, portMAX_DELAY);
 
                          //Calibration is complete. Return to the main menu or update as needed.
-                        currentState = MENU_STATE_MAIN;
+                        currentState = MENU_STATE_TESTING;
                     }
                 }
                 break;
@@ -260,7 +263,16 @@ void vMainMenuTask(void *pvParameters)
    	                 }
 
                  }
+            case MENU_STATE_TESTING:
+            {
+            	// TDOD: MENU FOR TESTING -- SHOW PROGRESS OF TESTING
 
+            	xEventGroupSetBits(testingEvent, CALIB_START_BIT);
+
+            	xEventGroupWaitBits(testingEvent, CALIB_COMPLETE_BIT,
+            	                    pdTRUE, pdFALSE, portMAX_DELAY);
+            	currentState = MENU_STATE_MAIN;
+            }
                 break;
             default:
                 currentState = MENU_STATE_MAIN;
@@ -271,11 +283,25 @@ void vMainMenuTask(void *pvParameters)
     }
 }
 
+void vTestingTask(void *arugment){
+	for(;;){
+
+
+		EventBits_t uxBits = xEventGroupWaitBits(testingEvent, CALIB_START_BIT,
+		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
+		if (uxBits) {
+		ProcessGcode(&axes, lines, sizeof(&lines));
+		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+		}
+	}
+	osDelay(1);
+}
+
 
 
 //// FUNCTIONS //////
 
-void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[], size_t gcodeCount) {
+void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount) {
 
 	MotorCommand cmd;
     // Variables to hold PCB dimensions

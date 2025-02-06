@@ -175,7 +175,8 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+
+	HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -211,7 +212,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
   LCD_I2C_Init(&hlcd3);
-  LCD_I2C_Clear(&hlcd3);
+ // LCD_I2C_Clear(&hlcd3);
 
   SERVO_Init(&hservo1);
   SERVO_Init(&hservo2);
@@ -219,15 +220,9 @@ int main(void)
   ENC_Init(&henc1);
 
 
-  initializeMotors();
-  initializeSystem();
+  //initializeSystem();
 
-  TMC2209_setMotorsConfiguration(motors,16,1);
 
-  TMC2209_EnableDriver(&motors[0], 1);
-  TMC2209_EnableDriver(&motors[1], 1);
-  TMC2209_EnableDriver(&motors[2], 1);
-  TMC2209_EnableDriver(&motors[3], 1);
 
 
  // TMC2209_SetSpeed(&motors[0], 7000);
@@ -239,6 +234,8 @@ int main(void)
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
 
+  testingEvent = xEventGroupCreate();
+  configASSERT(testingEvent != NULL);
   calibEventGroup = xEventGroupCreate();
   configASSERT(calibEventGroup != NULL);
 
@@ -247,7 +244,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   /* add semaphores, ... */
-
+  xInitSemaphore = xSemaphoreCreateMutex();
 
   /* USER CODE END RTOS_SEMAPHORES */
 
@@ -301,6 +298,15 @@ int main(void)
       1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  osPriorityBelowNormal,    /* Task priority */
+      NULL                     /* Task handle (optional) */
+  );
+
+  xTaskCreate(
+	  vTestingTask,           /* Task function */
+      "vTestingTask",          /* Task name (for debugging) */
+      1024,                     /* Stack size in words */
+      NULL,         /* Task parameters */
+	  osPriorityAboveNormal,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 

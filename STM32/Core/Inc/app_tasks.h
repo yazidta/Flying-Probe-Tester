@@ -19,10 +19,15 @@
 #include "encoder_config.h"
 #include "servo.h"
 #include "tmc2209.h"
+
+
 #define CALIB_START_BIT    (1 << 0)
 #define CALIB_COMPLETE_BIT (1 << 1)
 
+
+
 extern EventGroupHandle_t calibEventGroup;
+extern EventGroupHandle_t testingEvent;
 extern SemaphoreHandle_t lcdMutex;      // Protects LCD access
 extern SemaphoreHandle_t xInitSemaphore;
 extern SERVO_Handle_TypeDef hservo1;
@@ -62,6 +67,7 @@ typedef enum {
 	MENU_STATE_CALIBRATION2,
 	MENU_STATE_CALIBRATION3,
     MENU_STATE_PREPARE_MACHINE,
+	MENU_STATE_TESTING,
     MENU_STATE_EXIT
 } MenuState;
 
@@ -98,12 +104,12 @@ typedef struct {
 extern bool read_buttons(void);
 void vMainMenuTask(void *pvParameters);
 void calibProcessTask(void *pvParameters);
-
+void vTestingTask(void *arugment);
 void motorControlTask(void *arugment);
 void stallMonitorTask(void *arugment);
 
 // Function prototypes
-void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[], size_t gcodeCount);
+void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount);
 // MISC
 
 extern QueueHandle_t motorCommandQueue;
