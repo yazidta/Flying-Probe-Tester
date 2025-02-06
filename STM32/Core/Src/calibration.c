@@ -188,9 +188,9 @@ void AutoCalibration(Axis *axes, Motor *motors) {
     motors[1].currentPositionMM = 100;
     motors[3].currentPositionMM = 0;
 
-    LCD_I2C_Clear(&hlcd);
-    LCD_I2C_SetCursor(&hlcd, 0, 2);
-    LCD_I2C_printStr(hlcd, "Calibration done!");
+    LCD_I2C_Clear(&hlcd3);
+    LCD_I2C_SetCursor(&hlcd3, 0, 2);
+    LCD_I2C_printStr(&hlcd3, "Calibration done!");
 
     /* Wait 600 ms before issuing the next set of moves */
     //vTaskDelay(pdMS_TO_TICKS(600));

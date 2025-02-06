@@ -14,6 +14,7 @@ int coordinate_index = 0;
 extern SPI_HandleTypeDef hspi1;
 extern SPI_HandleTypeDef hspi2;
 extern UART_HandleTypeDef huart3; // UART handler for sending debug/output
+char lines[LINE_BUFFER_SIZE][MAX_LINE_LENGTH];
 
 // Transmit a string via UART
 void uart_transmit_string(const char *str) {
@@ -198,6 +199,16 @@ void process_raw_gcode(FIL *fil) {
     }
 }
 
+
+/**
+ * @brief  Reads the file (given by its filename) from the SD card and
+ *         stores each line into a 2D character array.
+ * @param  hlcd: Pointer to the LCD handle (to display status/info).
+ * @param  filename: The name of the file to process.
+ * @note   This example mounts and unmounts the SD card within the function.
+ *         Adjust error handling and processing as needed.
+ */
+
 /* Open and process the G-code file */
 void sd_card_read_gcode(void) {
     myprintf("\r\n~ SD card G-code processing ~\r\n");
@@ -219,7 +230,7 @@ void sd_card_read_gcode(void) {
     }
 
     // Open a G-code file
-    const char *filename = "yazidstink.gcode";
+    const char *filename = "gg.gcode";
     myprintf("Attempting to open file '%s'\r\n", filename);
 
     fres = f_open(&fil, filename, FA_READ);
