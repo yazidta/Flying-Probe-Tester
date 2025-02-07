@@ -197,6 +197,80 @@ void TMC2209_MoveTo(Axis *axis, uint8_t motorIndex, float targetPositionMM) {
     axis->motors[motorIndex]->currentPositionMM = targetPositionMM;
 
 }
+// Function to move all motors concurrently to their target positions.
+// The targetPositionsMM array should have one target position (in millimeters)
+// for each motor in the axis. We assume that MAX_MOTORS_PER_AXIS is defined.
+void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
+    uint8_t axisIndex, motorIndex;
+
+    // Initialize each motor on both axes.
+    // The mapping is:
+    //   targetPositions[ axisIndex * MAX_MOTORS_PER_AXIS + motorIndex ]
+    for (axisIndex = 0; axisIndex < 2; axisIndex++) {
+        for (motorIndex = 0; motorIndex < MAX_MOTORS_PER_AXIS; motorIndex++) {
+            int targetIndex = axisIndex * MAX_MOTORS_PER_AXIS + motorIndex;
+            Motor *motor = axes[axisIndex].motors[motorIndex];
+            if (motor == NULL) {
+                continue;
+            }
+
+            // Calculate the distance (in mm) and convert to steps.
+            float distanceToMoveMM = targetPositions[targetIndex] - motor->currentPositionMM;
+            int32_t stepsToMove = (int32_t)(distanceToMoveMM * axes[axisIndex].stepPerUnit);
+
+            // Save the absolute number of steps required.
+            motor->nextTotalSteps = (stepsToMove >= 0) ? stepsToMove : -stepsToMove;
+            // Reset the steps counter.
+            motor->stepsTaken = 0;
+            // Store the target position.
+            motor->nextPositionMM = targetPositions[targetIndex];
+
+            // Set the motor direction.
+            if (stepsToMove >= 0) {
+                TMC2209_SetDirection(motor, GPIO_PIN_RESET);  // Forward
+            } else {
+                TMC2209_SetDirection(motor, GPIO_PIN_SET);      // Reverse
+            }
+
+            // Start the motor.
+
+            TMC2209_Start(motor);
+        }
+    }
+
+    // Poll all motors concurrently. Each motor will be stopped as soon as it finishes.
+    bool motorsStillRunning = true;
+    while (motorsStillRunning) {
+        motorsStillRunning = false;  // Assume all motors are finished unless one is still moving.
+
+        for (axisIndex = 0; axisIndex < 2; axisIndex++) {
+            for (motorIndex = 0; motorIndex < MAX_MOTORS_PER_AXIS; motorIndex++) {
+                Motor *motor = axes[axisIndex].motors[motorIndex];
+                if (motor == NULL) {
+                    continue;
+                }
+                // If this motor still has steps to take...
+                if (motor->nextTotalSteps > 0) {
+                    if (motor->stepsTaken >= motor->nextTotalSteps) {
+                        // This motor has reached its target: stop it and update its current position.
+                        TMC2209_Stop(motor);
+                        motor->currentPositionMM = motor->nextPositionMM;
+                        // Mark this motor as finished.
+                        motor->nextTotalSteps = 0;
+                    } else {
+                        // At least one motor is still moving.
+                        motorsStillRunning = true;
+                    }
+                }
+            }
+        }
+        // Delay briefly to avoid hogging the CPU.
+        // If you're not using an RTOS, replace vTaskDelay(1) with a suitable delay function (e.g., HAL_Delay(1)).
+        //vTaskDelay(1);
+    }
+}
+
+
 
 
 

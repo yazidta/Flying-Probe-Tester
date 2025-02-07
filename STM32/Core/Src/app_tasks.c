@@ -16,7 +16,6 @@ MenuState currentState = MENU_STATE_WELCOME;
 
 extern SERVO_Handle_TypeDef hservo1;
 extern SERVO_Handle_TypeDef hservo2;
-
 /*-------------------------------------------------------------------
   Global or static variables for the calibration state machine
 -------------------------------------------------------------------*/
@@ -32,6 +31,10 @@ SemaphoreHandle_t xInitSemaphore;
 // Global calibration selection (set by UI when calibration is picked)
 volatile uint8_t g_calibSelection = 0;
 volatile uint8_t encButton = 0;
+float pcbWidth = 0.0f, pcbHeight = 0.0f;
+Coordinate coordinates[MAX_CORDS];
+size_t commandsGcode = 0;
+
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
   Parameters can include pointers to LCD, motors, and any other state
@@ -86,7 +89,7 @@ void calibProcessTask(void *pvParameters){
 
 void motorControlTask(void *argument) {
 		// Queue for motor cmds
-	motorCommandQueue = xQueueCreate(10, sizeof(MotorCommand));
+	motorCommandQueue = xQueueCreate(256, sizeof(MotorCommand));
 	configASSERT(motorCommandQueue != NULL);
 
 	MotorCommand cmd;
@@ -132,6 +135,13 @@ void motorControlTask(void *argument) {
     		case 	MOTOR_CMD_CONFIG_COOLTHRS:
     				TMC2209_SetTCoolThrs(&motors[cmd.motorIndex], cmd.coolThrs);
     				break;
+       		case 	MOTOR_CMD_MOVE_ALL_MOTORS:
+       		{
+       			   // Move all motors on axis 0 concurrently.
+       			TMC2209_MoveAllMotorsTo(&axes, cmd.targetPositionsAxis0);
+
+       			    break;
+       		}
 
 //    		case 	MOTOR_CMD_CHECK_SPEED:
 //
@@ -290,24 +300,45 @@ void vTestingTask(void *arugment){
 		EventBits_t uxBits = xEventGroupWaitBits(testingEvent, CALIB_START_BIT,
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
 		if (uxBits) {
-		ProcessGcode(&axes, lines, sizeof(&lines));
+
+        testingg();
+		//ProcessGcode(&axes, lines, sizeof(lines));
 		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 		}
 	}
-	osDelay(1);
+	vTaskDelay(pdMS_TO_TICKS(10));
+
 }
 
 
 
 //// FUNCTIONS //////
+void testingg(){
+	size_t numLines = sizeof(lines);
+	MotorCommand testingCMD;
+	ProcessGcode(&axes, &lines, numLines);
+	for(int i = 0; i < commandsGcode; i++){
+		if(i % 2 == 0){
+			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;
+			testingCMD.targetPositionsAxis0[0] = coordinates[i].y;
+		}
+		else{
+			testingCMD.targetPositionsAxis0[3] = coordinates[i].x;
+			testingCMD.targetPositionsAxis0[1] = coordinates[i].y;
+		}
+		if(i >= 1 && (i+1)%2 == 0){
+		testingCMD.command = MOTOR_CMD_MOVE_ALL_MOTORS;
+		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
+		}
+	}
+}
+
 
 void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount) {
 
-	MotorCommand cmd;
     // Variables to hold PCB dimensions
-    float pcbWidth = 0.0f, pcbHeight = 0.0f;
 
-    for (size_t i = 0; i < gcodeCount; i++) {
+    for(size_t i = 0; i < gcodeCount; i++) {
         const char *line = gcodeArray[i];
 
         if (line[0] == ';') {
@@ -332,36 +363,52 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
             // Extract axis coordinates from the line
              const char *ptr = strchr(line, 'X');
              if (ptr) xTarget = (float)atof(ptr + 1);
-              	  ptr = strchr(line, 'Y');
+                ptr = strchr(line, 'Y');
              if (ptr) yTarget = (float)atof(ptr + 1);
 
-             int motorIndex = (probe == 2) ? 1 : 0; // Select motor index based on P1 or P2
+             uint8_t motorIndex = (probe == 2) ? 1 : 0; // Select motor index based on P1 or P2
              // Send MoveTo commands
             if (xTarget >= 0) {
-                cmd.motorIndex = motorIndex;
-                cmd.axisIndex = 1;
-                cmd.targetPositionMM = xTarget;
-                cmd.command = MOTOR_CMD_MOVETO;
-                xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-            }
-            if (yTarget >= 0) {
-                cmd.motorIndex = motorIndex;
-                cmd.axisIndex = 0;
-                cmd.targetPositionMM = yTarget;
-                cmd.command = MOTOR_CMD_MOVETO;
-                xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-            }
+                //cmd.motorIndex = motorIndex;
+               // cmd.axisIndex = 1;
 
+                if(motorIndex == 0){
+                	coordinates[commandsGcode].x = -xTarget;
+            }
+                else{
+                	coordinates[commandsGcode].x = xTarget;
+           }
+                }
+                //cmd.command = MOTOR_CMD_MOVETO;
+                //xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+
+            if (yTarget >= 0) {
+               // cmd.motorIndex = motorIndex;
+               // cmd.axisIndex = 0;
+                if(motorIndex == 0){
+                	coordinates[commandsGcode].y = yTarget;
+                	commandsGcode++;
+                }
+                else{
+                	coordinates[commandsGcode].y = yTarget;
+                	commandsGcode++;
+              }
+                }
         }
+//          if(i == gcodeCount - 1){
+//        	   num_elements = i;
+//
+//          }
 
         else if (strncmp(line, "T1", 2) == 0) { // T : perform test
-        	CheckConnection(&hservo1, &hservo2);
+        //CheckConnection(&hservo1, &hservo2);
         }
 
         else if (line[0] == 'M') {
             if (strncmp(line, "M30", 3) == 0) { // M30: end of program
                 break;  // End processing
             }
+            //vTaskDelay(100);
         }
         // TODO: Some delay?
     }
@@ -370,7 +417,7 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
 
 
 void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
-    semiAutoCalibration(&axes,&motors);
+    //semiAutoCalibration(&axes,&motors);
 
 	switch (calibSubState)
     {
@@ -460,8 +507,6 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
 void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
     switch (calibSubState)
     {
-        ManualCalibration(&axes,&motors);
-
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
             LCD_I2C_SetCursor(hlcd, 0, 1);

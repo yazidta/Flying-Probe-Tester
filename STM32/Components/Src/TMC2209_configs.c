@@ -197,11 +197,11 @@ void initializeSystem(){
 		initializeAxis(&axes[1], &motors[2],&motors[3], 40, "X");
 
     // motor configurations
-		TMC2209_setMotorsConfiguration(&motors,2, 0);
-		 TMC2209_EnableDriver(&motors[0], 1);
-		  TMC2209_EnableDriver(&motors[1], 1);
-		  TMC2209_EnableDriver(&motors[2], 1);
-		  TMC2209_EnableDriver(&motors[3], 1);
+		//TMC2209_setMotorsConfiguration(&motors,2, 0);
+		// TMC2209_EnableDriver(&motors[0], 1);
+		//  TMC2209_EnableDriver(&motors[1], 1);
+		//  TMC2209_EnableDriver(&motors[2], 1);
+		//  TMC2209_EnableDriver(&motors[3], 1);
 		xSemaphoreGive(xInitSemaphore); // signal welcome menu state to proceed with next state
 
 }

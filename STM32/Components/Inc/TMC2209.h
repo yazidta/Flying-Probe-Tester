@@ -141,6 +141,7 @@ void TMC2209_resetMotorsConfiguration(Motor *motors);
 void debug_print(const char* msg);
 void debug_print_hex(uint8_t* data, uint8_t length);
 void clear_UART_buffers(UART_HandleTypeDef *huart);
+void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]);
 
 
 

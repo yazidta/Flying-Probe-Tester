@@ -125,7 +125,7 @@ bool MotorsHoming(Motor *motor) {
             homed[3] = true;
         }
         /* Yield for 1 ms to allow other tasks to run */
-        vTaskDelay(pdMS_TO_TICKS(1));
+        //vTaskDelay(pdMS_TO_TICKS(1));
     }
 
     return true;
@@ -142,96 +142,77 @@ bool MotorsHoming(Motor *motor) {
   Adjust axis/motor indexes, positions, and offsets as needed.
 ------------------------------------------------------------------*/
 void AutoCalibration(Axis *axes, Motor *motors) {
-    MotorCommand cmd;  // Temporary command structure
+    // First, perform homing on all motors.
+    MotorCommand cmd;
+    TMC2209_SetSpeed(&motors[0], 8000);
+    TMC2209_SetSpeed(&motors[1], 8000);
+    TMC2209_SetSpeed(&motors[2], 8000);
+    TMC2209_SetSpeed(&motors[3], 8000);
 
-    /* First, perform homing */
-    MotorsHoming(motors);
-    while(!calibrationState()){
-    /* Send a series of move commands via the queue */
+    // Continue with calibration until the calibration condition is met.
+    if(!calibrationState()) {
+        MotorsHoming(motors);
 
-    /* Move motor 0 on axis 0 to 79 mm */
+        /*
+         * Define target positions for each axis.
+         * For example, based on your original commands:
+         *   - Axis 0:
+         *       Motor 0 -> 77.9 mm
+         *       Motor 1 -> -100.8 mm
+         *   - Axis 1:
+         *       Motor 0 -> -47.9 mm
+         *       Motor 1 -> 50.2 mm
+         *
+         * Adjust the indices below if your system assigns motors differently.
+         */
+        //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
+        //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
+        cmd.targetPositionsAxis0[0] = 77.9f;
+        cmd.targetPositionsAxis0[1] = -100.8f;
+        cmd.targetPositionsAxis0[2] = -47.9f;
+        cmd.targetPositionsAxis0[3] = 47.9f;
+       // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
 
-    cmd.axisIndex = 0;
-    cmd.motorIndex = 0;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 77.9f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
-    /* Move motor 0 on axis 1 to -47.6 mm */
 
 
-    cmd.axisIndex = 1;
-    cmd.motorIndex = 0;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = -47.9f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
-    /* Update current positions if needed */
-    motors[0].currentPositionMM = 0;
-    motors[2].currentPositionMM = 0;
 
-    /* Move motor 1 on axis 0 to -102.4 mm */
-    cmd.axisIndex = 0;
-    cmd.motorIndex = 1;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = -100.8f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+        cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 
-    /* Move motor 1 on axis 1 to 46.8 mm */
-    cmd.axisIndex = 1;
-    cmd.motorIndex = 1;
-    cmd.command = MOTOR_CMD_MOVETO;
-    cmd.targetPositionMM = 50.2f;
-    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+       xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+       axes[0].motors[0]->currentPositionMM = 0;
+       axes[0].motors[1]->currentPositionMM = 100;
+       axes[1].motors[0]->currentPositionMM = 0;
+       axes[1].motors[1]->currentPositionMM = 0;
 
-    /* Update additional motor positions */
-    motors[1].currentPositionMM = 100;
-    motors[3].currentPositionMM = 0;
+        // Move all motors concurrently on axis 0.
+        // Move all motors concurrently on axis 1.
 
-    LCD_I2C_Clear(&hlcd3);
-    LCD_I2C_SetCursor(&hlcd3, 0, 2);
-    LCD_I2C_printStr(&hlcd3, "Calibration done!");
+        /*
+         * After the concurrent move, the TMC2209_MoveAllTo routine will have:
+         * - Polling loops that wait until every motor has taken the required steps,
+         * - Stopped the motors,
+         * - And updated each motor's currentPositionMM to the new (target) value.
+         */
 
-    /* Wait 600 ms before issuing the next set of moves */
-    //vTaskDelay(pdMS_TO_TICKS(600));
-   // osDelay(200);
-    /* Issue second set of moves: */
-    /* Move motor 0 on axis 0 to 20.5995 mm */
-//    cmd.axisIndex = 0;
-//    cmd.motorIndex = 0;
-//    cmd.command = MOTOR_CMD_MOVETO;
-//    cmd.targetPositionMM = 20.5995f;
-//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-//
-//    /* Move motor 0 on axis 1 to -37.5995 mm */
-//    cmd.axisIndex = 1;
-//    cmd.motorIndex = 0;
-//    cmd.command = MOTOR_CMD_MOVETO;
-//    cmd.targetPositionMM = -37.5995f;
-//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-//
-//    /* Move motor 1 on axis 0 to 44.5995 mm */
-//    cmd.axisIndex = 0;
-//    cmd.motorIndex = 1;
-//    cmd.command = MOTOR_CMD_MOVETO;
-//    cmd.targetPositionMM = -44.5995f;
-//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-//
-//    /* Move motor 1 on axis 1 to 20.5995 mm */
-//    cmd.axisIndex = 1;
-//    cmd.motorIndex = 1;
-//    cmd.command = MOTOR_CMD_MOVETO;
-//    cmd.targetPositionMM = 20.5995f;
-//    xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+        // Optionally update calibration values in the motors structure.
+        // (Be sure that these indices match your system's mapping.)
+        motors[0].calib[1] = 77.9f;  // 77.9f
+        motors[1].calib[1] = -47.9f;  // -47.9f
+        motors[2].calib[1] = -100.0f;  // -100.8f
+        motors[3].calib[1] = 50.2f;  // 50.2f
 
-    //Finally, check connections between the testpoints
-    testing = CheckConnection(&hservo2, &hservo1);
-    motors[0].calib[1] = 77.9f;
-    motors[1].calib[1] = -47.9f;
-    motors[2].calib[1] = -100.8f;
-    motors[3].calib[1] = 50.2f;
+        // Clear and update the LCD to indicate calibration is done.
+        LCD_I2C_Clear(&hlcd3);
+        LCD_I2C_SetCursor(&hlcd3, 0, 2);
+        LCD_I2C_printStr(&hlcd3, "Calibration done!");
+
+        // Perform any connection testing.
+        testing = CheckConnection(&hservo2, &hservo1);
+
     }
 }
+
 
 bool calibrationState(void) {
     

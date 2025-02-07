@@ -279,7 +279,7 @@ int main(void)
       "motorControlTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
-	  osPriorityHigh,    /* Task priority */
+	  tskIDLE_PRIORITY + 4,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -297,7 +297,7 @@ int main(void)
       "MainMenuTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
-	  osPriorityBelowNormal,    /* Task priority */
+	  tskIDLE_PRIORITY + 1,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -306,7 +306,7 @@ int main(void)
       "vTestingTask",          /* Task name (for debugging) */
       1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
-	  osPriorityAboveNormal,    /* Task priority */
+	  tskIDLE_PRIORITY + 3,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 
@@ -316,7 +316,7 @@ int main(void)
       "CalibProcessTask",      /* Task name */
       1024,                     /* Stack size in words */
       NULL,                    /* Task parameters */
-	  osPriorityAboveNormal,    /* Task priority */
+	  tskIDLE_PRIORITY + 2,    /* Task priority */
       NULL                     /* Task handle (optional) */
   );
 

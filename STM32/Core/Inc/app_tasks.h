@@ -23,7 +23,7 @@
 
 #define CALIB_START_BIT    (1 << 0)
 #define CALIB_COMPLETE_BIT (1 << 1)
-
+#define MAX_CORDS 300
 
 
 extern EventGroupHandle_t calibEventGroup;
@@ -36,6 +36,10 @@ extern SERVO_Handle_TypeDef hservo2;
 // Global calibration selection (set by UI when calibration is picked)
 extern volatile uint8_t g_calibSelection;
 // COMMANDS
+extern float pcbWidth;
+extern float pcbHeight;
+
+extern size_t commandsGcode;
 
 
 typedef enum {
@@ -80,8 +84,8 @@ typedef enum {
 	MOTOR_CMD_CONFIG_MSTEP,
 	MOTOR_CMD_CONFIG_SGTHRS,
 	MOTOR_CMD_CONFIG_COOLTHRS,
-	MOTOR_CMD_CONFIG_CHOPPER
-
+	MOTOR_CMD_CONFIG_CHOPPER,
+	MOTOR_CMD_MOVE_ALL_MOTORS,
 } MotorCommandType;
 
 typedef struct {
@@ -95,9 +99,14 @@ typedef struct {
 	uint8_t  sgthrs;			// SGTHRS
 	uint16_t coolThrs;			// coolTHRS
 	uint8_t  chopper;			// chopper mode (1 = SpreadCycle, 0 = StealthChop)
-
+    float    targetPositionsAxis0[4];
+    float    targetPositionsAxis1[2];
 } MotorCommand;
 
+typedef struct {
+    float x;
+    float y;
+} Coordinate;
 /* RTOS TASKS */
 
 /* Forward declaration of the external function to read button states */
@@ -110,9 +119,11 @@ void stallMonitorTask(void *arugment);
 
 // Function prototypes
 void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount);
+void testingg();
 // MISC
 
 extern QueueHandle_t motorCommandQueue;
+extern Coordinate coordinates[MAX_CORDS];
 
 
 #endif /* INC_APP_TASKS_H_ */
