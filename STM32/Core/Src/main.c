@@ -277,7 +277,7 @@ int main(void)
   xTaskCreate(
 	  motorControlTask,           /* Task function */
       "motorControlTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+	  2048,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 4,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -295,7 +295,7 @@ int main(void)
   xTaskCreate(
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+	  1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 1,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -304,7 +304,7 @@ int main(void)
   xTaskCreate(
 	  vTestingTask,           /* Task function */
       "vTestingTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+	  1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 3,    /* Task priority */
       NULL                     /* Task handle (optional) */
