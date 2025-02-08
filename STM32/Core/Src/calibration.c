@@ -167,10 +167,10 @@ void AutoCalibration(Axis *axes, Motor *motors) {
          */
         //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
         //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
-        cmd.targetPositionsAxis0[0] = 77.9f;
-        cmd.targetPositionsAxis0[1] = -100.8f;
-        cmd.targetPositionsAxis0[2] = -47.9f;
-        cmd.targetPositionsAxis0[3] = 47.9f;
+        cmd.targetPositionsAxis0[0] = 77.9f;   // Y
+        cmd.targetPositionsAxis0[1] = -100.8f; // Y
+        cmd.targetPositionsAxis0[2] = -47.9f;  // X
+        cmd.targetPositionsAxis0[3] = 47.9f;   // X
        // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
 
 
@@ -180,10 +180,10 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 
        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-       axes[0].motors[0]->currentPositionMM = 0;
-       axes[0].motors[1]->currentPositionMM = 100;
-       axes[1].motors[0]->currentPositionMM = 0;
-       axes[1].motors[1]->currentPositionMM = 0;
+       axes[0].motors[0]->currentPositionMM = 0.0f;
+       axes[0].motors[1]->currentPositionMM = 100.0f;
+       axes[1].motors[0]->currentPositionMM = 0.0f;
+       axes[1].motors[1]->currentPositionMM = 0.0f;
 
         // Move all motors concurrently on axis 0.
         // Move all motors concurrently on axis 1.

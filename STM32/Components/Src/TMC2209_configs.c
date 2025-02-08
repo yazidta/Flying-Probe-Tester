@@ -177,6 +177,10 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
     // Axis dimensions and step calculations
     axis->motors[0]->currentPositionMM = 0;
     axis->motors[1]->currentPositionMM = 0;
+    axis->motors[0]->prevPositionMM = 0;
+    axis->motors[1]->prevPositionMM = 0;
+    axis->motors[0]->nextPositionMM = 0;
+    axis->motors[1]->nextPositionMM = 0;
     uint32_t totalStepsPerRevolution = motor1->stepsPerRevolution * motor1->driver.mstep; // Both motors use the same microstepping
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;

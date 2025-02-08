@@ -32,10 +32,8 @@ SemaphoreHandle_t xInitSemaphore;
 volatile uint8_t g_calibSelection = 0;
 volatile uint8_t encButton = 0;
 float pcbWidth = 0.0f, pcbHeight = 0.0f;
-TestPoints coordinates[MAX_CORDS];
+Coordinate coordinates[MAX_CORDS];
 size_t commandsGcode = 0;
-size_t testResultsCount = 0;
-
 
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
@@ -232,6 +230,8 @@ void vMainMenuTask(void *pvParameters)
                     // Display SD card test menu or process SD card files.
 
                        LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
+                       size_t numLines = sizeof(lines);
+                       ProcessGcode(&axes, &lines, numLines);
                        currentState = MENU_STATE_CALIBRATION;
 
 
@@ -304,11 +304,12 @@ void vTestingTask(void *arugment){
 		if (uxBits) {
 
         testingg();
-		//ProcessGcode(&axes, lines, sizeof(lines));
 		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 		}
+
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
-	vTaskDelay(pdMS_TO_TICKS(10));
+
 
 }
 
@@ -316,62 +317,32 @@ void vTestingTask(void *arugment){
 
 //// FUNCTIONS //////
 void testingg(){
-	size_t numLines = sizeof(lines);
+
 	MotorCommand testingCMD;
-	uint16_t j = 0;
-	const char reportFilename = {"results.txt"};
-	ProcessGcode(&axes, &lines, numLines);
+
 	for(int i = 0; i < commandsGcode; i++){
-		if(i == commandsGcode){
-			break;
-		}
+		if(i % 2 == 0){
 			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;
 			testingCMD.targetPositionsAxis0[0] = coordinates[i].y;
-
-			testingCMD.targetPositionsAxis0[3] = coordinates[i+1].x;
-			testingCMD.targetPositionsAxis0[1] = coordinates[i+1].y;
-
-		if(i%2 == 0){
+		}
+		else{
+			testingCMD.targetPositionsAxis0[3] = coordinates[i].x;
+			testingCMD.targetPositionsAxis0[1] = coordinates[i].y;
+		}
+		if(i >= 1 && (i+1)%2 == 0){
 		testingCMD.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
-        coordinates[j].testResult = CheckConnection(&hservo1,&hservo2);
-        j++;
-		//osDelay(2000);
 		}
-		i++;
 	}
-	MotorsHoming(&motors);
-
-	//osDelay(2000);
-
-	generate_report(&hlcd3,reportFilename);
 }
 
 
 void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount) {
 
     // Variables to hold PCB dimensions
-	uint16_t netTestCount = 0;
-	    int inNetBlock = 0;
-	    size_t currentNetIndex = 0;
 
-	    for(size_t i = 0; i < gcodeCount; i++) {
-	            const char *line = gcodeArray[i];
-	        // Check for a net definition line.
-	        if (strncmp(line, "; Net:", 6) == 0) {
-	            // If there is an open net block, you may decide to close it here.
-	            if (netTestCount < 60) {
-	                inNetBlock = 1;
-	                currentNetIndex = netTestCount;
-	                netTestCount++;
-	                // Extract the net name (assumes the net name follows "; Net:" until the end of the line)
-	                sscanf(line, "; Net: %63[^\r\n]", coordinates[currentNetIndex].netName);
-	                // Reset the test point count for this net.
-	                //netTests[currentNetIndex].testPointCount = 0;
-	            }
-	            continue;  // Proceed to next line.
-	        }
-
+    for(size_t i = 0; i < gcodeCount; i++) {
+        const char *line = gcodeArray[i];
 
         if (line[0] == ';') {
             if (strncmp(line, "; G54", 5) == 0) { // G54: actual PCB dimensions. Format G54 X.. Y..
@@ -385,19 +356,8 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
                 if (ptr) {
                     pcbHeight = (float)atof(ptr + 1);
                 }
-
             }
             continue;
-        }
-        if (strncmp(line, "; Net:", 6) == 0) {
-        	            // If there is an open net block, you may decide to close it here.
-          if (netTestCount < 60) {
-        	  //inNetBlock = 1;
-        	  currentNetIndex = netTestCount;
-        	  netTestCount++;
-        	  sscanf(line, "; Net: %63[^\r\n]", coordinates[currentNetIndex].netName);
-           }
-        	  continue;  // Proceed to next line.
         }
 
         if (strncmp(line, "G0", 2) == 0) { // G0: move command
@@ -444,8 +404,6 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
 //          }
 
         else if (strncmp(line, "T1", 2) == 0) { // T : perform test
-        	testResultsCount++;
-        	//inNetBlock = 0;
         //CheckConnection(&hservo1, &hservo2);
         }
 
@@ -457,90 +415,9 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
         }
         // TODO: Some delay?
     }
-	    commandsGcode++;
-	    coordinates[commandsGcode].x = 1.5f;
-	    coordinates[commandsGcode].y = 1.5f;
-	    commandsGcode++;
-	    coordinates[commandsGcode].x = 1.5f;
-	    coordinates[commandsGcode].y = 1.5f;
 
 }
 
-
-//function to generate a report file on the SD card.
-//
-// Parameters:
-//   hlcd         - pointer to your LCD handle (for error messages)
-//   gcodeLines   - a 2D array holding the previously‐read G‑code file lines
-//   lineCount    - the number of lines in gcodeLines
-//   reportFilename - the name of the file to create (for example "report.txt")
-//
-// The report file will have a header and one line per “net” in the following format:
-//
-//   Net           Test Points                    Test result
-//   Net-(R11-Pad2) (37.5995,20.5995); (20.5995,44.5995)  PASS
-//------------------------------------------------------------------------------
-void generate_report(LCD_I2C_HandleTypeDef* hlcd
-
-                     ,const char *reportFilename)
-{
-    FATFS FatFs;
-    FIL file;
-    FRESULT fres;
-    UINT bw;
-
-    // Mount the SD card
-    fres = f_mount(&FatFs, "", 1);
-    if (fres != FR_OK) {
-        LCD_I2C_SetCursor(hlcd, 0, 0);
-        LCD_I2C_printStr(hlcd, "SD mount failed");
-        return;
-    }
-
-    // Open (or create) the report file for writing
-    fres = f_open(&file, reportFilename, FA_WRITE | FA_CREATE_ALWAYS);
-    if (fres != FR_OK) {
-        LCD_I2C_SetCursor(hlcd, 0, 0);
-        LCD_I2C_printStr(hlcd, "Report file open failed");
-        f_mount(NULL, "", 1);
-        return;
-    }
-
-    // Write the header line
-    const char *header = "Net       Test Points       Test result\r\n";
-    f_write(&file, header, strlen(header), &bw);
-    char resultStr[10];
-    char testPointsStr[100][20];
-    char reportLine[256][256];
-    char netsnames[100][20];
-            for(int i =0 ; i < commandsGcode;i++){
-            	snprintf(testPointsStr[i],sizeof(testPointsStr),"",
-            			coordinates[i].x,coordinates[i].y,coordinates[i+1].x,coordinates[i+1].y);
-
-            	if(commandsGcode % 2){
-		            strcpy(resultStr, coordinates[i].testResult ? "PASS" : "FAIL");
-
-            	}
-
-            	snprintf(reportLine[i], sizeof(reportLine),
-            			 "%-15s %-30s %-10s\r\n",
-            			 coordinates[i].netName, testPointsStr, resultStr);
-            }
-
-            // Format the test point coordinates into a string.
-
-            // Format a report line with fixed-width columns.
-
-
-
-            // Write the report line to the file.
-            f_write(&file, reportLine, strlen(reportLine), &bw);
-
-
-
-    f_close(&file);
-    f_mount(NULL, "", 1);
-}
 
 void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
     //semiAutoCalibration(&axes,&motors);
