@@ -75,15 +75,11 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart3;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_uart4_rx;
-DMA_HandleTypeDef hdma_uart4_tx;
 DMA_HandleTypeDef hdma_uart5_rx;
-DMA_HandleTypeDef hdma_uart5_tx;
 DMA_HandleTypeDef hdma_usart2_rx;
-DMA_HandleTypeDef hdma_usart2_tx;
 DMA_HandleTypeDef hdma_usart3_rx;
 DMA_HandleTypeDef hdma_usart3_tx;
 DMA_HandleTypeDef hdma_usart6_rx;
-DMA_HandleTypeDef hdma_usart6_tx;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -175,8 +171,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-
-	HAL_Init();
+  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -277,7 +272,7 @@ int main(void)
   xTaskCreate(
 	  motorControlTask,           /* Task function */
       "motorControlTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+      256,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 4,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -295,7 +290,7 @@ int main(void)
   xTaskCreate(
       vMainMenuTask,           /* Task function */
       "MainMenuTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+	  1024,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 1,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -304,7 +299,7 @@ int main(void)
   xTaskCreate(
 	  vTestingTask,           /* Task function */
       "vTestingTask",          /* Task name (for debugging) */
-      1024,                     /* Stack size in words */
+	  768 ,                     /* Stack size in words */
       NULL,         /* Task parameters */
 	  tskIDLE_PRIORITY + 3,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -314,7 +309,7 @@ int main(void)
   xTaskCreate(
       calibProcessTask,        /* Task function */
       "CalibProcessTask",      /* Task name */
-      1024,                     /* Stack size in words */
+      128,                     /* Stack size in words */
       NULL,                    /* Task parameters */
 	  tskIDLE_PRIORITY + 2,    /* Task priority */
       NULL                     /* Task handle (optional) */
@@ -352,10 +347,6 @@ void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
-
-  /** Configure LSE Drive Capability
-  */
-  HAL_PWR_EnableBkUpAccess();
 
   /** Configure the main internal regulator output voltage
   */
@@ -1152,24 +1143,12 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream3_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream3_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream3_IRQn);
-  /* DMA1_Stream4_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
-  /* DMA1_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
-  /* DMA1_Stream7_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA1_Stream7_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA1_Stream7_IRQn);
   /* DMA2_Stream1_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
-  /* DMA2_Stream6_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream6_IRQn, 5, 0);
-  HAL_NVIC_EnableIRQ(DMA2_Stream6_IRQn);
 
 }
 
@@ -1310,13 +1289,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 //void StartDefaultTask(void const * argument)
 //{
-//  /* USER CODE BEGIN 5 */
+  /* USER CODE BEGIN 5 */
 //////  /* Infinite loop */
 //////  for(;;)
 //////  {
 //////    osDelay(1);
 //////  }
-//  /* USER CODE END 5 */
+
+  /* USER CODE END 5 */
 //}
 
 /**

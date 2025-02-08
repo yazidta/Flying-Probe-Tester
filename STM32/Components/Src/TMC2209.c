@@ -46,7 +46,7 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
   for(int i = 0; i < MAX_MOTORS; i++){
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
-		  TMC2209_CountDistance(&motors[i]);
+		  //TMC2209_CountDistance(&motors[i]);
 		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
 		  		  motors[i].StepsFront++;
 		  }
@@ -233,8 +233,8 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
             }
 
             // Start the motor.
+            if(motor->currentPositionMM != motor->nextPositionMM)	TMC2209_Start(motor);
 
-            TMC2209_Start(motor);
         }
     }
 
@@ -254,6 +254,7 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
                     if (motor->stepsTaken >= motor->nextTotalSteps) {
                         // This motor has reached its target: stop it and update its current position.
                         TMC2209_Stop(motor);
+                        motor->prevPositionMM = motor->currentPositionMM;
                         motor->currentPositionMM = motor->nextPositionMM;
                         // Mark this motor as finished.
                         motor->nextTotalSteps = 0;

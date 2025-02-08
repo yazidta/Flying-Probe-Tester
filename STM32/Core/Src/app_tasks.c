@@ -230,6 +230,8 @@ void vMainMenuTask(void *pvParameters)
                     // Display SD card test menu or process SD card files.
 
                        LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
+                       size_t numLines = sizeof(lines);
+                       ProcessGcode(&axes, &lines, numLines);
                        currentState = MENU_STATE_CALIBRATION;
 
 
@@ -302,11 +304,12 @@ void vTestingTask(void *arugment){
 		if (uxBits) {
 
         testingg();
-		//ProcessGcode(&axes, lines, sizeof(lines));
 		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 		}
+
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
-	vTaskDelay(pdMS_TO_TICKS(10));
+
 
 }
 
@@ -314,9 +317,9 @@ void vTestingTask(void *arugment){
 
 //// FUNCTIONS //////
 void testingg(){
-	size_t numLines = sizeof(lines);
+
 	MotorCommand testingCMD;
-	ProcessGcode(&axes, &lines, numLines);
+
 	for(int i = 0; i < commandsGcode; i++){
 		if(i % 2 == 0){
 			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;

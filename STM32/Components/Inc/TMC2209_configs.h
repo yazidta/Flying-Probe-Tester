@@ -125,6 +125,7 @@ typedef struct {
     int32_t fullSteps;
     uint32_t nextTotalSteps;           // Total steps the motor should take
     uint32_t direction;				// Direction of the Motor
+    float prevPositionMM;	// Previous position on the axis in millimeter to no start the motor if it's in already in the requested position.
     float currentPositionMM; // Current position on the axis in millimeters
     float nextPositionMM;
     bool isStepping;               // State to track if the motor is currently stepping
