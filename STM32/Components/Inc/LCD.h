@@ -19,7 +19,6 @@
 #endif
 extern char lines[MAX_LINES][MAX_LINE_LENGTH];
 
-
 /* Includes ------------------------------------------------------------------*/
 
 #include <string.h>
@@ -176,7 +175,7 @@ uint8_t ReadFiles(DIR* dir, char fileList[][20 + 1], uint8_t maxFiles);
 FRESULT OpenRootDir(DIR* dir);
 FRESULT MountSDCard(FATFS* FatFs);
 void LCD_I2C_ClearAllLines(LCD_I2C_HandleTypeDef * hlcd);
-void generate_report(LCD_I2C_HandleTypeDef* hlcd);
+
 
 
 

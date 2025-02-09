@@ -23,6 +23,11 @@
 
 #define CALIB_START_BIT    (1 << 0)
 #define CALIB_COMPLETE_BIT (1 << 1)
+#define CALIB_STOP_BIT   ( 1 << 2 ) // Test finished
+#define TEST_START_BIT    (1 << 0) // Test in progress
+#define TEST_STOP_BIT   ( 1 << 1 ) // Test aborted, stall on stall for now.
+#define TEST_COMPLETE_BIT   ( 1 << 2 ) // Test finished
+
 #define MAX_CORDS 300
 
 
@@ -40,15 +45,6 @@ extern float pcbWidth;
 extern float pcbHeight;
 
 extern size_t commandsGcode;
-
-
-typedef enum {
-    MACHINE_STATE_AUTOCALIB,
-    MACHINE_STATE_SEMIAUTO,
-    MACHINE_STATE_MANUAL,
-	MACHINE_STATE_TESTING
-
-} MachineState;
 
 typedef enum {
     CALIB_STATE_INIT = 0,
@@ -72,6 +68,7 @@ typedef enum {
 	MENU_STATE_CALIBRATION3,
     MENU_STATE_PREPARE_MACHINE,
 	MENU_STATE_TESTING,
+	MENU_STATE_TEST_ABORTED,
     MENU_STATE_EXIT
 } MenuState;
 
@@ -106,9 +103,7 @@ typedef struct {
 typedef struct {
     float x;
     float y;
-    uint8_t testResult;
-    char netName[20];
-} TestPoints;
+} Coordinate;
 /* RTOS TASKS */
 
 /* Forward declaration of the external function to read button states */
@@ -121,12 +116,11 @@ void stallMonitorTask(void *arugment);
 
 // Function prototypes
 void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount);
-void testingg();
-
+void preformTest();
 // MISC
 
 extern QueueHandle_t motorCommandQueue;
-extern TestPoints coordinates[MAX_CORDS];
+extern Coordinate coordinates[MAX_CORDS];
 
 
 #endif /* INC_APP_TASKS_H_ */
