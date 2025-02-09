@@ -55,7 +55,6 @@
 #define TMC2209_REG_TSTEP        0x12
 #define TMC2209_REG_TPWMTHRS     0x13
 #define TMC2209_REG_VACTUAL      0x22
-
 #define TMC2209_REG_TCOOLTHRS    0x14
 #define TMC2209_REG_SGTHRS       0x40
 #define TMC2209_REG_SG_RESULT    0x41

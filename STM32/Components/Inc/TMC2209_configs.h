@@ -55,11 +55,14 @@ extern TIM_HandleTypeDef htim5;
 
 // DEFAULT DRIVERS CONFIGURATIONS
 
-#define DEFAULT_MSTEP	16
+#define DEFAULT_MSTEP		16
 #define DEFAULT_CHOPPERMODE	0
-#define DEFAULT_SENDDELAY 16
-
-
+#define DEFAULT_SENDDELAY 	16
+#define DEFAULT_IRUN 		12
+#define DEFAULT_IHOLD 		6
+#define DEFAULT_IDELAY		4
+#define DEFAULT_COOLTHRS	5000
+#define DEFAULT_SGTHRS		126
 // DEFAULT MOTOR SPEED
 
 #define DEFAULT_X_SPEED	8000
@@ -80,21 +83,23 @@ typedef struct {
     uint32_t STATUS;
     TIM_HandleTypeDef *htim;        // Timer handle for PWM generation
     uint32_t step_channel;          // PWM channel
+    uint32_t stepFrequency; 		// speed
 
     // Motor Configurations
     uint16_t mstep;	     // Microstepping: 2,8,16,256, or FULLSTEP
     uint8_t chopperMode; // 1 for StealthChop, 0 for SpreadCycle. Default: 1
     uint8_t sendDelay;
     uint32_t IFCNT; // Sucessful write incrementing counter(This value gets incremented with every sucessful UART write access 0 to 255 then wraps around.)
+    uint8_t pdn_disable; // PDN_DISABLE FOR UART
     uint8_t GCONF;
-    uint16_t IRUN;
-    uint16_t IHOLD;
-    uint16_t IDELAY;
-    uint8_t stallEnabled;
+    uint8_t IRUN;
+    uint8_t IHOLD;
+    uint8_t IDELAY;
+    uint8_t stallEnabled; // STALL enabled flag, this means that we will be able to read sg_result
     uint32_t SG_RESULT;
-    uint8_t checkSG_RESULT;
-    uint32_t stepFrequency;
-    int32_t TCoolThrs;
+    uint8_t checkSG_RESULT; // flag to check sg_result
+    int32_t TCoolThrs;  // TCoolThrs for Stall detection on DIAG pin(we will have to set the step frequency which stall will be triggered)
+    uint8_t standstill; // this indict that the motor is in standstill from DRV_STATUS
 
 
     // GPIO PINS
@@ -155,6 +160,8 @@ extern Axis axes[MAX_MOTORS_PER_AXIS];
 void initializeMotors();
 void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumference, const char *axisName);
 void initializeSystem();
+void TMC2209_setMotorsConfiguration(Motor *motors);
+
 
 
 #endif // TMC2209_CONFIGS_H

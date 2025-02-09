@@ -176,7 +176,7 @@ void stallMonitorTask(void *argument) {
 
             if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detected
                 stallCmd.motorIndex = i;
-            xQueueSend(motorCommandQueue, &stallCmd, pdMS_TO_TICKS(10));
+                xQueueSend(motorCommandQueue, &stallCmd, pdMS_TO_TICKS(10));
 
             }
         }
