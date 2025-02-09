@@ -88,6 +88,7 @@
 
 
 
+
 // Variables
 
 extern uint32_t last_tmc_read_attempt_ms;
@@ -116,12 +117,13 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress);
 uint8_t TMC2209_waitForReply(uint32_t timeout);
 
 //// TMC2209 configuration functions (UART)  ////
-bool TMC2209_enable_PDNuart(Motor *tmc2209);
+bool TMC2209_setPDNuart(Motor *tmc2209, bool enable);
 bool configureGCONF(Motor *tmc2209);
 void TMC2209_read_ifcnt(Motor *tmc2209);
 float TMC2209_readTemperature(Motor *tmc2209);
 uint8_t TMC2209_enableStallDetection(Motor *tmc2209, uint8_t sgthrs);
 void TMC2209_checkStall(Motor *tmc2209);
+bool TMC2209_readStandstillIndicator(Motor *tmc2209);
 
 uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution);
 void checkMicrosteppingResolution(Motor *tmc2209);
@@ -129,10 +131,10 @@ uint16_t TMC2209_setSpreadCycle(Motor *motor, uint8_t enable);
 void checkSpreadCycle(Motor *tmc2209);
 uint16_t TMC2209_setIRUN(Motor *tmc2209, uint8_t irun_value);
 void TMC2209_readIRUN(Motor *tmc2209);
-void testIHOLDIRUN(Motor *tmc2209, uint8_t irun, uint8_t ihold, uint8_t iholddelay);
+void TMC2209_configureCurrent(Motor *tmc2209, uint8_t ihold, uint8_t irun, uint8_t iholddelay);
 void TMC2209_SetTCoolThrs(Motor *tmc2209, uint32_t stepFrequency);
 
-void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle);
+void TMC2209_setMotorsConfiguration(Motor *motors);
 void TMC2209_resetMotorsConfiguration(Motor *motors);
 
 

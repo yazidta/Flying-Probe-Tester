@@ -436,21 +436,56 @@ int32_t TMC2209_readInit(Motor *tmc2209, uint8_t regAddress){
  	return (verifyBuffer[3] << 24) | (verifyBuffer[4] << 16) | (verifyBuffer[5] << 8) | verifyBuffer[6];
  }
 
-bool TMC2209_enable_PDNuart(Motor *tmc2209){
-	HAL_Delay(1);
-	 uint8_t driverID = tmc2209->driver.id;
-	 uint8_t IFCNT = tmc2209->driver.IFCNT;
-	 if(ENABLE_DEBUG){
-	 char debug_msg[150];
-	 sprintf(debug_msg, sizeof(debug_msg), "Enabling driver via GCONF registe Driver: %u \r\n", driverID);
-	 debug_print(debug_msg);
-	 }
-	 TMC2209_writeInit(tmc2209, 0x00, 0x00000040); // Set `pdn_disable = 1` in GCONF
-	 if (IFCNT <= tmc2209->driver.IFCNT){
-		 return false;
-	 }
-	 return true;
+bool TMC2209_setPDNuart(Motor *tmc2209, bool enable) {
+    // Read current GCONF register value from TMC2209_REG_GCONF
+    uint32_t currentGCONF = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
+
+    if (ENABLE_DEBUG) {
+        char debug_msg[150];
+        sprintf(debug_msg, sizeof(debug_msg), "Current GCONF = 0x%08lX\r\n", currentGCONF);
+        debug_print(debug_msg);
+    }
+
+    // Modify the pdn_disable bit (bit 6). When set to 1, pdn_disable is enabled (UART controls the driver).
+    // When cleared (0), PDN function is active.
+    if (enable) {
+        currentGCONF |= 0x00000040; // Set bit 6 to enable PDN_UART
+        if (ENABLE_DEBUG) {
+            debug_print("Enabling PDN_UART (pdn_disable=1).\r\n");
+        }
+    } else {
+        currentGCONF &= ~(0x00000040); // Clear bit 6 to disable PDN_UART
+        if (ENABLE_DEBUG) {
+            debug_print("Disabling PDN_UART (pdn_disable=0).\r\n");
+        }
+    }
+
+    // Write back the updated GCONF register value
+    TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, currentGCONF);
+    HAL_Delay(2); // Allow time for the write to complete
+
+    // Optionally, check if the write was successful by re-reading the register
+    uint32_t updatedGCONF = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
+    HAL_Delay(2);
+
+    if (ENABLE_DEBUG) {
+        char verify_msg[150];
+        sprintf(verify_msg, sizeof(verify_msg), "Updated GCONF = 0x%08lX\r\n", updatedGCONF);
+        debug_print(verify_msg);
+    }
+
+    // Verify that the pdn_disable bit matches the intended configuration
+    bool bitSet = (updatedGCONF & 0x00000040) ? true : false;
+    if (bitSet == enable) {
+        return tmc2209->driver.pdn_disable = 1;
+    } else {
+        if (ENABLE_DEBUG) {
+            debug_print("PDN_UART configuration failed to update correctly!\r\n");
+        }
+        return tmc2209->driver.pdn_disable = 0;
+    }
 }
+
 
 
 void TMC2209_read_ifcnt(Motor *tmc2209) {
@@ -573,6 +608,7 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
     // Read the current CHOPCONF register value
     uint32_t currentCHOPCONF = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
 
+    HAL_Delay(2);
 
     // Extract the current microstepping resolution (MRES) bits [24:27]
     uint8_t currentMRES = (currentCHOPCONF >> 24) & 0x0F;
@@ -615,12 +651,14 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
     // If the resolution has not changed, do nothing
     if (newMRES == currentMRES) {
     	if (ENABLE_DEBUG) debug_print("Resolution unchanged, no update needed.\r\n");
-        return resolution;
+        return tmc2209->driver.mstep = resolution;
     }
-    HAL_Delay(2);
+   // HAL_Delay(2);
     // Update the CHOPCONF register with the new MRES value
     uint32_t updatedCHOPCONF = (currentCHOPCONF & ~(0x0F << 24)) | (newMRES << 24);
     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, updatedCHOPCONF);
+    HAL_Delay(2);
+
     TMC2209_read_ifcnt(tmc2209);
 
     if(tmc2209->driver.IFCNT <= IFCNT){
@@ -640,7 +678,7 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
 
 
 void checkMicrosteppingResolution(Motor *tmc2209) {
-	HAL_Delay(2);
+	//HAL_Delay(2);
     // Read the CHOPCONF register
     uint32_t chopconf = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
     // Extract the MRES bits (bits 24–27 in CHOPCONF)
@@ -713,6 +751,41 @@ void TMC2209_readIRUN(Motor *tmc2209) {
     tmc2209->driver.IRUN = irunValue;
 }
 
+
+
+
+
+void TMC2209_configureCurrent(Motor *tmc2209, uint8_t ihold, uint8_t irun, uint8_t iholddelay) {
+	//  The bit assignments in the IHOLD_IRUN register are:
+	//  Bits 0-4  : IHOLD (0-31)
+	//  Bits 8-12 : IRUN (0-31)
+	//  Bits 16-19: IHOLDDELAY (0-15)
+
+    // Clamp values to allowed ranges
+    if (ihold > 31) {
+        ihold = 31;
+    }
+    if (irun > 31) {
+        irun = 31;
+    }
+    if (iholddelay > 15) {
+        iholddelay = 15;
+    }
+    uint32_t registerValue;
+   // Clear the relevant bits for IHOLD (0-4), IRUN (8-12), and IHOLDDELAY (16-19)
+    registerValue &= ~((0x1F) | (0x1F << 8) | (0x0F << 16));
+
+    //   Set bits 0-4 with IHOLD, bits 8-12 with IRUN, and bits 16-19 with IHOLDDELAY.
+    registerValue |= ((iholddelay & 0x0F) << 16) | ((irun & 0x1F) << 8) | (ihold & 0x1F);
+    uint32_t IFCNT = tmc2209->driver.IFCNT;
+    TMC2209_writeInit(tmc2209, TMC2209_REG_IHOLD_IRUN, registerValue);
+    if(tmc2209->driver.IFCNT < IFCNT){
+    	tmc2209->driver.IHOLD = TMC_IHOLD_ERROR;
+    	tmc2209->driver.IRUN = TMC_IRUN_ERROR;
+    	tmc2209->driver.IDELAY = TMC_IDELAY_ERROR;
+    }
+
+}
 
 // Function to configure the SPREADCYCLE mode parameters in the CHOPCONF register
 //void TMC2209_configureSpreadCycle(Motor *tmc2209, uint8_t toff, uint8_t tbl, uint8_t hend, uint8_t hstart) {
@@ -838,26 +911,32 @@ void TMC2209_readSGResult(Motor *tmc2209) { // IMPORTANT: The SG_RESULT becomes 
     tmc2209->driver.SG_RESULT = sg_result;
 }
 
-void TMC2209_setMotorsConfiguration(Motor *motors, uint8_t sendDelay, bool enableSpreadCycle){	// Set all motor configurations based on their variables set from init function
-    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
-    //	configureGCONF(&motors[i]);
-    //	uint16_t mstep = motors[i].driver.mstep;
-    //	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
-    //	TMC2209_enableStallDetection(&motors[i], 126);
-    //	TMC2209_SetTCoolThrs(&motors[i], 5000);
+bool TMC2209_readStandstillIndicator(Motor *tmc2209) {
+    // Read the DRV_STATUS register. Ensure that TMC2209_REG_DRV_STATUS is defined, typically 0x6F.
+    uint32_t drvStatus = TMC2209_readInit(tmc2209, TMC2209_REG_DRVSTATUS);
 
+    // Debug: output the DRV_STATUS register value if debug is enabled
+    #if ENABLE_DEBUG
+        char debug_msg[100];
+        sprintf(debug_msg, "DRV_STATUS = 0x%08lX\r\n", drvStatus);
+        debug_print(debug_msg);
+    #endif
 
+    // Check the standstill bit. stst is typically bit 31.
+    if(drvStatus & (1UL << 31)) {
+        return tmc2209->driver.standstill;  // Motor is at standstill
+    } else {
+        return tmc2209->driver.standstill; // Motor is not at standstill
     }
-    TMC2209_SetSpeed(&motors[0], 8000);
-    TMC2209_SetSpeed(&motors[1], 8000);
-    TMC2209_SetSpeed(&motors[2], 8000);
-    TMC2209_SetSpeed(&motors[3], 8000);
 }
+
+
 
 void TMC2209_resetMotorsConfiguration(Motor *motors){ // Reset all drivers to Default
 
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	configureGCONF(&motors[i]);
+
     	TMC2209_setMicrosteppingResolution(&motors[i], DEFAULT_MSTEP);
         TMC2209_setSpreadCycle(&motors[i], DEFAULT_CHOPPERMODE);
 

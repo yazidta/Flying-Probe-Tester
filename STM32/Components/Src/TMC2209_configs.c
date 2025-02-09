@@ -53,7 +53,7 @@ void initializeMotors() {
     for (int i = 0; i < MAX_MOTORS; i++) {
     	// Setting all for all drivers/motors
     	 // UART handler
-    	motors[i].driver.address = 0x00; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2
+    	motors[i].driver.address = 0x03; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2 // All drivers address 3 since they're on different uarts. If uart failed MSTEP 16 by default.
 
     	// Motor Parameters
     	motors[i].driver.id = i ;
@@ -65,6 +65,9 @@ void initializeMotors() {
         motors[i].driver.checkSG_RESULT = 0;
         motors[i].driver.TCoolThrs = 0;
         motors[i].driver.stepFrequency = 0;
+        motors[i].driver.IRUN = 0;
+        motors[i].driver.IHOLD = 0;
+
 
         motors[i].fullSteps = 0;
         motors[i].stepsTaken = 0;
@@ -82,9 +85,8 @@ void initializeMotors() {
         motors[i].driver.huart = &huart2;
         motors[i].driver.htim = &htim2;				 // TIMER HANDLER
         motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
-        motors[i].driver.mstep = 16;
-        motors[i].driver.IRUN = 16;
-        motors[i].driver.IHOLD = 16;
+        motors[i].driver.mstep = 0;
+
         motors[i].stepsPerRevolution = 200;
         // GPIO PINS
         motors[i].driver.step_port = STEP1_GPIO_Port;
@@ -105,7 +107,7 @@ void initializeMotors() {
             // TIMER configurations
             motors[i].driver.htim = &htim1;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_4; // PWM channel for motor 1
-            motors[i].driver.mstep = 16;
+            motors[i].driver.mstep = 0;
             motors[i].driver.huart = &huart4;
             motors[i].stepsPerRevolution = 200;
             // GPIO PINS
@@ -125,7 +127,7 @@ void initializeMotors() {
         	            // TIMER configurations
             motors[i].driver.htim = &htim5;				 // TIMER HANDLER
         	motors[i].driver.step_channel = TIM_CHANNEL_1; // PWM channel for motor 1
-            motors[i].driver.mstep = 16;
+            motors[i].driver.mstep = 0;
             motors[i].driver.huart = &huart5;
         	motors[i].stepsPerRevolution = 400;
         	            // GPIO PINS
@@ -146,7 +148,7 @@ void initializeMotors() {
             // TIMER configurations
             motors[i].driver.htim = &htim3;				 // TIMER HANDLER
             motors[i].driver.step_channel = TIM_CHANNEL_3; // PWM channel for motor 1
-            motors[i].driver.mstep = 16;
+            motors[i].driver.mstep = 0;
             motors[i].driver.huart = &huart6;
             motors[i].stepsPerRevolution = 400;
             // GPIO PINS
@@ -165,6 +167,36 @@ void initializeMotors() {
     }
 
 
+}
+
+void TMC2209_setMotorsConfiguration(Motor *motors){	// Set all motor configurations based on their variables set from init function
+    for (uint8_t i = 0; i < MAX_MOTORS; i++) {
+    	// DEFAULT VALUES
+    	uint16_t mstep = 16;
+    	uint8_t IHOLD = 16;
+    	uint8_t IRUN = 31;
+    	uint8_t IDELAY = 8;
+    	uint8_t sgthrs = 126;
+    	uint32_t coolThrs = 5000;
+
+    	TMC2209_EnableDriver(&motors[i], 1);
+    	HAL_Delay(100);
+    	TMC2209_set_PDNuart(&motors[i], 1);
+    	HAL_Delay(100);
+    	//TMC2209_configureCurrent(motors, IHOLD, IRUN, IDELAY); -- DISABLED
+    	HAL_Delay(10);
+    	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
+    	HAL_Delay(500);
+    	TMC2209_enableStallDetection(&motors[i], sgthrs);
+    	HAL_Delay(10);
+    	TMC2209_SetTCoolThrs(&motors[i], coolThrs);
+    	HAL_Delay(10);
+    	TMC2209_readStandstillIndicator(&motors[i]);
+    }
+    TMC2209_SetSpeed(&motors[0], 8000);
+    TMC2209_SetSpeed(&motors[1], 8000);
+    TMC2209_SetSpeed(&motors[2], 8000);
+    TMC2209_SetSpeed(&motors[3], 8000);
 }
 
 
@@ -195,17 +227,15 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
 
 void initializeSystem(){
 	// motors
-		initializeMotors();
-    // axis
-		initializeAxis(&axes[0], &motors[0],&motors[1], 8, "Y");
-		initializeAxis(&axes[1], &motors[2],&motors[3], 40, "X");
-
+	 initializeMotors();
     // motor configurations
-		//TMC2209_setMotorsConfiguration(&motors,2, 0);
-		// TMC2209_EnableDriver(&motors[0], 1);
-		//  TMC2209_EnableDriver(&motors[1], 1);
-		//  TMC2209_EnableDriver(&motors[2], 1);
-		//  TMC2209_EnableDriver(&motors[3], 1);
+	TMC2209_setMotorsConfiguration(&motors);
+    // axis
+	initializeAxis(&axes[0], &motors[0],&motors[1], 8, "Y");
+	initializeAxis(&axes[1], &motors[2],&motors[3], 40, "X");
+
+
+
 		xSemaphoreGive(xInitSemaphore); // signal welcome menu state to proceed with next state
 
 }
