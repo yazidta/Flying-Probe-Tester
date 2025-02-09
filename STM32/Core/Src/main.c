@@ -278,14 +278,14 @@ int main(void)
       NULL                     /* Task handle (optional) */
   );
 
-//  xTaskCreate(
-//	  stallMonitorTask,          /* Task function */
-//      "StallMonitorTask",       /* Task name (for debugging) */
-//      128,        				/* Stack size in words */
-//      NULL,                     /* Task parameters */
-//	  tskIDLE_PRIORITY + 4,     /* Task priority */
-//      NULL                       /* Task handle (optional) */
-//  );
+  xTaskCreate(
+	  stallMonitorTask,          /* Task function */
+      "StallMonitorTask",       /* Task name (for debugging) */
+      128,        				/* Stack size in words */
+      NULL,                     /* Task parameters */
+	  tskIDLE_PRIORITY + 4,     /* Task priority */
+      NULL                       /* Task handle (optional) */
+  );
 
   xTaskCreate(
       vMainMenuTask,           /* Task function */

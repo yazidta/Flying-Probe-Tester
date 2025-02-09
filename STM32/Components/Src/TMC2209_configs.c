@@ -176,12 +176,12 @@ void TMC2209_setMotorsConfiguration(Motor *motors){	// Set all motor configurati
     	uint8_t IHOLD = 16;
     	uint8_t IRUN = 31;
     	uint8_t IDELAY = 8;
-    	uint8_t sgthrs = 126;
+    	uint8_t sgthrs = 70;
     	uint32_t coolThrs = 5000;
 
     	TMC2209_EnableDriver(&motors[i], 1);
     	HAL_Delay(100);
-    	TMC2209_set_PDNuart(&motors[i], 1);
+    	TMC2209_setPDNuart(&motors[i], 1);
     	HAL_Delay(100);
     	//TMC2209_configureCurrent(motors, IHOLD, IRUN, IDELAY); -- DISABLED
     	HAL_Delay(10);

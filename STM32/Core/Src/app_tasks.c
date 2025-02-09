@@ -44,9 +44,10 @@ size_t commandsGcode = 0;
 void calibProcessTask(void *pvParameters){
 
 	for(;;){
-		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT,
+		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT | CALIB_STOP_BIT,
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
-	if (uxBits) {
+	if(uxBits & CALIB_STOP_BIT) return; // CALIB ABORTED TODO: Display calib aborted on LCD
+	if (uxBits & CALIB_START_BIT) {
 
      switch(g_calibSelection){
         
@@ -54,7 +55,7 @@ void calibProcessTask(void *pvParameters){
         AutoCalibration(&axes,&motors); 
         xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 
-        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
+        currentState = MENU_STATE_TESTING;
         break;
 
         case 2: // SEMI ATUO
@@ -143,13 +144,6 @@ void motorControlTask(void *argument) {
        			    break;
        		}
 
-//    		case 	MOTOR_CMD_CHECK_SPEED:
-//
-//    		case	MOTOR_CMD_CHECK_MSTEP:
-//    		case 	MOTOR_CMD_CHECK_CHOPPER:
-//    		case	MOTOR_CMD_CHECK_SGTHRS:
-//    		case 	MOTOR_CMD_CHECK_COOLTHRS:
-//    				break;
     		default: // unkown command
     				break;
     		}
@@ -168,16 +162,19 @@ void motorControlTask(void *argument) {
  */
 void stallMonitorTask(void *argument) {
 	MotorCommand stallCmd;
-	stallCmd.command = MOTOR_CMD_STOP;
 
     for(;;) {
         for(int i = 0; i < MAX_MOTORS; i++) {
         	motors[i].STALL = HAL_GPIO_ReadPin(motors[i].driver.diag_port, motors[i].driver.diag_pin);
 
-            if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detected
-                stallCmd.motorIndex = i;
-                xQueueSend(motorCommandQueue, &stallCmd, pdMS_TO_TICKS(10));
+            if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detecte
 
+                xEventGroupSetBits(testingEvent, TEST_STOP_BIT); // Abort Testing task
+                TMC2209_Stop(&motors[i]); // Stop stalled motor first
+                for(int j = 0; j<MAX_MOTORS; j++){ // Stop the other motors
+                   if(j != i) TMC2209_Stop(&motors[j]);
+
+                }
             }
         }
         vTaskDelay(pdMS_TO_TICKS(STALL_CHECK_INTERVAL_MS));
@@ -279,13 +276,14 @@ void vMainMenuTask(void *pvParameters)
             {
             	// TDOD: MENU FOR TESTING -- SHOW PROGRESS OF TESTING
 
-            	xEventGroupSetBits(testingEvent, CALIB_START_BIT);
+            	xEventGroupSetBits(testingEvent, TEST_START_BIT); // Start Testing task
 
-            	xEventGroupWaitBits(testingEvent, CALIB_COMPLETE_BIT,
-            	                    pdTRUE, pdFALSE, portMAX_DELAY);
+            	xEventGroupWaitBits(testingEvent, TEST_COMPLETE_BIT,
+            	                    pdTRUE, pdFALSE, portMAX_DELAY); // Test Finished.
             	currentState = MENU_STATE_MAIN;
             }
                 break;
+
             default:
                 currentState = MENU_STATE_MAIN;
                 break;
@@ -298,16 +296,21 @@ void vMainMenuTask(void *pvParameters)
 void vTestingTask(void *arugment){
 	for(;;){
 
+		EventBits_t testingBits = xEventGroupWaitBits(testingEvent, TEST_START_BIT | TEST_STOP_BIT,
+		                                                   pdTRUE, pdFALSE, portMAX_DELAY); // Trigger testing
+		if(testingBits & TEST_STOP_BIT){ // Stall detected during test
 
-		EventBits_t uxBits = xEventGroupWaitBits(testingEvent, CALIB_START_BIT,
-		                                                   pdTRUE, pdFALSE, portMAX_DELAY);
-		if (uxBits) {
+			continue;	// Abort test
+		}
+		if (testingBits & TEST_START_BIT) { // Start Test
 
-        testingg();
-		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+		preformTest();
+		xEventGroupSetBits(testingEvent, TEST_COMPLETE_BIT);
+       // xEventGroupClearBits(testingEvent, TEST_STOP_BIT); // clear bit incase we want to restart test
+
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(2000));
+		vTaskDelay(pdMS_TO_TICKS(10));
 	}
 
 
@@ -316,11 +319,14 @@ void vTestingTask(void *arugment){
 
 
 //// FUNCTIONS //////
-void testingg(){
+void preformTest(){
 
 	MotorCommand testingCMD;
 
 	for(int i = 0; i < commandsGcode; i++){
+		if(xEventGroupGetBits(testingEvent) & TEST_STOP_BIT) { // Abort Test if stop is bit is set. For now this is use for stall
+		    return;
+		}
 		if(i % 2 == 0){
 			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;
 			testingCMD.targetPositionsAxis0[0] = coordinates[i].y;
