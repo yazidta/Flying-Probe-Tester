@@ -32,8 +32,9 @@ SemaphoreHandle_t xInitSemaphore;
 volatile uint8_t g_calibSelection = 0;
 volatile uint8_t encButton = 0;
 float pcbWidth = 0.0f, pcbHeight = 0.0f;
-Coordinate coordinates[MAX_CORDS];
+TestPoints coordinates[MAX_CORDS];
 size_t commandsGcode = 0;
+size_t testResultsCount = 0;
 
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
@@ -54,17 +55,18 @@ void calibProcessTask(void *pvParameters){
         AutoCalibration(&axes,&motors); 
         xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 
-        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
         case 2: // SEMI ATUO
-        RunSemiAutoCalibrationStateMachine(&hlcd3,&motors);
-        currentState = MENU_STATE_CALIBRATION2;
+        	semiAutoCalibration(&axes,&motors);
+            currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
         case 3: // MANUAL
+        	ManualCalibration(&axes,&motors);
+
         RunManualCalibrationStateMachine(&hlcd3, &motors);
-        currentState = MENU_STATE_CALIBRATION3;
+        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
         default:
         break;
@@ -228,11 +230,14 @@ void vMainMenuTask(void *pvParameters)
             case MENU_STATE_SD_TEST:
                 {
                     // Display SD card test menu or process SD card files.
+                	  LCD_I2C_Clear(&hlcd3);
+                	  LCD_I2C_SetCursor(&hlcd3, 0, 1);
+                	  LCD_I2C_printStr(&hlcd3, "Performing Tests");
+                      LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
 
-                       LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
                        size_t numLines = sizeof(lines);
                        ProcessGcode(&axes, &lines, numLines);
-                       currentState = MENU_STATE_CALIBRATION;
+            	 currentState = MENU_STATE_CALIBRATION;
 
 
                         //currentState = MENU_STATE_MAIN;
@@ -268,7 +273,7 @@ void vMainMenuTask(void *pvParameters)
                 	LCD_I2C_SetCursor(&hlcd3, 0, 1);
                     LCD_I2C_printStr(&hlcd3, "Preparing...");
                     if(MotorsHoming(&motors) == 1){
-                       if(calibrationState()){
+                       if(!calibrationState()){
                            currentState =MENU_STATE_CALIBRATION;
                         }
                        currentState = MENU_STATE_MAIN;
@@ -307,6 +312,7 @@ void vTestingTask(void *arugment){
 		xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 		}
 
+
 		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 
@@ -319,7 +325,8 @@ void vTestingTask(void *arugment){
 void testingg(){
 
 	MotorCommand testingCMD;
-
+	uint16_t j = 0;
+		const char reportFilename = {"results.txt"};
 	for(int i = 0; i < commandsGcode; i++){
 		if(i % 2 == 0){
 			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;
@@ -332,17 +339,31 @@ void testingg(){
 		if(i >= 1 && (i+1)%2 == 0){
 		testingCMD.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
+		 coordinates[j].testResult = CheckConnection(&hservo1,&hservo2);
+		        j++;
 		}
 	}
+	generate_report(&hlcd3);
+
+	MotorsHoming(&motors);
+
+		//osDelay(2000);
+
 }
 
 
 void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], size_t gcodeCount) {
 
     // Variables to hold PCB dimensions
+	uint16_t netTestCount = 0;
+	    int inNetBlock = 0;
+	    size_t currentNetIndex = 0;
 
-    for(size_t i = 0; i < gcodeCount; i++) {
-        const char *line = gcodeArray[i];
+	    for(size_t i = 0; i < gcodeCount; i++) {
+	            const char *line = gcodeArray[i];
+	        // Check for a net definition line.
+
+
 
         if (line[0] == ';') {
             if (strncmp(line, "; G54", 5) == 0) { // G54: actual PCB dimensions. Format G54 X.. Y..
@@ -356,8 +377,26 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
                 if (ptr) {
                     pcbHeight = (float)atof(ptr + 1);
                 }
+
             }
-            continue;
+
+        if (strncmp(line, "; Net:", 6) == 0) {
+
+        	const char *netName = strchr(line, 'Net-(');
+
+        		if(netName != NULL){
+              	  //netName = strlen(line);
+              	  size_t len = strcspn(netName,"\r\n");
+              	  if( len >= 20){
+              		  len = 20-1;
+              	  }
+        			strncpy(coordinates[commandsGcode].netName, netName, len);
+        			coordinates[commandsGcode].netName[len] ='\0';
+        		}
+        	}
+
+        continue;
+
         }
 
         if (strncmp(line, "G0", 2) == 0) { // G0: move command
@@ -404,6 +443,8 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
 //          }
 
         else if (strncmp(line, "T1", 2) == 0) { // T : perform test
+        	testResultsCount++;
+        	//inNetBlock = 0;
         //CheckConnection(&hservo1, &hservo2);
         }
 
@@ -415,8 +456,27 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
         }
         // TODO: Some delay?
     }
+	    commandsGcode++;
+	    coordinates[commandsGcode].x = 1.5f;
+	    coordinates[commandsGcode].y = 1.5f;
+	    commandsGcode++;
+	    coordinates[commandsGcode].x = 1.5f;
+	    coordinates[commandsGcode].y = 1.5f;
 
 }
+    //function to generate a report file on the SD card.
+    //
+    // Parameters:
+    //   hlcd         - pointer to your LCD handle (for error messages)
+    //   gcodeLines   - a 2D array holding the previously‐read G‑code file lines
+    //   lineCount    - the number of lines in gcodeLines
+    //   reportFilename - the name of the file to create (for example "report.txt")
+    //
+    // The report file will have a header and one line per “net” in the following format:
+    //
+    //   Net           Test Points                    Test result
+    //   Net-(R11-Pad2) (37.5995,20.5995); (20.5995,44.5995)  PASS
+    //------------------------------------------------------------------------------
 
 
 void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
@@ -428,33 +488,29 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
         case CALIB_STATE_INIT:
             LCD_I2C_Clear(hlcd);
             LCD_I2C_SetCursor(hlcd, 0, 1);
-            LCD_I2C_printStr(hlcd, "cheetosckjrcjo to move");
-            LCD_I2C_SetCursor(hlcd, 1, 1);
+            LCD_I2C_printStr(hlcd, "Use Buttons to move");
             LCD_I2C_printStr(hlcd, "probe 1");
-            delayStartTime = xTaskGetTickCount();
+            osDelay(500);
             calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
             break;
 
         case CALIB_STATE_INSTRUCT_PROBE1:
             // Wait 2000ms nonblocking
-            if ((xTaskGetTickCount() - delayStartTime) >= pdMS_TO_TICKS(2000))
-            {
+
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 1 facing");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "X-axis edge 1");
                 calibSubState = CALIB_STATE_WAIT_PROBE1_DONE;
-            }
+
             break;
 
         case CALIB_STATE_WAIT_PROBE1_DONE:
             if (Iscalib1Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 2 facing");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "Y-axis edge 1");
                 calibSubState = CALIB_STATE_INSTRUCT_PROBE2;
             }
@@ -464,9 +520,8 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib1Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 1 facing");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "Y-axis edge 1");
                 calibSubState = CALIB_STATE_WAIT_PROBE1_Y_DONE;
             }
@@ -476,9 +531,8 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib2Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 2 facing");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "X-axis edge 2");
                 calibSubState = CALIB_STATE_WAIT_PROBE2_X_DONE;
             }
@@ -488,23 +542,26 @@ void RunSemiAutoCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *moto
             if (Iscalib2Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Points saved");
                 calibSubState = CALIB_STATE_COMPLETE;
             }
             break;
 
         case CALIB_STATE_COMPLETE:
-            // You may change to the next overall state here.
-            // For example: currentState = MENU_STATE_CALIBRATION3;
+        {
+            currentState = MENU_STATE_TESTING;
             // Reset the substate for future calibration sessions.
             calibSubState = CALIB_STATE_INIT;
+        }
             break;
 
         default:
             break;
+
     }
 }
+
 
 
 void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors) {
@@ -514,32 +571,27 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
             LCD_I2C_Clear(hlcd);
             LCD_I2C_SetCursor(hlcd, 0, 1);
             LCD_I2C_printStr(hlcd, "Use buttons to move");
-            LCD_I2C_SetCursor(hlcd, 1, 1);
             LCD_I2C_printStr(hlcd, "probe 1");
-            delayStartTime = xTaskGetTickCount();
+            osDelay(300);
             calibSubState = CALIB_STATE_INSTRUCT_PROBE1;
             break;
 
         case CALIB_STATE_INSTRUCT_PROBE1:
-            // Wait 2000ms nonblocking
-            if ((xTaskGetTickCount() - delayStartTime) >= pdMS_TO_TICKS(2000))
-            {
+        {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 1 on");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "X-axis edge 1");
                 calibSubState = CALIB_STATE_WAIT_PROBE1_DONE;
-            }
+        }
             break;
 
         case CALIB_STATE_WAIT_PROBE1_DONE:
             if (Iscalib1Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 2 on");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "Y-axis edge 1");
                 calibSubState = CALIB_STATE_INSTRUCT_PROBE2;
             }
@@ -549,9 +601,8 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
             if (Iscalib1Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 1 on");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "x-axis edge 2");
                 calibSubState = CALIB_STATE_WAIT_PROBE1_Y_DONE;
             }
@@ -561,9 +612,8 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
             if (Iscalib2Done(&motors[0], &motors[2]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Place probe 2 on");
-                LCD_I2C_SetCursor(hlcd, 1, 0);
                 LCD_I2C_printStr(hlcd, "y-axis edge 2");
                 calibSubState = CALIB_STATE_WAIT_PROBE2_X_DONE;
             }
@@ -573,22 +623,25 @@ void RunManualCalibrationStateMachine(LCD_I2C_HandleTypeDef *hlcd, Motor *motors
             if (Iscalib2Done(&motors[1], &motors[3]))
             {
                 LCD_I2C_Clear(hlcd);
-                LCD_I2C_SetCursor(hlcd, 0, 0);
+                LCD_I2C_SetCursor(hlcd, 0, 1);
                 LCD_I2C_printStr(hlcd, "Points saved");
                 calibSubState = CALIB_STATE_COMPLETE;
             }
             break;
 
         case CALIB_STATE_COMPLETE:
-            // You may change to the next overall state here.
-            // For example: currentState = MENU_STATE_CALIBRATION3;
+        {
+               currentState = MENU_STATE_TESTING;
             // Reset the substate for future calibration sessions.
             calibSubState = CALIB_STATE_INIT;
+        }
             break;
 
         default:
             break;
+
     }
-    /* Yield for a short time so other tasks can run */
     vTaskDelay(pdMS_TO_TICKS(10));
+
 }
+

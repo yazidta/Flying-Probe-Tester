@@ -253,8 +253,8 @@ int main(void)
 
   /* Create the thread(s) */
   /* definition and creation of defaultTask */
-//  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
-//  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  //osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 512);
+  //defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -697,7 +697,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 400;
+  htim4.Init.Period = 800;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
@@ -1289,14 +1289,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 //void StartDefaultTask(void const * argument)
 //{
-  /* USER CODE BEGIN 5 */
-//////  /* Infinite loop */
-//////  for(;;)
-//////  {
-//////    osDelay(1);
-//////  }
-
-  /* USER CODE END 5 */
+//  /* USER CODE BEGIN 5 */
+////////  /* Infinite loop */
+////////  for(;;)
+////////  {
+////////    osDelay(1);
+////////  }
+//
+//  /* USER CODE END 5 */
 //}
 
 /**
