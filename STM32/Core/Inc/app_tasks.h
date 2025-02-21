@@ -103,7 +103,9 @@ typedef struct {
 typedef struct {
     float x;
     float y;
-} Coordinate;
+    uint8_t testResult;
+    char netName[20];
+} TestPoints;
 /* RTOS TASKS */
 
 /* Forward declaration of the external function to read button states */
@@ -120,7 +122,7 @@ void preformTest();
 // MISC
 
 extern QueueHandle_t motorCommandQueue;
-extern Coordinate coordinates[MAX_CORDS];
+extern TestPoints coordinates[MAX_CORDS];
 
 
 #endif /* INC_APP_TASKS_H_ */

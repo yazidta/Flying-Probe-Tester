@@ -12,7 +12,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "LCD.h"
-
+#include "app_tasks.h"
 
 /* Private typedef -----------------------------------------------------------*/
 
@@ -50,7 +50,14 @@ uint8_t __lcd_i2c_buffer[6] = { 0x00, };
 uint8_t fileCount = 0;
 char fileList[10][21] = {0}; // Buffer for up to 10 files (20 chars max + null terminator)
 
-char lines[MAX_LINES][MAX_LINE_LENGTH];;
+char lines[MAX_LINES][MAX_LINE_LENGTH];
+
+extern size_t commandsGcode;
+extern TestPoints coordinates[MAX_CORDS];
+static char reportLine[40][40];
+static char testPointsStr[10][40];
+static char netsnames[10][40];
+extern MenuState currentState;
 /* Public variables ----------------------------------------------------------*/
 
 /* Private function ----------------------------------------------------------*/
@@ -440,7 +447,9 @@ uint8_t LCD_I2C_menuTemplate(LCD_I2C_HandleTypeDef* hlcd,
         if (buttonInput == 0) {
             osDelay(200); // Debounce delay
             if (selectedOption == 0 && backOption) {
-                return 0;
+                currentState = MENU_STATE_PREPARE_MACHINE;
+
+                return ;
             } else {
                 return selectedOption;
             }
@@ -534,6 +543,8 @@ void DisplayMenu(LCD_I2C_HandleTypeDef* hlcd, char fileList[][20 + 1], uint8_t f
 }
 
 void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc) {
+
+
     FATFS FatFs;
     FRESULT fres;
     DIR dir;
@@ -543,14 +554,16 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
 
     fres = MountSDCard(&FatFs);
     if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Failed to mount");
         HAL_Delay(2000);
         return;
     }
-
+    else{
     fres = OpenRootDir(&dir);
     if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Open dir failed");
         f_mount(NULL, "", 0);
@@ -631,25 +644,29 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
 
         HAL_Delay(100);
     }
+    }
 }
 void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
     FATFS FatFs;
-    FIL file;
+
     FRESULT fres;
     uint8_t numLines = 0;
 
     // Mount the SD card
     fres = f_mount(&FatFs, "", 1);
     if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "SD mount failed");
        // HAL_Delay(2000);
         return;
     }
-
+    else{
     // Open the file for reading
+    FIL file;
     fres = f_open(&file, filename, FA_READ);
     if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Open file failed");
         f_mount(NULL, "", 1);
@@ -672,7 +689,85 @@ void process_file(LCD_I2C_HandleTypeDef* hlcd, const char *filename) {
     }
     f_close(&file);
     f_mount(NULL, "", 1);
+    }
 }
+
+void generate_report(LCD_I2C_HandleTypeDef* hlcd)
+{
+
+
+    // Mount the SD card
+
+	FATFS FatFs;
+	FRESULT fres;
+	DIR dir;
+    fres = MountSDCard(&FatFs);
+    if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "SD mount failed");
+        return;
+    }
+    else{
+    const char *reportFilename = "test13.txt";
+	FIL file;
+
+    // Open (or create) the report file for writing
+    fres = f_open(&file, reportFilename, FA_WRITE | FA_CREATE_ALWAYS);
+    if (fres != FR_OK) {
+    	LCD_I2C_ClearAllLines(hlcd);
+        LCD_I2C_SetCursor(hlcd, 0, 0);
+        LCD_I2C_printStr(hlcd, "Report file open failed");
+        f_mount(NULL, "", 1);
+        return;
+    }
+    UINT bw;
+    // Write the header line
+    const char *header = "  Net           Test Points          Test result\r\n";
+    f_write(&file, header, strlen(header), &bw);
+    char resultStr[10][40];
+
+            for(int i =0 ; i < commandsGcode;i++){
+                snprintf(testPointsStr[i], sizeof(testPointsStr[i]), "%.d, %.d, %.d, %.d",
+                         (int)coordinates[i].x, (int)coordinates[i].y,
+                         (int)coordinates[i+1].x, (int)coordinates[i+1].y);
+
+            	if((i+1 % 2) == 0){
+		            strcpy(resultStr[i], coordinates[i].testResult ? "PASS" : "FAIL");
+
+            	}
+
+            	snprintf(reportLine[i], sizeof(reportLine[i]),
+            			 "%-15s %-30s %-10s\n",
+            			 coordinates[i].netName, testPointsStr[i], resultStr);
+                f_write(&file, reportLine[i], strlen(reportLine[i]), &bw);
+                i++;
+
+
+            }
+
+    f_close(&file);
+    f_mount(NULL, "", 1);
+}
+}
+void ftoa(float value, char *buffer, int decimalPlaces) {
+    int integerPart = (int)value;
+    float fractionalPart = value - integerPart;
+
+    // Convert integer part
+    sprintf(buffer, "%d.", integerPart);
+
+    // Convert fractional part
+    for (int i = 0; i < decimalPlaces; i++) {
+        fractionalPart *= 10;
+        int digit = (int)fractionalPart;
+        fractionalPart -= digit;
+        sprintf(buffer + strlen(buffer), "%d", digit);
+    }
+}
+
+
+
 
 
 #endif
