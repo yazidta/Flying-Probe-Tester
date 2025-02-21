@@ -87,8 +87,8 @@ osThreadId defaultTaskHandle;
 /* USER CODE BEGIN PV */
 
 
-SERVO_Handle_TypeDef hservo1 = { .PwmOut = PWM_INIT_HANDLE(&htim14, TIM_CHANNEL_1) };
-SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim9, TIM_CHANNEL_1) };
+SERVO_Handle_TypeDef hservo1 = { .PwmOut = PWM_INIT_HANDLE(&htim14, TIM_CHANNEL_1), .ID= 1 };
+SERVO_Handle_TypeDef hservo2 = { .PwmOut = PWM_INIT_HANDLE(&htim9, TIM_CHANNEL_1), .ID=2 };
 
 Motor motors[MAX_MOTORS]; // Global motor array
 Axis axes[MAX_MOTORS_PER_AXIS]; // Global axes array

@@ -19,6 +19,7 @@ typedef struct {
 typedef struct {
   PWM_Handle_TypeDef PwmOut;
   float Position;
+  uint8_t ID;
 } SERVO_Handle_TypeDef;
 
 #define PWM_INIT_HANDLE(TIMER_HANDLE, CHANNEL) \
@@ -28,6 +29,10 @@ typedef struct {
     .Duty = 0.0f                               \
   }
 
+#define SERVO1_HOME_POS 90.0f
+#define SERVO2_HOME_POS 60.0f
+#define SERVO1_CHECK_POS 72.0f
+#define SERVO2_CHECK_POS 42.0f
 #define __LINEAR_TRANSFORM(x,amin,amax,bmin,bmax) (((x-amin)/(amax-amin))*(bmax-bmin)+bmin)
 #define __SATURATION(x,xmin,xmax) fmaxf(fminf(x, xmax), xmin)
 

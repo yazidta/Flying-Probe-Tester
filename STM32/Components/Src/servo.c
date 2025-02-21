@@ -11,6 +11,8 @@
 
 #define SERVO_MIN_DUTY 	2.5f
 #define SERVO_MAX_DUTY 12.5f
+extern SERVO_Handle_TypeDef hservo2;
+extern SERVO_Handle_TypeDef hservo1;
 /**
   * @brief Initialize PWM output
   * @param[in/out] hpwm   : PWM output handler
@@ -55,7 +57,13 @@ float PWM_ReadDuty(const PWM_Handle_TypeDef* hpwm)
 }
 void SERVO_Init(SERVO_Handle_TypeDef* hservo)
 {
-	SERVO_WritePosition(hservo, 0.0f);
+	if(hservo->ID == 1 ){
+	SERVO_WritePosition(hservo, SERVO1_HOME_POS); // Home position is 90 deg, Down is 72 deg.
+	}
+	else{
+	SERVO_WritePosition(hservo, SERVO2_HOME_POS); // Home position is 50 deg, down is 40.
+	}
+
 	PWM_Init(&(hservo->PwmOut));
 }
 
