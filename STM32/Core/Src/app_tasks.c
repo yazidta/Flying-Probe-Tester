@@ -375,6 +375,8 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
             if (strncmp(line, "; G54", 5) == 0) { // G54: actual PCB dimensions. Format G54 X.. Y..
 
                 const char *ptr = strchr(line, 'X');
+
+
                 if (ptr) {
                     pcbWidth = (float)atof(ptr + 1);
                 }
@@ -383,9 +385,13 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
                 if (ptr) {
                     pcbHeight = (float)atof(ptr + 1);
                 }
-
+                else{
+                	return;
+                }
             }
-
+            else{
+            	return;
+            }
         if (strncmp(line, "; Net:", 6) == 0) {
 
         	const char *netName = strchr(line, 'Net-(');
