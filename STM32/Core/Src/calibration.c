@@ -237,10 +237,13 @@ void ManualCalibration(Axis *axes, Motor *motors) {
     TMC2209_SetSpeed(&motors[1], 8000);
     TMC2209_SetSpeed(&motors[2], 8000);
     TMC2209_SetSpeed(&motors[3], 8000);
+    MotorCommand cmd;  // Command structure to post to motorControlTask
+
 	MotorsHoming(motors);
     while(!calibrationState()){
     //RunManualCalibrationStateMachine(&hlcd3, &motors);
-
+        SERVO_WritePosition(&hservo1, SERVO1_CHECK_POS);
+        SERVO_WritePosition(&hservo2, SERVO2_CHECK_POS);
 
     /* Static variables to detect a button press edge */
     	/* Example variables. Put them in a suitable scope (static in file-scope or function-scope). */
@@ -295,9 +298,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
                               / axes[1].stepPerUnit;
 
                         motors[motorGroup].calib[0] = motors[motorGroup].currentPositionMM;
-                        motors[motorGroup].calib[1] = motors[motorGroup].currentPositionMM;
                         motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
-                        motors[motorGroup + 2].calib[1] = motors[motorGroup + 2].currentPositionMM;
 
                         motorGroup += 1;
                         break;
@@ -312,12 +313,30 @@ void ManualCalibration(Axis *axes, Motor *motors) {
                               / axes[1].stepPerUnit;
 
                         motors[motorGroup].calib[0] = motors[motorGroup].currentPositionMM;
-                        motors[motorGroup].calib[1] = motors[motorGroup].currentPositionMM;
                         motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
-                        motors[motorGroup + 2].calib[1] = motors[motorGroup + 2].currentPositionMM;
+                        MotorsHoming(motors);
+                    	SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
+                    	SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
+
+                        cmd.targetPositionsAxis0[0] = motors[0].calib[0];   // Y
+                        cmd.targetPositionsAxis0[1] = -(motors[1].calib[0]); // Y
+                        cmd.targetPositionsAxis0[2] = -(motors[2].calib[0]);  // X
+                        cmd.targetPositionsAxis0[3] = motors[3].calib[0];   // X
+                        cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
+
+                       xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+                       axes[0].motors[0]->currentPositionMM = 0.0f;
+                       axes[0].motors[1]->currentPositionMM = 100;
+                       axes[1].motors[0]->currentPositionMM = 0.0f;
+                       axes[1].motors[1]->currentPositionMM = 0.0f;
+                       motors[0].calib[1] = motors[0].calib[0];
+                       motors[1].calib[1] = -(motors[1].calib[0]);
+                       motors[2].calib[1] = -(motors[2].calib[0]);
+                       motors[3].calib[1] = motors[3].calib[0];
 
                         motorGroup = 0;  // Reset as needed
                         Pressed = 0;     // Reset the press counter
+
                         break;
 
                     default:
@@ -333,7 +352,6 @@ void ManualCalibration(Axis *axes, Motor *motors) {
 
 
     /* --- Manual motor control via buttons --- */
-    MotorCommand cmd;  // Command structure to post to motorControlTask
 
     /* Example: BtnUp pressed -> move motor (motorGroup) in the forward direction */
     if (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET) {
