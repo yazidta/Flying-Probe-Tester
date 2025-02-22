@@ -57,13 +57,13 @@ void calibProcessTask(void *pvParameters){
 
         break;
 
-        case 2: // SEMI ATUO
+        case 2: // Manual
         	ManualCalibration(&axes,&motors);
             xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
             currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
-//        case 3: // MANUAL
+//        case 3: // Semi-Auto
 //
 //            //semiAutoCalibration(&axes,&motors);
 //                       // xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
