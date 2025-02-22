@@ -697,7 +697,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 400;
+  htim4.Init.Period = 800;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
@@ -1218,11 +1218,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : BtnLeft_Pin */
-  GPIO_InitStruct.Pin = BtnLeft_Pin;
+  /*Configure GPIO pins : BtnLef_Pin BtnLeft_Pin */
+  GPIO_InitStruct.Pin = BtnLef_Pin|BtnLeft_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(BtnLeft_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOG, &GPIO_InitStruct);
 
   /*Configure GPIO pins : EndStop2_Pin EndStop3_Pin */
   GPIO_InitStruct.Pin = EndStop2_Pin|EndStop3_Pin;
@@ -1289,14 +1289,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_StartDefaultTask */
 //void StartDefaultTask(void const * argument)
 //{
-  /* USER CODE BEGIN 5 */
-//  /* Infinite loop */
-//  for(;;)
-//  {
-//   osDelay(1);
-//  }
-
-  /* USER CODE END 5 */
+//  /* USER CODE BEGIN 5 */
+////  /* Infinite loop */
+////  for(;;)
+////  {
+////   osDelay(1);
+////  }
+//
+//  /* USER CODE END 5 */
 //}
 
 /**

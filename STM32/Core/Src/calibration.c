@@ -148,7 +148,8 @@ void AutoCalibration(Axis *axes, Motor *motors) {
     TMC2209_SetSpeed(&motors[1], 8000);
     TMC2209_SetSpeed(&motors[2], 8000);
     TMC2209_SetSpeed(&motors[3], 8000);
-
+//    SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
+//    SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
     // Continue with calibration until the calibration condition is met.
     if(!calibrationState()) {
         MotorsHoming(motors);
@@ -169,10 +170,10 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         LCD_I2C_printStr(&hlcd3, "Calibrating!");
         //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
         //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
-        cmd.targetPositionsAxis0[0] = 77.9f;   // Y
-        cmd.targetPositionsAxis0[1] = -100.8f; // Y
-        cmd.targetPositionsAxis0[2] = -47.9f;  // X
-        cmd.targetPositionsAxis0[3] = 47.9f;   // X
+        cmd.targetPositionsAxis0[0] = 38.93f;   // Y
+        cmd.targetPositionsAxis0[1] = -57.51f; // Y
+        cmd.targetPositionsAxis0[2] = -82.15f;  // X
+        cmd.targetPositionsAxis0[3] = 22.7f;   // X
        // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
 
 
@@ -182,13 +183,40 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 
        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+       CheckConnection(&hservo1,&hservo2);
+//       SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
+//       SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
        axes[0].motors[0]->currentPositionMM = 0.0f;
-       axes[0].motors[1]->currentPositionMM = 100.0f;
+       axes[0].motors[1]->currentPositionMM = 99.1f;
        axes[1].motors[0]->currentPositionMM = 0.0f;
        axes[1].motors[1]->currentPositionMM = 0.0f;
 
         // Move all motors concurrently on axis 0.
         // Move all motors concurrently on axis 1.
+
+       //----------------------------------------------------------------------------NIGGER-----------------------------------------------------------------------------------------------------------
+       //SMALL ASS PADS COORDINATES
+//               cmd.targetPositionsAxis0[0] = 64.5995f;   // Y
+//               cmd.targetPositionsAxis0[1] = 67.7745f; // Y
+//               cmd.targetPositionsAxis0[2] = -14.512f;  // X
+//               cmd.targetPositionsAxis0[3] = 49.5995f;   // X
+
+       //BIG ASS PADS COORDINATES
+
+//               cmd.targetPositionsAxis0[0] = 20.5995f;   // Y
+//               cmd.targetPositionsAxis0[1] = 44.5995f; // Y
+//               cmd.targetPositionsAxis0[2] = -37.5995f;  // X
+//               cmd.targetPositionsAxis0[3] = 20.5995f;   // X
+              // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
+
+
+
+
+//               cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
+//
+//              xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+//              CheckConnection(&hservo1,&hservo2);
+//              HAL_Delay(200000);
 
         /*
          * After the concurrent move, the TMC2209_MoveAllTo routine will have:
@@ -210,7 +238,7 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         LCD_I2C_printStr(&hlcd3, "Calibration done!");
 
         // Perform any connection testing.
-        testing = CheckConnection(&hservo2, &hservo1);
+       // testing = CheckConnection(&hservo2, &hservo1);
 
     }
 }
