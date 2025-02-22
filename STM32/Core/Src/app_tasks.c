@@ -46,7 +46,13 @@ void calibProcessTask(void *pvParameters){
 
 	for(;;){
 		EventBits_t uxBits = xEventGroupWaitBits(calibEventGroup, CALIB_START_BIT | CALIB_STOP_BIT, pdTRUE, pdFALSE, portMAX_DELAY);
-    if(uxBits & CALIB_STOP_BIT) return; // CALIB ABORTED TODO: Display calib aborted on LCD
+    if(uxBits & CALIB_STOP_BIT){
+    	LCD_I2C_ClearAllLines(&hlcd3);
+    	LCD_I2C_SetCursor(&hlcd3, 0, 1);
+    	LCD_I2C_printStr(&hlcd3, "Stall Detected, Calibration Aborted!");
+    	osDelay(500);
+    	return; // CALIB ABORTED TODO: Display calib aborted on LCD
+    }
 	if (uxBits & CALIB_START_BIT) {
 
      switch(g_calibSelection){
@@ -308,7 +314,10 @@ void vTestingTask(void *arugment){
 		EventBits_t testingBits = xEventGroupWaitBits(testingEvent, TEST_START_BIT | TEST_STOP_BIT,
 		                                                   pdTRUE, pdFALSE, portMAX_DELAY); // Trigger testing
 		if(testingBits & TEST_STOP_BIT){ // Stall detected during test
-
+	    	LCD_I2C_ClearAllLines(&hlcd3);
+	    	LCD_I2C_SetCursor(&hlcd3, 0, 1);
+	    	LCD_I2C_printStr(&hlcd3, "Stall Detected, Test Aborted!");
+	    	osDelay(500);
 			continue;	// Abort test
 		}
 		if (testingBits & TEST_START_BIT) { // Start Test
