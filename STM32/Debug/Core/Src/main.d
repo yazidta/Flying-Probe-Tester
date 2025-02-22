@@ -74,6 +74,7 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h \
  ../Core/Inc/app_tasks.h \
  D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h \
+ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/tmc2209.h \
  ../Core/Inc/app_tasks.h
 ../Core/Inc/main.h:
 C:/Users/yazed/STM32Cube/Repository/STM32Cube_FW_F7_V1.17.2/Drivers/STM32F7xx_HAL_Driver/Inc/stm32f7xx_hal.h:
@@ -155,4 +156,5 @@ D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/servo.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/extras.h:
 ../Core/Inc/app_tasks.h:
 D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/LCD.h:
+D:/github/flyingrobots/Flying-Probe-Tester/STM32/Components/Inc/tmc2209.h:
 ../Core/Inc/app_tasks.h:

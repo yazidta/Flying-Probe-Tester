@@ -90,7 +90,9 @@ void Error_Handler(void);
 #define EndStop4_GPIO_Port GPIOF
 #define BtnDownF15_Pin GPIO_PIN_15
 #define BtnDownF15_GPIO_Port GPIOF
-#define BtnLeft_Pin GPIO_PIN_0
+#define BtnLef_Pin GPIO_PIN_0
+#define BtnLef_GPIO_Port GPIOG
+#define BtnLeft_Pin GPIO_PIN_1
 #define BtnLeft_GPIO_Port GPIOG
 #define ENN3_Pin GPIO_PIN_7
 #define ENN3_GPIO_Port GPIOE

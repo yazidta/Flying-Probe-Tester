@@ -1,2 +1,2 @@
-../Components/Src/sd_card_reader.c:39:6:process_raw_gcode	416	static
-../Components/Src/sd_card_reader.c:85:6:sd_card_read_gcode	1144	static
+../Components/Src/sd_card_reader.c:38:6:process_raw_gcode	416	static
+../Components/Src/sd_card_reader.c:84:6:sd_card_read_gcode	1144	static

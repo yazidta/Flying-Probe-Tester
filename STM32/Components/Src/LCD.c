@@ -745,7 +745,7 @@ void generate_report(LCD_I2C_HandleTypeDef* hlcd)
 
 
             }
-
+    f_write(&file, reportLine, strlen(reportLine), &bw);
     f_close(&file);
     f_mount(NULL, "", 1);
 }

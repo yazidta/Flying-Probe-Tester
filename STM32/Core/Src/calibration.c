@@ -1,6 +1,6 @@
 #include "Calibration.h" 
 uint8_t motorGroup = 0;// 0 for motor[0] and motor[2], 1 for motor[1] and motor[3]
-uint8_t Pressed = 0;
+volatile uint8_t Pressed = 0;
 int8_t motor1Cali[2];
 int8_t motor2Cali[2];
 uint32_t StepsFront[4]={0,0,0,0};
@@ -233,72 +233,104 @@ bool calibrationState(void) {
 
 void ManualCalibration(Axis *axes, Motor *motors) {
     /* If calibration is complete, exit immediately */
-	MotorsHoming(&motors);
+    TMC2209_SetSpeed(&motors[0], 8000);
+    TMC2209_SetSpeed(&motors[1], 8000);
+    TMC2209_SetSpeed(&motors[2], 8000);
+    TMC2209_SetSpeed(&motors[3], 8000);
+	MotorsHoming(motors);
     while(!calibrationState()){
-    RunManualCalibrationStateMachine(&hlcd3, &motors);
+    //RunManualCalibrationStateMachine(&hlcd3, &motors);
 
 
     /* Static variables to detect a button press edge */
-    static uint8_t CtrPressedFlag = 0;
-    uint32_t pressStartTime = 0;
-    const uint32_t debounceTime = 50;  // milliseconds
-    uint32_t currentTime = xTaskGetTickCount();
+    	/* Example variables. Put them in a suitable scope (static in file-scope or function-scope). */
+    	static uint8_t buttonState = 0;       // 0 = not pressed, 1 = pressed
+    	static uint32_t pressStartTime = 0;   // Time at which the button was first pressed
+
+    	// Debounce time in ms:
+    	const uint32_t debounceTime = 50;
 
     /* Set servo positions (this call remains direct) */
-    SERVO_WritePosition(&hservo1, 115);
-    SERVO_WritePosition(&hservo2, 115);
+    //SERVO_WritePosition(&hservo1, 115);
+    //SERVO_WritePosition(&hservo2, 115);
 
     static uint32_t lastPressTime = 0;  // Last valid press timestamp
 
     /* Process the calibration button (BtnCtr) */
-    if (HAL_GPIO_ReadPin(EncoderBtn_GPIO_Port, EncoderBtn_Pin) == GPIO_PIN_SET) {
-        if (CtrPressedFlag == 0) {  // First rising edge detected
+
+    uint32_t currentTime = xTaskGetTickCount(); // or HAL_GetTick(), whichever you use
+    uint8_t currentLevel = HAL_GPIO_ReadPin(EncoderBtn_GPIO_Port, EncoderBtn_Pin);
+
+    // ----------------------------------------------------------
+    // Active-low button logic: pressed = (currentLevel == RESET)
+    // ----------------------------------------------------------
+    if (currentLevel == GPIO_PIN_RESET) {
+        // Button is physically pressed
+        if (buttonState == 0) {
+            // Transition from not-pressed -> pressed
+            buttonState = 1;
             pressStartTime = currentTime;
-            CtrPressedFlag = 1;
         }
-        
-    }
-    else {
-        if (CtrPressedFlag == 1 && (currentTime - pressStartTime) >= debounceTime) {
-            Pressed += 1;  // Count a valid press
-            lastPressTime = currentTime;
-        }
-        CtrPressedFlag = 0;  // Reset flag when the button is released
+    } else {
+        // Button is physically released
+        if (buttonState == 1) {
+            // Transition from pressed -> released
+            buttonState = 0;
+            // Check if it was held long enough to count as a valid press
+            if ((currentTime - pressStartTime) >= debounceTime) {
+                // We register exactly ONE press per cycle
+                Pressed++;
 
-        /* Execute calibration steps based on the number of valid presses */
-        switch (Pressed) {
-            case 1:
-                /* Save calibration for first press.
-                   Use abs() and perform the division as a float calculation. */
-                motors[motorGroup].currentPositionMM =
-                    (float)abs(motors[motorGroup].StepsFront - motors[motorGroup].StepsBack) / axes[0].stepPerUnit;
-                motors[motorGroup + 2].currentPositionMM =
-                    (float)abs(motors[motorGroup + 2].StepsBack - motors[motorGroup + 2].StepsFront) / axes[1].stepPerUnit;
-                motors[motorGroup].calib[0] = motors[motorGroup].currentPositionMM;
-                motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
-                break;
+                // -----------------------------
+                // Handle your calibration steps
+                // -----------------------------
+                switch (Pressed) {
+                    case 1:
+                        // Save calibration for first press
+                        motors[motorGroup].currentPositionMM =
+                            (float)abs(motors[motorGroup].StepsFront - motors[motorGroup].StepsBack)
+                              / axes[0].stepPerUnit;
+                        motors[motorGroup + 2].currentPositionMM =
+                            (float)abs(motors[motorGroup + 2].StepsBack - motors[motorGroup + 2].StepsFront)
+                              / axes[1].stepPerUnit;
 
-            case 2:
-                /* Save calibration for second press */
-                motors[motorGroup].currentPositionMM =
-                    (float)abs(motors[motorGroup].StepsFront - motors[motorGroup].StepsBack) / axes[0].stepPerUnit;
-                motors[motorGroup + 2].currentPositionMM =
-                    (float)abs(motors[motorGroup + 2].StepsBack - motors[motorGroup + 2].StepsFront) / axes[1].stepPerUnit;
-                motors[motorGroup].calib[1] = motors[motorGroup].currentPositionMM;
-                motors[motorGroup + 2].calib[1] = motors[motorGroup + 2].currentPositionMM;
-                motorGroup += 1;
-                if (motorGroup >= 2) {
-                    motorGroup = 0;  // Reset as needed
+                        motors[motorGroup].calib[0] = motors[motorGroup].currentPositionMM;
+                        motors[motorGroup].calib[1] = motors[motorGroup].currentPositionMM;
+                        motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
+                        motors[motorGroup + 2].calib[1] = motors[motorGroup + 2].currentPositionMM;
+
+                        motorGroup += 1;
+                        break;
+
+                    case 2:
+                        // Save calibration for second press
+                        motors[motorGroup].currentPositionMM =
+                            (float)abs(motors[motorGroup].StepsFront - motors[motorGroup].StepsBack)
+                              / axes[0].stepPerUnit;
+                        motors[motorGroup + 2].currentPositionMM =
+                            (float)abs(motors[motorGroup + 2].StepsBack - motors[motorGroup + 2].StepsFront)
+                              / axes[1].stepPerUnit;
+
+                        motors[motorGroup].calib[0] = motors[motorGroup].currentPositionMM;
+                        motors[motorGroup].calib[1] = motors[motorGroup].currentPositionMM;
+                        motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
+                        motors[motorGroup + 2].calib[1] = motors[motorGroup + 2].currentPositionMM;
+
+                        motorGroup = 0;  // Reset as needed
+                        Pressed = 0;     // Reset the press counter
+                        break;
+
+                    default:
+                        // If somehow we get more than 2, just reset
+                        Pressed = 0;
+                        break;
                 }
-                Pressed = 0;  // Reset the press counter after completing this step
-                break;
-
-            default:
-                /* For any unexpected value, reset the press counter */
-                Pressed = 0;
-                break;
+            }
         }
     }
+
+
+
 
     /* --- Manual motor control via buttons --- */
     MotorCommand cmd;  // Command structure to post to motorControlTask
@@ -309,13 +341,14 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_DIRECTION;
         cmd.direction  = GPIO_PIN_SET;  // Set forward direction
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+    	//TMC2209_SetDirection(&motors[motorGroup],1);
 
         cmd.command = MOTOR_CMD_START;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
         /* While the button remains pressed, yield to other tasks */
         while (HAL_GPIO_ReadPin(BtnUp_GPIO_Port, BtnUp_Pin) == GPIO_PIN_RESET) {
-            vTaskDelay(pdMS_TO_TICKS(10));
+            //vTaskDelay(pdMS_TO_TICKS(10));
         }
         cmd.command = MOTOR_CMD_STOP;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
@@ -328,12 +361,13 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_DIRECTION;
         cmd.direction  = GPIO_PIN_RESET;  // Set reverse direction
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+    	//TMC2209_SetDirection(&motors[motorGroup],1);
 
         cmd.command = MOTOR_CMD_START;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
         while (HAL_GPIO_ReadPin(BtnDown_GPIO_Port, BtnDown_Pin) == GPIO_PIN_RESET) {
-            vTaskDelay(pdMS_TO_TICKS(10));
+            //vTaskDelay(pdMS_TO_TICKS(10));
         }
         cmd.motorIndex = motorGroup;
         cmd.command    = MOTOR_CMD_STOP;
@@ -347,12 +381,12 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_DIRECTION;
         cmd.direction  = GPIO_PIN_SET;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-
+    	//TMC2209_SetDirection(&motors[motorGroup + 2],1);
         cmd.command = MOTOR_CMD_START;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
         while (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
-            vTaskDelay(pdMS_TO_TICKS(10));
+            //vTaskDelay(pdMS_TO_TICKS(10));
         }
         cmd.motorIndex = motorGroup + 2;
         cmd.command    = MOTOR_CMD_STOP;
@@ -367,14 +401,15 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         cmd.command    = MOTOR_CMD_DIRECTION;
         cmd.direction  = GPIO_PIN_RESET;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
+    	//TMC2209_SetDirection(&motors[motorGroup + 2],0);
 
         cmd.command = MOTOR_CMD_START;
         xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
 
 
 
-    while (HAL_GPIO_ReadPin(BtnRight_GPIO_Port, BtnRight_Pin) == GPIO_PIN_RESET) {
-                vTaskDelay(pdMS_TO_TICKS(10));
+    while (HAL_GPIO_ReadPin(BtnLeft_GPIO_Port, BtnLeft_Pin) == GPIO_PIN_RESET) {
+                //vTaskDelay(pdMS_TO_TICKS(10));
             }
             cmd.motorIndex = motorGroup + 2;
             cmd.command    = MOTOR_CMD_STOP;
@@ -382,6 +417,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
         }
     }
 }
+
 /**
  * @brief  Moves a motor at the given speed and direction until a stall is detected.
  *         After the stall, it calculates the current position (in mm) based on the difference
@@ -467,7 +503,7 @@ void moveMotorUntilStallAndCalibrate(Axis *axes, Motor *motors,
 
 void semiAutoCalibration(Axis *axes, Motor *motors)
 {
-	MotorsHoming(&motors);
+	MotorsHoming(motors);
     // If a calibration is already in progress, exit.
     while(!calibrationState()) {
 

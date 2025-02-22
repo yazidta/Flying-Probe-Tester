@@ -58,16 +58,18 @@ void calibProcessTask(void *pvParameters){
         break;
 
         case 2: // SEMI ATUO
-        	semiAutoCalibration(&axes,&motors);
+        	ManualCalibration(&axes,&motors);
+            xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
             currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
-        case 3: // MANUAL
-        	ManualCalibration(&axes,&motors);
-
-        RunManualCalibrationStateMachine(&hlcd3, &motors);
-        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
-        break;
+//        case 3: // MANUAL
+//
+//            //semiAutoCalibration(&axes,&motors);
+//                       // xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+//        //RunManualCalibrationStateMachine(&hlcd3, &motors);
+//        currentState = MENU_STATE_TESTING; // TODO: Add Test Process
+//        break;
         default:
         break;
 
@@ -249,8 +251,8 @@ void vMainMenuTask(void *pvParameters)
 
             case MENU_STATE_CALIBRATION:
                 {
-                    const char* calibMenuItems[] = {"Auto Calibartion", "Semi-Auto Calibration", "Manual Calibration" };
-                    uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,3, 1);
+                    const char* calibMenuItems[] = {"Auto Calibartion", "Manual Calibration" };
+                    uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,2, 1);
 
                     if (calibSelection == 0) {  // "Back"
                         currentState = MENU_STATE_MAIN;
