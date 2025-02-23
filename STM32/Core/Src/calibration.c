@@ -194,8 +194,6 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         // Move all motors concurrently on axis 0.
         // Move all motors concurrently on axis 1.
 
-       //----------------------------------------------------------------------------NIGGER-----------------------------------------------------------------------------------------------------------
-       //SMALL ASS PADS COORDINATES
 //               cmd.targetPositionsAxis0[0] = 64.5995f;   // Y
 //               cmd.targetPositionsAxis0[1] = 67.7745f; // Y
 //               cmd.targetPositionsAxis0[2] = -14.512f;  // X
