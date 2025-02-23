@@ -35,7 +35,6 @@ float pcbWidth = 0.0f, pcbHeight = 0.0f;
 TestPoints coordinates[MAX_CORDS];
 size_t commandsGcode = 0;
 size_t testResultsCount = 0;
-
 /*-------------------------------------------------------------------
   RunCalibrationStateMachine(): Encapsulates the calibration logic.
   Parameters can include pointers to LCD, motors, and any other state
@@ -50,8 +49,8 @@ void calibProcessTask(void *pvParameters){
     	LCD_I2C_ClearAllLines(&hlcd3);
     	LCD_I2C_SetCursor(&hlcd3, 0, 1);
     	LCD_I2C_printStr(&hlcd3, "Stall Detected, Calibration Aborted!");
-    	osDelay(500);
-    	return; // CALIB ABORTED TODO: Display calib aborted on LCD
+    	osDelay(3500);
+    	currentState = MENU_STATE_TESTING;
     }
 	if (uxBits & CALIB_START_BIT) {
 
@@ -178,7 +177,6 @@ void motorControlTask(void *argument) {
  */
 void stallMonitorTask(void *argument) {
 	MotorCommand stallCmd;
-
     for(;;) {
         for(int i = 0; i < MAX_MOTORS; i++) {
         	motors[i].STALL = HAL_GPIO_ReadPin(motors[i].driver.diag_port, motors[i].driver.diag_pin);
@@ -186,7 +184,7 @@ void stallMonitorTask(void *argument) {
             if(motors[i].STALL == GPIO_PIN_SET) {  // Stall detecte
 
                 xEventGroupSetBits(testingEvent, TEST_STOP_BIT); // Abort Testing task
-                TMC2209_Stop(&motors[i]); // Stop stalled motor first
+                TMC2209_Stop(&motors[i]); // Stop stalled motor first -- We don't send a command through the motor task here since we need to not queue and execute as soon as possible
                 for(int j = 0; j<MAX_MOTORS; j++){ // Stop the other motors
                    if(j != i) TMC2209_Stop(&motors[j]);
 
@@ -341,7 +339,15 @@ void preformTest(){
 
 	MotorCommand testingCMD;
 	uint16_t j = 0;
-		const char reportFilename = {"results.txt"};
+	const char reportFilename = {"results.txt"};
+
+	for(int l = 0; l< MAX_MOTORS; l++){ // Set testing speed for all motors
+		testingCMD.command = MOTOR_CMD_SETSPEED;
+		testingCMD.motorIndex = l;
+		testingCMD.speed = 10000;
+		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
+	}
+	osDelay(1000);
 	for(int i = 0; i < commandsGcode; i++){
 		if(i % 2 == 0){
 			testingCMD.targetPositionsAxis0[2] = coordinates[i].x;
@@ -354,10 +360,12 @@ void preformTest(){
 		if(i >= 1 && (i+1)%2 == 0){
 		testingCMD.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
-		 coordinates[j].testResult = CheckConnection(&hservo1,&hservo2);
-		        j++;
+		 coordinates[i].testResult = CheckConnection(&hservo1,&hservo2);
+		 coordinates[i-1].testResult = coordinates[i].testResult;
 		}
 	}
+
+
 	generate_report(&hlcd3);
 
 	MotorsHoming(&motors);
@@ -398,9 +406,7 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
                 	return;
                 }
             }
-            else{
-            	return;
-            }
+
         if (strncmp(line, "; Net:", 6) == 0) {
 
         	const char *netName = strchr(line, 'Net-(');
