@@ -165,8 +165,8 @@ void AutoCalibration(Axis *axes, Motor *motors) {
          *
          * Adjust the indices below if your system assigns motors differently.
          */
-        LCD_I2C_Clear(&hlcd3);
-        LCD_I2C_SetCursor(&hlcd3, 0, 1);
+        LCD_I2C_ClearAllLines(&hlcd3);
+        LCD_I2C_SetCursor(&hlcd3, 0, 2);
         LCD_I2C_printStr(&hlcd3, "Calibrating!");
         //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
         //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
@@ -233,8 +233,8 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         motors[3].calib[1] = 50.2f;  // 50.2f
 
         // Clear and update the LCD to indicate calibration is done.
-        LCD_I2C_Clear(&hlcd3);
-        LCD_I2C_SetCursor(&hlcd3, 0, 1);
+        LCD_I2C_ClearAllLines(&hlcd3);
+        LCD_I2C_SetCursor(&hlcd3, 0, 2);
         LCD_I2C_printStr(&hlcd3, "Calibration done!");
 
         // Perform any connection testing.
@@ -280,10 +280,11 @@ void ManualCalibration(Axis *axes, Motor *motors) {
 
     	// Debounce time in ms:
     	const uint32_t debounceTime = 50;
-
+    	LCD_I2C_ClearAllLines(&hlcd3);
+    	LCD_I2C_SetCursor(&hlcd3, 0, 2);
+    	LCD_I2C_printStr(&hlcd3, "Calibrate Probe 1!");
     /* Set servo positions (this call remains direct) */
-    //SERVO_WritePosition(&hservo1, 115);
-    //SERVO_WritePosition(&hservo2, 115);
+
 
     static uint32_t lastPressTime = 0;  // Last valid press timestamp
 
@@ -329,6 +330,9 @@ void ManualCalibration(Axis *axes, Motor *motors) {
                         motors[motorGroup + 2].calib[0] = motors[motorGroup + 2].currentPositionMM;
 
                         motorGroup += 1;
+                        LCD_I2C_ClearAllLines(&hlcd3);
+                        LCD_I2C_SetCursor(&hlcd3, 0, 2);
+                        LCD_I2C_printStr(&hlcd3, "Calibrate Probe 2!");
                         break;
 
                     case 2:
@@ -351,7 +355,9 @@ void ManualCalibration(Axis *axes, Motor *motors) {
                         cmd.targetPositionsAxis0[2] = -(motors[2].calib[0]);  // X
                         cmd.targetPositionsAxis0[3] = motors[3].calib[0];   // X
                         cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
-
+                        LCD_I2C_ClearAllLines(&hlcd3);
+                        LCD_I2C_SetCursor(&hlcd3, 0, 2);
+                        LCD_I2C_printStr(&hlcd3, "Calibration Done!");
                        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
                        axes[0].motors[0]->currentPositionMM = 0.0f;
                        axes[0].motors[1]->currentPositionMM = 100;

@@ -723,7 +723,7 @@ void generate_report(LCD_I2C_HandleTypeDef* hlcd)
     }
     UINT bw;
     // Write the header line
-    const char *header = "  Net           Test Points          Test result\r\n";
+    const char *header = "  Net           Test Points           Test result\r\n";
     f_write(&file, header, strlen(header), &bw);
     char resultStr[10][40];
 

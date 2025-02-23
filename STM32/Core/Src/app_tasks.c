@@ -321,7 +321,9 @@ void vTestingTask(void *arugment){
 			continue;	// Abort test
 		}
 		if (testingBits & TEST_START_BIT) { // Start Test
-
+			LCD_I2C_ClearAllLines(&hlcd3);
+			LCD_I2C_SetCursor(&hlcd3, 0, 2);
+			LCD_I2C_printStr(&hlcd3, "Testing Started!");
 		preformTest();
 		xEventGroupSetBits(testingEvent, TEST_COMPLETE_BIT);
        // xEventGroupClearBits(testingEvent, TEST_STOP_BIT); // clear bit incase we want to restart test
@@ -354,12 +356,17 @@ void preformTest(){
 		if(i >= 1 && (i+1)%2 == 0){
 		testingCMD.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
-		 coordinates[j].testResult = CheckConnection(&hservo1,&hservo2);
-		        j++;
+		 coordinates[i].testResult = CheckConnection(&hservo1,&hservo2);
+		 coordinates[i-1].testResult = coordinates[i].testResult;
+
 		}
 	}
 	generate_report(&hlcd3);
-
+	LCD_I2C_ClearAllLines(&hlcd3);
+	LCD_I2C_SetCursor(&hlcd3, 0, 2);
+	LCD_I2C_printStr(&hlcd3, "Testing Done!");
+	LCD_I2C_SetCursor(&hlcd3, 1, 2);
+	LCD_I2C_printStr(&hlcd3, "Report Saved!");
 	MotorsHoming(&motors);
 
 		//osDelay(2000);
@@ -398,9 +405,7 @@ void ProcessGcode(Axis *axisGroup[], const char *gcodeArray[][MAX_LINE_LENGTH], 
                 	return;
                 }
             }
-            else{
-            	return;
-            }
+
         if (strncmp(line, "; Net:", 6) == 0) {
 
         	const char *netName = strchr(line, 'Net-(');

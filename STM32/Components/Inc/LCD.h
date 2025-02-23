@@ -4,8 +4,8 @@
 /* Config --------------------------------------------------------------------*/
 #define LCD_PRINTF_ENABLE
 #define LCD_USE_TIMER
-#define MAX_LINES       100    // Maximum number of lines to process
-#define LINE_BUFFER_SIZE 100
+#define MAX_LINES       500    // Maximum number of lines to process
+#define LINE_BUFFER_SIZE 500
 #define MAX_LINE_LENGTH 64
 //#define LCD20xN    // For 20xN LCDs
 #define LCD16xN     // For 16xN LCDs
