@@ -97,7 +97,6 @@ typedef struct {
 	uint16_t coolThrs;			// coolTHRS
 	uint8_t  chopper;			// chopper mode (1 = SpreadCycle, 0 = StealthChop)
     float    targetPositionsAxis0[4];
-    float    targetPositionsAxis1[2];
 } MotorCommand;
 
 typedef struct {

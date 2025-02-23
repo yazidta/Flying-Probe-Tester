@@ -8,24 +8,18 @@
 
 
 #include "extras.h"
-
+bool probe = 0;
 
 bool CheckConnection(SERVO_Handle_TypeDef* hservo,SERVO_Handle_TypeDef* hservo2){
 
 	SERVO_WritePosition(hservo, SERVO1_CHECK_POS);
 	SERVO_WritePosition(hservo2, SERVO2_CHECK_POS);
 	HAL_Delay(5000);
-	bool x =0;
-	if(HAL_GPIO_ReadPin(Probe_GPIO_Port,Probe_Pin) == GPIO_PIN_SET){
-	     x = true;
-	}
-	else{
-		 x=false;
-	}
+	probe = HAL_GPIO_ReadPin(Probe_GPIO_Port,Probe_Pin);
 	SERVO_WritePosition(hservo, SERVO1_HOME_POS);
 	SERVO_WritePosition(hservo2, SERVO2_HOME_POS);
 //	HAL_Delay(1000);
-	return x;
+	return probe;
 }
 bool IsSensorTriggered(GPIO_TypeDef *sensorPort, uint16_t sensorPin)
 {
