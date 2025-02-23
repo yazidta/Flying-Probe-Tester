@@ -1233,7 +1233,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : Probe_Pin */
   GPIO_InitStruct.Pin = Probe_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(Probe_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : ENN1_Pin SPI_cs_Pin */
@@ -1287,17 +1287,17 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-//void StartDefaultTask(void const * argument)
-//{
-//  /* USER CODE BEGIN 5 */
+void StartDefaultTask(void const * argument)
+{
+  /* USER CODE BEGIN 5 */
 ////  /* Infinite loop */
 ////  for(;;)
 ////  {
 ////   osDelay(1);
 ////  }
 //
-//  /* USER CODE END 5 */
-//}
+  /* USER CODE END 5 */
+}
 
 /**
   * @brief  Period elapsed callback in non blocking mode
