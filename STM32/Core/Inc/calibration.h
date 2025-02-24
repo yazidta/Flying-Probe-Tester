@@ -12,6 +12,9 @@
 #include "app_tasks.h"
 extern SERVO_Handle_TypeDef hservo1;
 extern SERVO_Handle_TypeDef hservo2;
+
+
+
 bool MotorsHoming(Motor *motor);
 void ManualCalibration(Axis *axes, Motor *motors);
 void motorHoming(Motor *motor, GPIO_TypeDef *GPIO_Port, uint16_t GPIO_Pin, int direction, int speed, int homePositionMM);

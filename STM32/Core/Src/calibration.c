@@ -8,6 +8,8 @@ int32_t StepsBack[4]={0,0};
 uint32_t LastSteps[3] = {0,0,0,0};
 uint8_t x = 0;
 bool testing = 0;
+const uint32_t HOMING_SPEED = 80000;
+const uint32_t CALIB_SPEED = 80000;
 
 static void ResetMotorState(Motor *m, float homePosition) {
     m->currentPositionMM = homePosition;
@@ -40,7 +42,7 @@ bool MotorsHoming(Motor *motor) {
     /* --- Start each motor if not already at its home sensor --- */
     /* Motor 0: Uses EndStop2, home position = 0, direction = 1 */
     if (IsSensorTriggered(EndStop2_GPIO_Port, EndStop2_Pin) == 0) {
-        TMC2209_SetSpeed(&motor[0], 8000);
+        TMC2209_SetSpeed(&motor[0], HOMING_SPEED);
         cmd.motorIndex = 0;
         cmd.command = MOTOR_CMD_DIRECTION;
         cmd.direction = 1;
@@ -54,7 +56,7 @@ bool MotorsHoming(Motor *motor) {
 
     /* Motor 1: Uses EndStop4, home position = 450, direction = 0 */
     if (IsSensorTriggered(EndStop4_GPIO_Port, EndStop4_Pin) == 0) {
-        TMC2209_SetSpeed(&motor[1], 8000);
+        TMC2209_SetSpeed(&motor[1], HOMING_SPEED);
         cmd.motorIndex = 1;
         cmd.command = MOTOR_CMD_DIRECTION;
         cmd.direction = 0;
@@ -68,7 +70,7 @@ bool MotorsHoming(Motor *motor) {
 
     /* Motor 2: Uses EndStop1, home position = 0, direction = 0 */
     if (IsSensorTriggered(EndStop1_GPIO_Port, EndStop1_Pin) == 0) {
-        TMC2209_SetSpeed(&motor[2], 8000);
+        TMC2209_SetSpeed(&motor[2], HOMING_SPEED);
         cmd.motorIndex = 2;
         cmd.command = MOTOR_CMD_DIRECTION;
         cmd.direction = 0;
@@ -82,7 +84,7 @@ bool MotorsHoming(Motor *motor) {
 
     /* Motor 3: Uses EndStop3, home position = 0, direction = 1 */
     if (IsSensorTriggered(EndStop3_GPIO_Port, EndStop3_Pin) == 0) {
-        TMC2209_SetSpeed(&motor[3], 8000);
+        TMC2209_SetSpeed(&motor[3], HOMING_SPEED);
         cmd.motorIndex = 3;
         cmd.command = MOTOR_CMD_DIRECTION;
         cmd.direction = 1;
@@ -144,10 +146,7 @@ bool MotorsHoming(Motor *motor) {
 void AutoCalibration(Axis *axes, Motor *motors) {
     // First, perform homing on all motors.
     MotorCommand cmd;
-    TMC2209_SetSpeed(&motors[0], 8000);
-    TMC2209_SetSpeed(&motors[1], 8000);
-    TMC2209_SetSpeed(&motors[2], 8000);
-    TMC2209_SetSpeed(&motors[3], 8000);
+
 //    SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
 //    SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
     // Continue with calibration until the calibration condition is met.
@@ -165,15 +164,21 @@ void AutoCalibration(Axis *axes, Motor *motors) {
          *
          * Adjust the indices below if your system assigns motors differently.
          */
+        TMC2209_SetSpeed(&motors[0], CALIB_SPEED);
+        TMC2209_SetSpeed(&motors[1], CALIB_SPEED);
+        TMC2209_SetSpeed(&motors[2], CALIB_SPEED);
+        TMC2209_SetSpeed(&motors[3], CALIB_SPEED);
+        HAL_Delay(3000);
+
         LCD_I2C_ClearAllLines(&hlcd3);
         LCD_I2C_SetCursor(&hlcd3, 0, 2);
         LCD_I2C_printStr(&hlcd3, "Calibrating!");
         //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
         //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
-        cmd.targetPositionsAxis0[0] = 38.93f;   // Y
-        cmd.targetPositionsAxis0[1] = -57.51f; // Y
-        cmd.targetPositionsAxis0[2] = -82.15f;  // X
-        cmd.targetPositionsAxis0[3] = 22.7f;   // X
+        cmd.targetPositionsAxis0[0] = 38.57f;   // Y
+        cmd.targetPositionsAxis0[1] = -57.8f; // Y
+        cmd.targetPositionsAxis0[2] = -80.48f;  // X
+        cmd.targetPositionsAxis0[3] = 21.9f;   // X
        // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
 
 
@@ -187,7 +192,7 @@ void AutoCalibration(Axis *axes, Motor *motors) {
 //       SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
 //       SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
        axes[0].motors[0]->currentPositionMM = 0.0f;
-       axes[0].motors[1]->currentPositionMM = 99.1f;
+       axes[0].motors[1]->currentPositionMM = 99.11111f;
        axes[1].motors[0]->currentPositionMM = 0.0f;
        axes[1].motors[1]->currentPositionMM = 0.0f;
 
