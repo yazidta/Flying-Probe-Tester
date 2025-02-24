@@ -47,11 +47,14 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
 	  if (htim->Instance == motors[i].driver.htim->Instance){ // Check which motor's timer called back
 		  motors[i].stepsTaken++;
 		  //TMC2209_CountDistance(&motors[i]);
-		  if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_SET){
+		  if(motors[i].direction == GPIO_PIN_SET){
 		  		  motors[i].StepsFront++;
+
 		  }
-		  else if(HAL_GPIO_ReadPin(motors[i].driver.dir_port, motors[i].driver.dir_pin) == GPIO_PIN_RESET){
+
+		  else if(motors[i].direction == GPIO_PIN_RESET){
 			  	  motors[i].StepsBack++;
+
 		  }
           if (motors[i].stepsTaken % motors[i].stepsPerRevolution == 0){ // Count Full steps
               motors[i].driver.checkSG_RESULT = 1;
@@ -60,8 +63,9 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
       }
 
     }
-}
+  }
 
+}
 
 // Set the direction of the motor
 void TMC2209_SetDirection(Motor *motor, GPIO_PinState state) {
@@ -89,6 +93,13 @@ uint32_t TMC2209_ReadIndexStatus(Motor *motor) {
 // Start stepping with PWM
 void TMC2209_SetSpeed(Motor *motor, uint32_t StepFrequency) {
 	uint32_t prescaler = motor->driver.htim->Init.Prescaler;
+//	if(StepFrequency >= (1 << 16)){ // divide Period and Prescaler if stepFrequency is greater than 2^16 since the ARR only supports up to 16 bit
+//		HAL_TIM_Base_Stop_IT(motor->driver.htim);
+//		StepFrequency = StepFrequency / 3;
+//		motor->driver.htim->Init.Prescaler = prescaler / 3; // Update prescaler
+//		HAL_TIM_Base_Init(motor->driver.htim);
+//		HAL_TIM_PWM_Init(motor->driver.htim);
+//	};
     uint32_t timerClock = HAL_RCC_GetHCLKFreq() / prescaler ;
     uint32_t ARR = (timerClock / StepFrequency) - 1; // Auto-reload value
 
@@ -255,7 +266,6 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
                         // This motor has reached its target: stop it and update its current position.
                         TMC2209_Stop(motor);
                         motor->prevPositionMM = motor->currentPositionMM;
-                        motor->currentPositionMM = motor->nextPositionMM;
                         // Mark this motor as finished.
                         motor->nextTotalSteps = 0;
                     } else {
@@ -270,8 +280,6 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
         //vTaskDelay(1);
     }
 }
-
-
 
 
 
@@ -462,11 +470,11 @@ bool TMC2209_setPDNuart(Motor *tmc2209, bool enable) {
 
     // Write back the updated GCONF register value
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, currentGCONF);
-    HAL_Delay(2); // Allow time for the write to complete
+    HAL_Delay(3); // Allow time for the write to complete
 
     // Optionally, check if the write was successful by re-reading the register
     uint32_t updatedGCONF = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
-    HAL_Delay(2);
+    HAL_Delay(3);
 
     if (ENABLE_DEBUG) {
         char verify_msg[150];
@@ -601,14 +609,16 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
     memset(debug_msg, 0, sizeof(debug_msg)); // clear buffer
     }
     // Ensure GCONF is set to enable UART control for microstepping resolution
-    uint8_t gconf = 0x80; // Bit 7 (mstep_reg_select) set to 1. This to change the option to control mstepping using UART instead of MS1 & MS2 pins
+    uint32_t gconf = TMC2209_readInit(tmc2209, TMC2209_REG_GCONF);
+    gconf |= 0x80;  // / Bit 7 (mstep_reg_select) set to 1. This to change the option to control mstepping using UART instead of MS1 & MS2 pins
+    HAL_Delay(3);
     TMC2209_writeInit(tmc2209, TMC2209_REG_GCONF, gconf);
 
-    HAL_Delay(2);
+    HAL_Delay(3);
     // Read the current CHOPCONF register value
     uint32_t currentCHOPCONF = TMC2209_readInit(tmc2209, TMC2209_REG_CHOPCONF);
 
-    HAL_Delay(2);
+    HAL_Delay(3);
 
     // Extract the current microstepping resolution (MRES) bits [24:27]
     uint8_t currentMRES = (currentCHOPCONF >> 24) & 0x0F;
@@ -657,7 +667,7 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
     // Update the CHOPCONF register with the new MRES value
     uint32_t updatedCHOPCONF = (currentCHOPCONF & ~(0x0F << 24)) | (newMRES << 24);
     TMC2209_writeInit(tmc2209, TMC2209_REG_CHOPCONF, updatedCHOPCONF);
-    HAL_Delay(2);
+    HAL_Delay(3);
 
     TMC2209_read_ifcnt(tmc2209);
 
@@ -665,8 +675,9 @@ uint32_t TMC2209_setMicrosteppingResolution(Motor *tmc2209, uint16_t resolution)
     	if (ENABLE_DEBUG) debug_print("Failed to set microstepping.\r\n");
     	return tmc2209->driver.mstep = TMC_SET_MSTEP_ERROR;
     }
-    // Debug
-    tmc2209->driver.mstep = resolution;
+    else{
+        tmc2209->driver.mstep = resolution;
+    }
 
     if (ENABLE_DEBUG) {
     	sprintf(debug_msg, "Updated microstepping resolution to: %d\r\n", resolution);
