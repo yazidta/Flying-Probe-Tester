@@ -53,7 +53,7 @@ void initializeMotors() {
     for (int i = 0; i < MAX_MOTORS; i++) {
     	// Setting all for all drivers/motors
     	 // UART handler
-    	motors[i].driver.address = 0x03; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2 // All drivers address 3 since they're on different uarts. If uart failed MSTEP 16 by default.
+    	motors[i].driver.address = 0x02; // Address : 0x00, 0x01 ... Depends on MS1 AND MS2 // All drivers address 3 since they're on different uarts. If uart failed MSTEP 16 by default.
 
     	// Motor Parameters
     	motors[i].driver.id = i ;
@@ -172,26 +172,27 @@ void initializeMotors() {
 void TMC2209_setMotorsConfiguration(Motor *motors){	// Set all motor configurations based on their variables set from init function
     for (uint8_t i = 0; i < MAX_MOTORS; i++) {
     	// DEFAULT VALUES
-    	uint16_t mstep = 16;
-    	uint8_t IHOLD = 16;
-    	uint8_t IRUN = 31;
+    	uint16_t mstep = 256;
+    	uint8_t IHOLD = 15;
+    	uint8_t IRUN = 25;
     	uint8_t IDELAY = 8;
-    	uint8_t sgthrs = 70;
-    	uint32_t coolThrs = 5000;
+    	uint8_t sgthrs = 1;
+    	uint32_t coolThrs = 7000;
 
     	TMC2209_EnableDriver(&motors[i], 1);
-    	HAL_Delay(100);
+    	HAL_Delay(10);
     	TMC2209_setPDNuart(&motors[i], 1);
     	HAL_Delay(100);
-    	//TMC2209_configureCurrent(motors, IHOLD, IRUN, IDELAY); -- DISABLED
-    	HAL_Delay(10);
+    	TMC2209_configureCurrent(&motors[i], IHOLD, IRUN, IDELAY);
+    	HAL_Delay(500);
     	TMC2209_setMicrosteppingResolution(&motors[i], mstep);
     	HAL_Delay(500);
     	TMC2209_enableStallDetection(&motors[i], sgthrs);
     	HAL_Delay(10);
     	TMC2209_SetTCoolThrs(&motors[i], coolThrs);
     	HAL_Delay(10);
-    	TMC2209_readStandstillIndicator(&motors[i]);
+    	//TMC2209_readStandstillIndicator(&motors[i]);
+    	TMC2209_EnableDriver(&motors[i], 0);
     }
     TMC2209_SetSpeed(&motors[0], 8000);
     TMC2209_SetSpeed(&motors[1], 8000);
@@ -216,7 +217,7 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
     uint32_t totalStepsPerRevolution = motor1->stepsPerRevolution * motor1->driver.mstep; // Both motors use the same microstepping
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;
-    axis->stepPerUnit = totalStepsPerRevolution / circumference;
+    axis->stepPerUnit =  totalStepsPerRevolution / circumference;
 
     // IDs for motors controlling the axis, eg. X1, X2
     snprintf(axis->id[0], sizeof(axis->id[0]), "%s%d", axisName, motor1->driver.id);
@@ -239,5 +240,4 @@ void initializeSystem(){
 		xSemaphoreGive(xInitSemaphore); // signal welcome menu state to proceed with next state
 
 }
-
 

@@ -65,7 +65,6 @@ void HAL_TIM_PWM_PulseFinishedCallback(TIM_HandleTypeDef *htim)
     }
   }
 
-}
 
 // Set the direction of the motor
 void TMC2209_SetDirection(Motor *motor, GPIO_PinState state) {
