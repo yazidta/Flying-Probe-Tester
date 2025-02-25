@@ -290,16 +290,6 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 31.75) (xy 41.91 45.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "113135f4-fb36-4971-80d5-aa9108a2c1f6")
-	)
-	(wire
-		(pts
 			(xy 90.17 60.96) (xy 90.17 63.5)
 		)
 		(stroke
@@ -438,6 +428,16 @@
 		)
 		(uuid "c2040be3-af63-4894-a9c8-8ce2075b6706")
 	)
+	(wire
+		(pts
+			(xy 39.37 45.72) (xy 41.91 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fabe0144-3858-49ce-b6b8-1a23804df0f7")
+	)
 	(text_box "All thr end stop sensors are connected to logic ground instead of voltage. It is possible for i to work only if the cofigurations of the GPIO pin on the stm32 board will be confiured as pull up. It will stay as logical \"True\" value until we connect it to ground, then the logic state will be set as \"False\"."
 		(exclude_from_sim no)
 		(at 12.7 119.38 0)
@@ -483,13 +483,13 @@
 	)
 	(hierarchical_label "GND"
 		(shape input)
-		(at 41.91 31.75 90)
+		(at 39.37 45.72 180)
 		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left)
+			(justify right)
 		)
 		(uuid "b3b58e58-68da-4f3c-8997-c9ddb6b169b8")
 	)
@@ -570,10 +570,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "4347dfa0-9ced-4b12-8a9a-9b5bb6a72e51")
+			(uuid "215c2e13-41cd-4e30-a749-2cddd5b35254")
 		)
 		(pin "2"
-			(uuid "cdb99fed-1398-47ea-af67-bc82c6f18837")
+			(uuid "941aaba0-35a2-4842-ac2a-caf6556dfa03")
 		)
 		(instances
 			(project "Tester_circut"
@@ -637,10 +637,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "9dbce86e-6404-4104-b849-e4a6a63ffa98")
+			(uuid "8cbc9719-293d-48ee-84d8-705fd6f2bf6c")
 		)
 		(pin "2"
-			(uuid "71b2a7a7-e0ee-4fcd-b60c-de54ca50907b")
+			(uuid "bfc18f82-960a-4824-ab42-2458f69d96ec")
 		)
 		(instances
 			(project "Tester_circut"
@@ -706,13 +706,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "e138274b-c57e-49bd-9774-76b4ab3fb7e5")
+			(uuid "0e676f05-ce80-4d01-b497-481f78647986")
 		)
 		(pin "3"
-			(uuid "3bebb40a-440a-42ee-aaa6-25fa56eec18c")
+			(uuid "1867992c-ca2a-4e48-a0da-97299c0e421f")
 		)
 		(pin "2"
-			(uuid "7b80d9af-acbc-43d5-b88f-709eb3f97882")
+			(uuid "1e01936c-f038-447e-8f91-b6f0b65cd9c3")
 		)
 		(instances
 			(project "Tester_circut"
@@ -776,10 +776,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "d05969e9-a95c-4bff-992f-969c0475ea1d")
+			(uuid "07c9e467-dc93-421a-b0e2-f01124a2a326")
 		)
 		(pin "2"
-			(uuid "2221f650-4ca5-40c1-b609-6d12c8e8d101")
+			(uuid "247704cb-fea1-4884-aa84-0c6d17ecf536")
 		)
 		(instances
 			(project "Tester_circut"
@@ -845,13 +845,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "f5d47760-364d-4152-8e93-f3d1cc057bef")
+			(uuid "1d48e257-f554-4979-bdc0-ffcfdc09655f")
 		)
 		(pin "3"
-			(uuid "2f4e8694-d268-4511-9732-87f67aca4cfa")
+			(uuid "2327d93f-81f2-42b1-8d13-b714eed24c3d")
 		)
 		(pin "2"
-			(uuid "0dcc59cb-4187-4ac3-b86b-76eb43c044fc")
+			(uuid "1551bdf2-561e-4dca-b155-679a17c04483")
 		)
 		(instances
 			(project "Tester_circut"
@@ -917,13 +917,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "3aa32677-b7af-42a2-a323-8f1b4d212ac1")
+			(uuid "55cd21d0-3dca-427a-bc4c-5542c8d4ee32")
 		)
 		(pin "3"
-			(uuid "dd74207c-3002-4571-962f-01d86323c80f")
+			(uuid "0a1365ac-19a3-4f0e-91e1-294f20ce77d0")
 		)
 		(pin "2"
-			(uuid "140a583e-0c5c-4ddc-a6e5-67e42f0525bf")
+			(uuid "3237e7bb-ccf6-4762-8eb0-0ed80353a6d2")
 		)
 		(instances
 			(project "Tester_circut"
@@ -989,13 +989,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "3d591c92-9681-4099-bb2d-e9f46fb89f4b")
+			(uuid "1c618864-38ff-47a6-82d4-2a8746afc0e1")
 		)
 		(pin "3"
-			(uuid "e133d8db-f252-40e4-ae9e-822accf9b28b")
+			(uuid "eb35b978-ddcc-4a57-9bf6-8237edbbd6a4")
 		)
 		(pin "2"
-			(uuid "a94c5b47-c5ef-4d33-8e48-a7cda3f143ec")
+			(uuid "ffe86acf-417b-4b69-9c7f-05c5001c6e35")
 		)
 		(instances
 			(project "Tester_circut"
@@ -1059,10 +1059,10 @@
 			)
 		)
 		(pin "1"
-			(uuid "b7d5cd6f-5962-4b15-8f19-bf975c585ba5")
+			(uuid "78634618-3318-4091-8643-1666796e546f")
 		)
 		(pin "2"
-			(uuid "fba11977-4b7f-4dd0-a88c-ee1d7e582208")
+			(uuid "fc0b7b40-bec1-479e-b520-13ed7db0d399")
 		)
 		(instances
 			(project "Tester_circut"

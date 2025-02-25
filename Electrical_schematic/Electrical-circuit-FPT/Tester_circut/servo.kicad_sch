@@ -537,13 +537,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "3bff373d-ac5e-45e5-89a9-ced10c96c66d")
+			(uuid "57dfc272-93e5-484b-b234-6aae097cc46f")
 		)
 		(pin "2"
-			(uuid "1c689ba1-f343-4b50-a77a-5826d7e94049")
+			(uuid "22444d20-197a-4026-830a-7d66b7819ab1")
 		)
 		(pin "3"
-			(uuid "4861d5f9-d457-42ab-b585-0684ed54dd4c")
+			(uuid "2b51331c-8e78-4968-a0a5-0872b51c33b8")
 		)
 		(instances
 			(project "Tester_circut"
@@ -609,13 +609,13 @@
 			)
 		)
 		(pin "1"
-			(uuid "e0edaf2b-3e1a-41b4-9bb0-291f13809e23")
+			(uuid "3bd8914a-2f7f-48e0-a6e0-08c70f0564f4")
 		)
 		(pin "2"
-			(uuid "f0101909-a142-4003-9ade-978829a6eb54")
+			(uuid "801476a0-94ac-41e2-bb34-31ad60394017")
 		)
 		(pin "3"
-			(uuid "3a3279ab-3074-45e6-a197-8e4c57a79b3c")
+			(uuid "9314c53e-49a4-47dc-81da-1c73fedf3476")
 		)
 		(instances
 			(project "Tester_circut"

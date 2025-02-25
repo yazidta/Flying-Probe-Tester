@@ -74,8 +74,10 @@ void initializeMotors() {
         motors[i].nextTotalSteps = 0;
         motors[i].currentPositionMM = 0;
         motors[i].nextPositionMM = 0;
+        motors[i].stepError = 0;
         motors[i].isStepping = false;
         motors[i].STALL = 0;
+
 
 
         if(i == 0){
@@ -218,6 +220,7 @@ void initializeAxis(Axis *axis, Motor *motor1, Motor *motor2, uint8_t circumfere
     motor1->totalStepsPerRevolution = totalStepsPerRevolution;
     motor2->totalStepsPerRevolution = totalStepsPerRevolution;
     axis->stepPerUnit =  totalStepsPerRevolution / circumference;
+
 
     // IDs for motors controlling the axis, eg. X1, X2
     snprintf(axis->id[0], sizeof(axis->id[0]), "%s%d", axisName, motor1->driver.id);

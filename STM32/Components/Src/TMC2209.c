@@ -33,6 +33,7 @@
  ******************************************************************************
  */
 #include "TMC2209.h"
+#include "math.h"
 
 
 uint32_t last_tmc_read_attempt_ms = 0;
@@ -127,6 +128,9 @@ void TMC2209_Start(Motor *motor) {
 
 
 static void TMC2209_CountSteps(Motor *motor, uint32_t totalSteps){ // Static for now unless we need to expose it later
+	if(totalSteps == 0){
+		return;
+	}
 	motor->nextTotalSteps = totalSteps;
 	motor->stepsTaken = 0;
 
@@ -226,7 +230,9 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
 
             // Calculate the distance (in mm) and convert to steps.
             float distanceToMoveMM = targetPositions[targetIndex] - motor->currentPositionMM;
-            int32_t stepsToMove = (int32_t)(distanceToMoveMM * axes[axisIndex].stepPerUnit);
+            double stepsError = (distanceToMoveMM * axes[axisIndex].stepPerUnit) + motor->stepError;
+            int32_t stepsToMove = (int32_t)(roundf(stepsError));
+            motor->stepError = stepsError - stepsToMove;
 
             // Save the absolute number of steps required.
             motor->nextTotalSteps = (stepsToMove >= 0) ? stepsToMove : -stepsToMove;
@@ -265,6 +271,7 @@ void TMC2209_MoveAllMotorsTo(Axis axes[2], float targetPositions[4]) {
                         // This motor has reached its target: stop it and update its current position.
                         TMC2209_Stop(motor);
                         motor->prevPositionMM = motor->currentPositionMM;
+                        motor->currentPositionMM = motor->nextPositionMM;
                         // Mark this motor as finished.
                         motor->nextTotalSteps = 0;
                     } else {
