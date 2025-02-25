@@ -1,0 +1,1076 @@
+(kicad_sch
+	(version 20231120)
+	(generator "eeschema")
+	(generator_version "8.0")
+	(uuid "510b3b02-dc83-4d01-a93f-a0d70715cf2c")
+	(paper "A5")
+	(lib_symbols
+		(symbol "Device:R"
+			(pin_numbers hide)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+		(symbol "End_stop_mechanical_sensor_1"
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "WK8"
+				(at 0 12.7 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "~"
+				(at 0 10.16 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" "Connector_Wire:SolderWire-0.127sqmm_1x03_P3.7mm_D0.48mm_OD1mm"
+				(at 0 10.668 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" ""
+				(at 0 10.668 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" ""
+				(at 0 10.668 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "End_stop_mechanical_sensor_1_0_1"
+				(rectangle
+					(start -5.08 8.89)
+					(end 5.08 -13.97)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "End_stop_mechanical_sensor_1_1_1"
+				(pin passive line
+					(at 6.35 5.08 180)
+					(length 6.35)
+					(name "+V"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 6.35 -2.54 180)
+					(length 6.35)
+					(name "NO"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 6.35 -10.16 180)
+					(length 6.35)
+					(name "NC"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+		)
+	)
+	(junction
+		(at 120.65 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9d93f580-6f2b-4779-b5c9-a42742aa8689")
+	)
+	(junction
+		(at 41.91 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "dbd3ca03-9b39-4d93-bf2b-8b48785a31b9")
+	)
+	(junction
+		(at 82.55 45.72)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f4159ab9-8c82-404e-abd9-0cf8f258f02f")
+	)
+	(no_connect
+		(at 57.15 73.66)
+		(uuid "26c8969c-35ce-4a0f-8779-5836db16ffd4")
+	)
+	(no_connect
+		(at 172.72 73.66)
+		(uuid "27e8ae27-aa9a-44ec-8fd9-7199dbed5f3c")
+	)
+	(no_connect
+		(at 97.79 73.66)
+		(uuid "ae81bf76-b2d2-416c-bfe4-907fd96cbbb8")
+	)
+	(no_connect
+		(at 135.89 73.66)
+		(uuid "d743fbeb-baf2-4001-8f38-14da8104363c")
+	)
+	(wire
+		(pts
+			(xy 82.55 73.66) (xy 82.55 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "03c42147-ef39-46d9-acd8-050c18f8fac8")
+	)
+	(wire
+		(pts
+			(xy 90.17 60.96) (xy 90.17 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "14396733-0341-422f-bfeb-a2849abd9b35")
+	)
+	(wire
+		(pts
+			(xy 165.1 71.12) (xy 165.1 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "25753a36-f233-48ff-835c-6c9bcf8c5078")
+	)
+	(wire
+		(pts
+			(xy 49.53 71.12) (xy 49.53 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4df8eaf4-96c0-4f61-9327-0b04b222e2d6")
+	)
+	(wire
+		(pts
+			(xy 157.48 73.66) (xy 157.48 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4eaa31d7-6cd8-40ac-9f83-ceccc3793547")
+	)
+	(wire
+		(pts
+			(xy 120.65 45.72) (xy 82.55 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "59332ba0-6bbf-4feb-80dd-776152a4be25")
+	)
+	(wire
+		(pts
+			(xy 90.17 71.12) (xy 90.17 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "5b5ade3a-13bc-458a-9bcf-c5f908e943cd")
+	)
+	(wire
+		(pts
+			(xy 49.53 60.96) (xy 49.53 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "69a17024-37c4-4cec-874e-bac03765247a")
+	)
+	(wire
+		(pts
+			(xy 41.91 45.72) (xy 41.91 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "742f6eb0-5711-439e-a807-7b81681415c0")
+	)
+	(wire
+		(pts
+			(xy 128.27 71.12) (xy 128.27 73.66)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8ca8e137-f245-4411-8b18-beed7ddf6c60")
+	)
+	(wire
+		(pts
+			(xy 165.1 60.96) (xy 165.1 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9447ab3b-9bb7-429f-b6fb-b9977b9a7fbb")
+	)
+	(wire
+		(pts
+			(xy 128.27 60.96) (xy 128.27 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9d9b9833-1562-4498-837d-0a6036e5057d")
+	)
+	(wire
+		(pts
+			(xy 82.55 45.72) (xy 41.91 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b2f7c3cb-f0fd-4072-b68e-809f0bc7df9a")
+	)
+	(wire
+		(pts
+			(xy 157.48 45.72) (xy 120.65 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bda3b16c-ab1f-4d06-9f44-7607622ab6ac")
+	)
+	(wire
+		(pts
+			(xy 120.65 73.66) (xy 120.65 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c2040be3-af63-4894-a9c8-8ce2075b6706")
+	)
+	(wire
+		(pts
+			(xy 39.37 45.72) (xy 41.91 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fabe0144-3858-49ce-b6b8-1a23804df0f7")
+	)
+	(text_box "All thr end stop sensors are connected to logic ground instead of voltage. It is possible for i to work only if the cofigurations of the GPIO pin on the stm32 board will be confiured as pull up. It will stay as logical \"True\" value until we connect it to ground, then the logic state will be set as \"False\"."
+		(exclude_from_sim no)
+		(at 12.7 119.38 0)
+		(size 57.15 15.24)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left top)
+		)
+		(uuid "9bc2cbce-a320-4546-aea9-7d5ef3e3b74b")
+	)
+	(hierarchical_label "EndStop4"
+		(shape output)
+		(at 165.1 60.96 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "6b284603-8fab-4c12-bbf1-11262f5af143")
+	)
+	(hierarchical_label "EndStop2"
+		(shape output)
+		(at 90.17 60.96 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "8ad10525-a3df-4284-9901-78471576838b")
+	)
+	(hierarchical_label "GND"
+		(shape input)
+		(at 39.37 45.72 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "b3b58e58-68da-4f3c-8997-c9ddb6b169b8")
+	)
+	(hierarchical_label "EndStop1"
+		(shape output)
+		(at 49.53 60.96 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "e58ce95d-3f32-441d-8815-cd94a87facc9")
+	)
+	(hierarchical_label "EndStop3"
+		(shape output)
+		(at 128.27 60.96 90)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "f1b00cd3-477f-4b7c-a188-64150f8fd425")
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 90.17 67.31 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "0d1f1b85-8ff3-46c1-acf3-d2d788d0a6d5")
+		(property "Reference" "R2"
+			(at 93.472 67.564 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3.3k"
+			(at 86.36 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 91.948 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 90.17 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 90.17 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "215c2e13-41cd-4e30-a749-2cddd5b35254")
+		)
+		(pin "2"
+			(uuid "941aaba0-35a2-4842-ac2a-caf6556dfa03")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "R2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 128.27 67.31 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "13c39f9a-945f-4c7f-a180-55d5266fe9c3")
+		(property "Reference" "R11"
+			(at 131.572 67.564 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3.3k"
+			(at 124.46 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 130.048 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 128.27 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 128.27 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8cbc9719-293d-48ee-84d8-705fd6f2bf6c")
+		)
+		(pin "2"
+			(uuid "bfc18f82-960a-4824-ab42-2458f69d96ec")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "R11")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "End_stop_mechanical_sensor_1")
+		(lib_id "Sensor:End_stop_mechanical_sensor")
+		(at 125.73 80.01 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "4ceb81df-b0dd-4dc3-baa8-35dcb698b6d9")
+		(property "Reference" "WK1"
+			(at 113.03 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 115.57 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:END_STOP"
+			(at 115.062 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 115.062 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 115.062 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "0e676f05-ce80-4d01-b497-481f78647986")
+		)
+		(pin "3"
+			(uuid "1867992c-ca2a-4e48-a0da-97299c0e421f")
+		)
+		(pin "2"
+			(uuid "1e01936c-f038-447e-8f91-b6f0b65cd9c3")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "WK1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 49.53 67.31 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "50fefbe8-1b42-4a3e-a33a-900bee053d5c")
+		(property "Reference" "R1"
+			(at 52.832 67.564 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3.3k"
+			(at 46.736 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 51.308 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 49.53 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 49.53 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "07c9e467-dc93-421a-b0e2-f01124a2a326")
+		)
+		(pin "2"
+			(uuid "247704cb-fea1-4884-aa84-0c6d17ecf536")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "R1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "End_stop_mechanical_sensor_1")
+		(lib_id "Sensor:End_stop_mechanical_sensor")
+		(at 87.63 80.01 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5d8f296a-7360-4681-b2e2-b2e44678dee5")
+		(property "Reference" "WK2"
+			(at 74.93 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 77.47 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:END_STOP"
+			(at 76.962 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 76.962 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 76.962 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1d48e257-f554-4979-bdc0-ffcfdc09655f")
+		)
+		(pin "3"
+			(uuid "2327d93f-81f2-42b1-8d13-b714eed24c3d")
+		)
+		(pin "2"
+			(uuid "1551bdf2-561e-4dca-b155-679a17c04483")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "WK2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "End_stop_mechanical_sensor_1")
+		(lib_id "Sensor:End_stop_mechanical_sensor")
+		(at 162.56 80.01 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "6c169650-41ae-411b-a638-81526a59823d")
+		(property "Reference" "WK8"
+			(at 149.86 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 152.4 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:END_STOP"
+			(at 151.892 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 151.892 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 151.892 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "55cd21d0-3dca-427a-bc4c-5542c8d4ee32")
+		)
+		(pin "3"
+			(uuid "0a1365ac-19a3-4f0e-91e1-294f20ce77d0")
+		)
+		(pin "2"
+			(uuid "3237e7bb-ccf6-4762-8eb0-0ed80353a6d2")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "WK8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_name "End_stop_mechanical_sensor_1")
+		(lib_id "Sensor:End_stop_mechanical_sensor")
+		(at 46.99 80.01 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "afa5e738-be2f-499a-97ce-0502328998d3")
+		(property "Reference" "WK3"
+			(at 34.29 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "~"
+			(at 36.83 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Library:END_STOP"
+			(at 36.322 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 36.322 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 36.322 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1c618864-38ff-47a6-82d4-2a8746afc0e1")
+		)
+		(pin "3"
+			(uuid "eb35b978-ddcc-4a57-9bf6-8237edbbd6a4")
+		)
+		(pin "2"
+			(uuid "ffe86acf-417b-4b69-9c7f-05c5001c6e35")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "WK3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 165.1 67.31 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e5cac772-b6a8-40a0-8852-ba78444250cf")
+		(property "Reference" "R12"
+			(at 168.402 67.564 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "3.3k"
+			(at 161.29 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "Resistor_SMD:R_0805_2012Metric"
+			(at 166.878 67.31 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 165.1 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 165.1 67.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "78634618-3318-4091-8643-1666796e546f")
+		)
+		(pin "2"
+			(uuid "fc0b7b40-bec1-479e-b520-13ed7db0d399")
+		)
+		(instances
+			(project "Tester_circut"
+				(path "/e9d51b57-f7f4-4dc8-a5d5-c432dd7d472e/94d18c3b-5b78-4afc-915f-ba82f358a063"
+					(reference "R12")
+					(unit 1)
+				)
+			)
+		)
+	)
+)
