@@ -618,6 +618,8 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
             }
 
             if (selectedIndex == 0 ) {
+                currentState = MENU_STATE_MAIN;
+
                 // "Back" selected
                 return; // Exit the menu to go back to the previous menu
             } else {
@@ -734,7 +736,6 @@ void generate_report(LCD_I2C_HandleTypeDef* hlcd)
     // Write the header line
     const char *header = "  Net           Test Points           Test result\r\n";
     f_write(&file, header, strlen(header), &bw);
-
             for(int i =0 ; i < commandsGcode;i++){
                 snprintf(testPointsStr[i], sizeof(testPointsStr[i]), "%.d, %.d",
                          (int)coordinates[i].x, (int)coordinates[i].y);

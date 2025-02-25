@@ -173,14 +173,15 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         LCD_I2C_ClearAllLines(&hlcd3);
         LCD_I2C_SetCursor(&hlcd3, 0, 2);
         LCD_I2C_printStr(&hlcd3, "Calibrating!");
-        //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
-        //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
-        cmd.targetPositionsAxis0[0] = 38.653677f;   // Y
 
+        // The Auto calibration based on only hard saving one point was deleted
+        // Because of the mechanical design the probes were bending so the next commands
+        // are for auto calibration based on 2 hard saved coordinates
+        // sending commands to the motor control task
+        cmd.targetPositionsAxis0[0] = 38.653677f;   // Y
         cmd.targetPositionsAxis0[1] = -57.26f; // Y
         cmd.targetPositionsAxis0[2] = -80.8456786f;  // X
         cmd.targetPositionsAxis0[3] = 22.0f;   // X
-       // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
 
         cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 
@@ -189,48 +190,16 @@ void AutoCalibration(Axis *axes, Motor *motors) {
 //       SERVO_WritePosition(&hservo1, SERVO1_HOME_POS);
 //       SERVO_WritePosition(&hservo2, SERVO2_HOME_POS);
        axes[0].motors[0]->currentPositionMM = 0.0f;
-       axes[0].motors[1]->currentPositionMM = 99.11111f;
+       axes[0].motors[1]->currentPositionMM = pcbHeight;
        axes[1].motors[0]->currentPositionMM = 0.0f;
        axes[1].motors[1]->currentPositionMM = 0.0f;
 
-        // Move all motors concurrently on axis 0.
-        // Move all motors concurrently on axis 1.
 
-//               cmd.targetPositionsAxis0[0] = 64.5995f;   // Y
-//               cmd.targetPositionsAxis0[1] = 67.7745f; // Y
-//               cmd.targetPositionsAxis0[2] = -14.512f;  // X
-//               cmd.targetPositionsAxis0[3] = 49.5995f;   // X
-
-       //BIG ASS PADS COORDINATES
-
-//               cmd.targetPositionsAxis0[0] = 20.5995f;   // Y
-//               cmd.targetPositionsAxis0[1] = 44.5995f; // Y
-//               cmd.targetPositionsAxis0[2] = -37.5995f;  // X
-//               cmd.targetPositionsAxis0[3] = 20.5995f;   // X
-              // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
-
-
-
-
-//               cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
-//
-//              xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
-//              CheckConnection(&hservo1,&hservo2);
-//              HAL_Delay(200000);
-
-        /*
-         * After the concurrent move, the TMC2209_MoveAllTo routine will have:
-         * - Polling loops that wait until every motor has taken the required steps,
-         * - Stopped the motors,
-         * - And updated each motor's currentPositionMM to the new (target) value.
-         */
-
-        // Optionally update calibration values in the motors structure.
-        // (Be sure that these indices match your system's mapping.)
-        motors[0].calib[1] = 77.9f;  // 77.9f
-        motors[1].calib[1] = -47.9f;  // -47.9f
-        motors[2].calib[1] = -100.0f;  // -100.8f
-        motors[3].calib[1] = 50.2f;  // 50.2f
+       // This is just to leave the function after actually calibrating the numbers don't matter
+        motors[0].calib[1] = 1;
+        motors[1].calib[1] = 1;
+        motors[2].calib[1] = 1;
+        motors[3].calib[1] = 1;
 
         // Clear and update the LCD to indicate calibration is done.
         LCD_I2C_ClearAllLines(&hlcd3);
@@ -261,12 +230,14 @@ bool calibrationState(void) {
 
 void ManualCalibration(Axis *axes, Motor *motors) {
     /* If calibration is complete, exit immediately */
-    TMC2209_SetSpeed(&motors[0], 8000);
-    TMC2209_SetSpeed(&motors[1], 8000);
-    TMC2209_SetSpeed(&motors[2], 8000);
-    TMC2209_SetSpeed(&motors[3], 8000);
+    TMC2209_SetSpeed(&motors[0], 50000);
+    TMC2209_SetSpeed(&motors[1], 50000);
+    TMC2209_SetSpeed(&motors[2], 50000);
+    TMC2209_SetSpeed(&motors[3], 50000);
     MotorCommand cmd;  // Command structure to post to motorControlTask
-
+	LCD_I2C_ClearAllLines(&hlcd3);
+	LCD_I2C_SetCursor(&hlcd3, 0, 2);
+	LCD_I2C_printStr(&hlcd3, "Calibrate Probe 1!");
 	MotorsHoming(motors);
     while(!calibrationState()){
     //RunManualCalibrationStateMachine(&hlcd3, &motors);
@@ -280,9 +251,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
 
     	// Debounce time in ms:
     	const uint32_t debounceTime = 50;
-    	LCD_I2C_ClearAllLines(&hlcd3);
-    	LCD_I2C_SetCursor(&hlcd3, 0, 2);
-    	LCD_I2C_printStr(&hlcd3, "Calibrate Probe 1!");
+
     /* Set servo positions (this call remains direct) */
 
 
@@ -337,6 +306,7 @@ void ManualCalibration(Axis *axes, Motor *motors) {
 
                     case 2:
                         // Save calibration for second press
+
                         motors[motorGroup].currentPositionMM =
                             (float)abs(motors[motorGroup].StepsFront - motors[motorGroup].StepsBack)
                               / axes[0].stepPerUnit;
@@ -360,17 +330,20 @@ void ManualCalibration(Axis *axes, Motor *motors) {
                         LCD_I2C_printStr(&hlcd3, "Calibration Done!");
                        xQueueSend(motorCommandQueue, &cmd, portMAX_DELAY);
                        axes[0].motors[0]->currentPositionMM = 0.0f;
-                       axes[0].motors[1]->currentPositionMM = 100;
+                       axes[0].motors[1]->currentPositionMM = pcbHeight;
                        axes[1].motors[0]->currentPositionMM = 0.0f;
                        axes[1].motors[1]->currentPositionMM = 0.0f;
-                       motors[0].calib[1] = motors[0].calib[0];
-                       motors[1].calib[1] = -(motors[1].calib[0]);
-                       motors[2].calib[1] = -(motors[2].calib[0]);
-                       motors[3].calib[1] = motors[3].calib[0];
+
 
                         motorGroup = 0;  // Reset as needed
                         Pressed = 0;     // Reset the press counter
+                        //The numbers below don't matter they are just to leave the function
+                        motors[0].calib[1] = 1;
+                        motors[1].calib[1] = 1;
+                        motors[2].calib[1] = 1;
+                        motors[3].calib[1] = 1;
 
+                        break;
                         break;
 
                     default:

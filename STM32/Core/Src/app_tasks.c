@@ -55,9 +55,7 @@ void calibProcessTask(void *pvParameters){
 	if (uxBits & CALIB_START_BIT) {
 
      switch(g_calibSelection){
-        case 0:
-            currentState = MENU_STATE_SD_TEST;
-            //xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+
 
         case 1: // AUTO
         AutoCalibration(&axes,&motors); 
@@ -258,8 +256,11 @@ void vMainMenuTask(void *pvParameters)
                 {
                     const char* calibMenuItems[] = {"Auto Calibartion", "Manual Calibration" };
                     uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,2, 1);
+                        if(calibSelection == 0){
+                            currentState = MENU_STATE_MAIN;
 
-
+                        }
+                        else{
                     	g_calibSelection = calibSelection;
                          //Signal the calibration task to start.
                     	xEventGroupSetBits(calibEventGroup, CALIB_START_BIT);
@@ -270,7 +271,7 @@ void vMainMenuTask(void *pvParameters)
 
                          //Calibration is complete. Return to the main menu or update as needed.
                         currentState = MENU_STATE_TESTING;
-
+                        }
                 }
                 break;
 
@@ -281,9 +282,7 @@ void vMainMenuTask(void *pvParameters)
                 	LCD_I2C_SetCursor(&hlcd3, 0, 1);
                     LCD_I2C_printStr(&hlcd3, "Preparing...");
                     if(MotorsHoming(&motors) == 1){
-                       if(!calibrationState()){
-                           currentState =MENU_STATE_CALIBRATION;
-                        }
+
                        currentState = MENU_STATE_MAIN;
    	                 }
 
