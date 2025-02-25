@@ -175,15 +175,12 @@ void AutoCalibration(Axis *axes, Motor *motors) {
         LCD_I2C_printStr(&hlcd3, "Calibrating!");
         //float targetPositionsAxis0[MAX_MOTORS_PER_AXIS] = ;
         //float targetPositionsAxis1[MAX_MOTORS_PER_AXIS] = ;
-        cmd.targetPositionsAxis0[0] = 38.57f;   // Y
-        cmd.targetPositionsAxis0[1] = -57.8f; // Y
-        cmd.targetPositionsAxis0[2] = -80.48f;  // X
-        cmd.targetPositionsAxis0[3] = 21.9f;   // X
+        cmd.targetPositionsAxis0[0] = 38.653677f;   // Y
+
+        cmd.targetPositionsAxis0[1] = -57.26f; // Y
+        cmd.targetPositionsAxis0[2] = -80.8456786f;  // X
+        cmd.targetPositionsAxis0[3] = 22.0f;   // X
        // cmd.targetPositionsAxis0[2] = { -47.9f, 50.2f };
-
-
-
-
 
         cmd.command = MOTOR_CMD_MOVE_ALL_MOTORS;
 

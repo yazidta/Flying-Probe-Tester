@@ -133,6 +133,7 @@ typedef struct {
     float prevPositionMM;	// Previous position on the axis in millimeter to no start the motor if it's in already in the requested position.
     float currentPositionMM; // Current position on the axis in millimeters
     float nextPositionMM;
+    double stepError;
     bool isStepping;               // State to track if the motor is currently stepping
     uint32_t StepsFront;           // Tracking Steps Based on direction
     int32_t StepsBack;
