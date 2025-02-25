@@ -54,9 +54,10 @@ char lines[MAX_LINES][MAX_LINE_LENGTH];
 
 extern size_t commandsGcode;
 extern TestPoints coordinates[MAX_CORDS];
-static char reportLine[40][40];
-static char testPointsStr[10][40];
-static char netsnames[10][40];
+static char reportLine[40][54];
+static char testPointsStr[40][10];
+static char netsnames[40][10];
+char resultStr[40][5];      // Buffer for result string ("PASS" or "FAIL")
 extern MenuState currentState;
 /* Public variables ----------------------------------------------------------*/
 
@@ -557,7 +558,10 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
     	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "Failed to mount");
+
         HAL_Delay(2000);
+        currentState = MENU_STATE_MAIN;
+
         return;
     }
     else{
@@ -636,6 +640,10 @@ void LCD_I2C_DisplaySDMenu(LCD_I2C_HandleTypeDef* hlcd, ENC_Handle_TypeDef* henc
                     memmove(fileListBackoption[selectedIndex], start, strlen(start) + 1);
                 }
                 process_file(hlcd, fileListBackoption[selectedIndex]);
+                size_t numLines = sizeof(lines);
+                ProcessGcode(&axes, &lines, numLines);
+
+           	    currentState = MENU_STATE_CALIBRATION;
 
                 // Add your file processing logic here
                 return;
@@ -706,6 +714,7 @@ void generate_report(LCD_I2C_HandleTypeDef* hlcd)
     	LCD_I2C_ClearAllLines(hlcd);
         LCD_I2C_SetCursor(hlcd, 0, 0);
         LCD_I2C_printStr(hlcd, "SD mount failed");
+        currentState = MENU_STATE_MAIN;
         return;
     }
     else{
@@ -725,27 +734,25 @@ void generate_report(LCD_I2C_HandleTypeDef* hlcd)
     // Write the header line
     const char *header = "  Net           Test Points           Test result\r\n";
     f_write(&file, header, strlen(header), &bw);
-    char resultStr[10][40];
 
             for(int i =0 ; i < commandsGcode;i++){
-                snprintf(testPointsStr[i], sizeof(testPointsStr[i]), "%.d, %.d, %.d, %.d",
-                         (int)coordinates[i].x, (int)coordinates[i].y,
-                         (int)coordinates[i+1].x, (int)coordinates[i+1].y);
+                snprintf(testPointsStr[i], sizeof(testPointsStr[i]), "%.d, %.d",
+                         (int)coordinates[i].x, (int)coordinates[i].y);
 
-            	if((i+1 % 2) == 0){
-		            strcpy(resultStr[i], coordinates[i].testResult ? "PASS" : "FAIL");
 
-            	}
+            		const char *result = coordinates[i].testResult ? "PASS" : "FAIL";
+            		        snprintf(resultStr[i], sizeof(resultStr[i]), "%-4s", result);
+
+
 
             	snprintf(reportLine[i], sizeof(reportLine[i]),
-            			 "%-15s %-30s %-10s\n",
+            			 "%-15s %-30s %-5s\n",
             			 coordinates[i].netName, testPointsStr[i], resultStr);
                 f_write(&file, reportLine[i], strlen(reportLine[i]), &bw);
-                i++;
 
 
             }
-    f_write(&file, reportLine, strlen(reportLine), &bw);
+    //f_write(&file, reportLine, strlen(reportLine), &bw);
     f_close(&file);
     f_mount(NULL, "", 1);
 }

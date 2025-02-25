@@ -14,7 +14,7 @@ bool CheckConnection(SERVO_Handle_TypeDef* hservo,SERVO_Handle_TypeDef* hservo2)
 
 	SERVO_WritePosition(hservo, SERVO1_CHECK_POS);
 	SERVO_WritePosition(hservo2, SERVO2_CHECK_POS);
-	HAL_Delay(5000);
+	HAL_Delay(100);
 	probe = HAL_GPIO_ReadPin(Probe_GPIO_Port,Probe_Pin);
 	SERVO_WritePosition(hservo, SERVO1_HOME_POS);
 	SERVO_WritePosition(hservo2, SERVO2_HOME_POS);

@@ -19,5 +19,6 @@
 ../Core/Src/main.c:1093:13:MX_USB_OTG_FS_PCD_Init	2
 ../Core/Src/main.c:1126:13:MX_DMA_Init	1
 ../Core/Src/main.c:1160:13:MX_GPIO_Init	1
+../Core/Src/main.c:1290:6:StartDefaultTask	1
 ../Core/Src/main.c:1310:6:HAL_TIM_PeriodElapsedCallback	2
 ../Core/Src/main.c:1327:6:Error_Handler	1

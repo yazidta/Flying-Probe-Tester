@@ -55,17 +55,21 @@ void calibProcessTask(void *pvParameters){
 	if (uxBits & CALIB_START_BIT) {
 
      switch(g_calibSelection){
-        
+        case 0:
+            currentState = MENU_STATE_SD_TEST;
+            //xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+
         case 1: // AUTO
         AutoCalibration(&axes,&motors); 
+        //currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 
         break;
 
         case 2: // Manual
         	ManualCalibration(&axes,&motors);
+          //  currentState = MENU_STATE_TESTING; // TODO: Add Test Process
             xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
-            currentState = MENU_STATE_TESTING; // TODO: Add Test Process
         break;
 
 //        case 3: // Semi-Auto
@@ -88,7 +92,7 @@ void calibProcessTask(void *pvParameters){
 
     }
         // Short delay to let other tasks run.
-     xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
+     //xEventGroupSetBits(calibEventGroup, CALIB_COMPLETE_BIT);
 
        }
 		vTaskDelay(pdMS_TO_TICKS(10));
@@ -244,9 +248,6 @@ void vMainMenuTask(void *pvParameters)
                 	  LCD_I2C_printStr(&hlcd3, "Performing Tests");
                       LCD_I2C_DisplaySDMenu(&hlcd3, &henc1);
 
-                       size_t numLines = sizeof(lines);
-                       ProcessGcode(&axes, &lines, numLines);
-            	 currentState = MENU_STATE_CALIBRATION;
 
 
                         //currentState = MENU_STATE_MAIN;
@@ -258,9 +259,7 @@ void vMainMenuTask(void *pvParameters)
                     const char* calibMenuItems[] = {"Auto Calibartion", "Manual Calibration" };
                     uint8_t calibSelection = LCD_I2C_menuTemplate(&hlcd3, &henc1,calibMenuItems,2, 1);
 
-                    if (calibSelection == 0) {  // "Back"
-                        currentState = MENU_STATE_MAIN;
-                    } else {
+
                     	g_calibSelection = calibSelection;
                          //Signal the calibration task to start.
                     	xEventGroupSetBits(calibEventGroup, CALIB_START_BIT);
@@ -271,7 +270,7 @@ void vMainMenuTask(void *pvParameters)
 
                          //Calibration is complete. Return to the main menu or update as needed.
                         currentState = MENU_STATE_TESTING;
-                    }
+
                 }
                 break;
 
@@ -339,12 +338,14 @@ void preformTest(){
 
 	MotorCommand testingCMD;
 	uint16_t j = 0;
-	const char reportFilename = {"results.txt"};
+	LCD_I2C_ClearAllLines(&hlcd3);
+	LCD_I2C_SetCursor(&hlcd3, 0, 1);
+	LCD_I2C_printStr(&hlcd3, "Testing Started!");
 
 	for(int l = 0; l< MAX_MOTORS; l++){ // Set testing speed for all motors
 		testingCMD.command = MOTOR_CMD_SETSPEED;
 		testingCMD.motorIndex = l;
-		testingCMD.speed = 10000;
+		testingCMD.speed = 80000;
 		xQueueSend(motorCommandQueue, &testingCMD, portMAX_DELAY);
 	}
 	osDelay(1000);
@@ -364,9 +365,14 @@ void preformTest(){
 		 coordinates[i-1].testResult = coordinates[i].testResult;
 		}
 	}
-
-
+    LCD_I2C_SetCursor(&hlcd3, 0, 1);
+    LCD_I2C_printStr(&hlcd3, "Testing Done!");
 	generate_report(&hlcd3);
+
+	LCD_I2C_ClearAllLines(&hlcd3);
+    LCD_I2C_SetCursor(&hlcd3, 0, 1);
+    LCD_I2C_printStr(&hlcd3, "File Generated");
+
 
 	MotorsHoming(&motors);
 
