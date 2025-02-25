@@ -1,4 +1,4 @@
 ../Components/Src/TMC2209_configs.c:51:6:initializeMotors	6
-../Components/Src/TMC2209_configs.c:172:6:TMC2209_setMotorsConfiguration	2
-../Components/Src/TMC2209_configs.c:204:6:initializeAxis	2
-../Components/Src/TMC2209_configs.c:229:6:initializeSystem	1
+../Components/Src/TMC2209_configs.c:174:6:TMC2209_setMotorsConfiguration	2
+../Components/Src/TMC2209_configs.c:206:6:initializeAxis	2
+../Components/Src/TMC2209_configs.c:232:6:initializeSystem	1

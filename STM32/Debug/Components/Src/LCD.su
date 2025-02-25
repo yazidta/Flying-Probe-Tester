@@ -23,6 +23,6 @@
 ../Components/Src/LCD.c:506:6:AddBackOption	16	static
 ../Components/Src/LCD.c:510:6:DisplayMenu	56	static
 ../Components/Src/LCD.c:546:6:LCD_I2C_DisplaySDMenu	1136	static
-../Components/Src/LCD.c:657:6:process_file	1160	static
-../Components/Src/LCD.c:703:6:generate_report	1240	static
-../Components/Src/LCD.c:760:6:ftoa	40	static
+../Components/Src/LCD.c:659:6:process_file	1160	static
+../Components/Src/LCD.c:705:6:generate_report	1240	static
+../Components/Src/LCD.c:761:6:ftoa	40	static

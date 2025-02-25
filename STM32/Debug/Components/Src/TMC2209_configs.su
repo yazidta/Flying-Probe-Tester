@@ -1,4 +1,4 @@
 ../Components/Src/TMC2209_configs.c:51:6:initializeMotors	16	static
-../Components/Src/TMC2209_configs.c:172:6:TMC2209_setMotorsConfiguration	32	static
-../Components/Src/TMC2209_configs.c:204:6:initializeAxis	40	static
-../Components/Src/TMC2209_configs.c:229:6:initializeSystem	16	static
+../Components/Src/TMC2209_configs.c:174:6:TMC2209_setMotorsConfiguration	32	static
+../Components/Src/TMC2209_configs.c:206:6:initializeAxis	40	static
+../Components/Src/TMC2209_configs.c:232:6:initializeSystem	16	static
